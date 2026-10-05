@@ -1,0 +1,32 @@
+---
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Support · Nova" description="Get help with the Nova app and self-hosted Nova.">
+  <div class="container">
+    <Header />
+    <main id="main" class="privacy-copy">
+      <h1>Nova support</h1>
+      <p>
+        For help with the Nova mobile app or a hosted Nova account, email{" "}
+        <a href="mailto:hello@nova.example">hello@nova.example</a>. Include the email address on your
+        account, what you expected to happen, and any error message you saw. Do not send passwords, API keys,
+        access tokens, or other secrets.
+      </p>
+      <h2>Self-hosted Nova</h2>
+      <p>
+        For self-hosting setup help or to report a bug or feature request, email{" "}
+        <a href="mailto:hello@nova.example">hello@nova.example</a>.
+      </p>
+      <h2>Account deletion</h2>
+      <p>
+        In the mobile app, open <strong>Account</strong>, enter your current password under{" "}
+        <strong>Delete account</strong>, and confirm. This permanently deletes the hosted account and its
+        associated personal Space data.
+      </p>
+    </main>
+    <Footer />
+  </div>
+</BaseLayout>

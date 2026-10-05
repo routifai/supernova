@@ -1,0 +1,3474 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-08-26 00:00+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+"Project-Id-Version: aiden-web\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. placeholder {0}: group.entries.length
+msgid "{0, plural, one {# model} other {# models}}"
+msgstr "{0, plural, one {# model} other {# models}}"
+
+#. placeholder {0}: file.name
+msgid "{0} (max {ATTACHMENT_MAX_COUNT} attachments)"
+msgstr "{0} (max {ATTACHMENT_MAX_COUNT} attachments)"
+
+#. placeholder {0}: file.name
+msgid "{0} (over 10 MiB)"
+msgstr "{0} (over 10 MiB)"
+
+#. placeholder {0}: preset.n
+msgid "{0} {unitLabel}"
+msgstr "{0} {unitLabel}"
+
+#. placeholder {0}: block.name
+msgid "{0} connection"
+msgstr "{0} connection"
+
+#. placeholder {0}: bot.name
+msgid "{0} default"
+msgstr "{0} default"
+
+#. placeholder {0}: sender.name
+msgid "{0} handling"
+msgstr "{0} handling"
+
+#. placeholder {0}: format(size / 1024)
+msgid "{0} KB"
+msgstr "{0} KB"
+
+#. placeholder {0}: format(size / (1024 * 1024))
+msgid "{0} MB"
+msgstr "{0} MB"
+
+#. placeholder {0}: sender.name
+msgid "{0} rollup hours"
+msgstr "{0} rollup hours"
+
+#. placeholder {0}: usage.runs
+#. placeholder {1}: usage.inputTokens + usage.outputTokens
+msgid "{0} runs · {1} tokens"
+msgstr "{0} runs · {1} tokens"
+
+#. placeholder {0}: steps.length
+msgid "{0} steps planned"
+msgstr "{0} steps planned"
+
+#. placeholder {0}: bot.name
+msgid "{0} will still respond to direct mentions."
+msgstr "{0} will still respond to direct mentions."
+
+#. placeholder {0}: computerBot.name
+msgid "{0}'s computer"
+msgstr "{0}'s computer"
+
+#. placeholder {0}: active.name
+msgid "{0}'s screen"
+msgstr "{0}'s screen"
+
+msgid "{activeCount} active"
+msgstr "{activeCount} active"
+
+msgid "{activeCount} active · {waiting} need you"
+msgstr "{activeCount} active · {waiting} need you"
+
+msgid "{botName}’s computer"
+msgstr "{botName}’s computer"
+
+msgid "{days}d ago"
+msgstr "{days}d ago"
+
+msgid "{done} of {total}"
+msgstr "{done} of {total}"
+
+msgid "{done} of {total} done"
+msgstr "{done} of {total} done"
+
+msgid "{done} of {total} Tasks done"
+msgstr "{done} of {total} Tasks done"
+
+msgid "{hidden} more"
+msgstr "{hidden} more"
+
+msgid "{hours}h ago"
+msgstr "{hours}h ago"
+
+msgid "{minutes}m ago"
+msgstr "{minutes}m ago"
+
+#. js-lingui-explicit-id
+msgid "{name} failed"
+msgstr "{name} failed"
+
+#. js-lingui-explicit-id
+msgid "{name} finished"
+msgstr "{name} finished"
+
+#. js-lingui-explicit-id
+msgid "{name} stopped"
+msgstr "{name} stopped"
+
+msgid "{remaining} left · bot is watching, not acting"
+msgstr "{remaining} left · bot is watching, not acting"
+
+msgid "{size} B"
+msgstr "{size} B"
+
+msgid "{toolCount, plural, one {# tool} other {# tools}}"
+msgstr "{toolCount, plural, one {# tool} other {# tools}}"
+
+msgid "{workingBotName} is working"
+msgstr "{workingBotName} is working"
+
+#. placeholder {0}: mention.name
+msgid "@{0}"
+msgstr "@{0}"
+
+msgid "2 of 5 · Next check-in Friday, 9:00"
+msgstr "2 of 5 · Next check-in Friday, 9:00"
+
+msgid "A bit of everything"
+msgstr "A bit of everything"
+
+msgid "About groups"
+msgstr "About groups"
+
+msgid "About spaces"
+msgstr "About spaces"
+
+msgid "Access token"
+msgstr "Access token"
+
+msgid "Access token (optional)"
+msgstr "Access token (optional)"
+
+msgid "Account"
+msgstr "Account"
+
+msgid "Account default"
+msgstr "Account default"
+
+msgid "Account label"
+msgstr "Account label"
+
+msgid "Accounts"
+msgstr "Accounts"
+
+msgid "Action confirmations"
+msgstr "Action confirmations"
+
+#. placeholder {0}: bot.name
+msgid "Actions for {0}"
+msgstr "Actions for {0}"
+
+msgid "Active"
+msgstr "Active"
+
+msgid "Active model"
+msgstr "Active model"
+
+msgid "Activity"
+msgstr "Activity"
+
+msgid "Add"
+msgstr "Add"
+
+msgid "Add a check-in"
+msgstr "Add a check-in"
+
+msgid "Add a model in Settings to use this."
+msgstr "Add a model in Settings to use this."
+
+msgid "Add a run time for this one-shot."
+msgstr "Add a run time for this one-shot."
+
+msgid "Add a schedule, webhook, GitHub, or message trigger"
+msgstr "Add a schedule, webhook, GitHub, or message trigger"
+
+msgid "Add a schedule, webhook, GitHub, or message trigger to run this routine."
+msgstr "Add a schedule, webhook, GitHub, or message trigger to run this routine."
+
+msgid "Add a server name."
+msgstr "Add a server name."
+
+msgid "Add a stdio command."
+msgstr "Add a stdio command."
+
+msgid "Add an HTTPS server URL."
+msgstr "Add an HTTPS server URL."
+
+msgid "Add another"
+msgstr "Add another"
+
+msgid "Add Executor"
+msgstr "Add Executor"
+
+msgid "Add GraphQL"
+msgstr "Add GraphQL"
+
+msgid "Add GraphQL endpoint"
+msgstr "Add GraphQL endpoint"
+
+msgid "Add item"
+msgstr "Add item"
+
+msgid "Add MCP server"
+msgstr "Add MCP server"
+
+msgid "Add OpenAPI"
+msgstr "Add OpenAPI"
+
+msgid "Add remote MCP server"
+msgstr "Add remote MCP server"
+
+msgid "Add server"
+msgstr "Add server"
+
+msgid "Add server URL"
+msgstr "Add server URL"
+
+msgid "Add to routine"
+msgstr "Add to routine"
+
+msgid "Add Treg"
+msgstr "Add Treg"
+
+msgid "Add trigger"
+msgstr "Add trigger"
+
+msgid "Added"
+msgstr "Added"
+
+msgid "Adding…"
+msgstr "Adding…"
+
+msgid "Advanced"
+msgstr "Advanced"
+
+msgid "Advanced..."
+msgstr "Advanced..."
+
+msgid "Agent computer"
+msgstr "Agent computer"
+
+msgid "Agent connections"
+msgstr "Agent connections"
+
+msgid "Agents:"
+msgstr "Agents:"
+
+msgid "All"
+msgstr "All"
+
+msgid "All bots"
+msgstr "All bots"
+
+msgid "All time"
+msgstr "All time"
+
+#. placeholder {0}: rule.matchValue
+msgid "Allow {0} actions without asking"
+msgstr "Allow {0} actions without asking"
+
+#. placeholder {0}: rule.matchValue
+msgid "Allow {0} connector without asking"
+msgstr "Allow {0} connector without asking"
+
+#. placeholder {0}: rule.matchValue
+msgid "Allow {0} without asking"
+msgstr "Allow {0} without asking"
+
+msgid "Allow email actions without asking"
+msgstr "Allow email actions without asking"
+
+msgid "Allow once"
+msgstr "Allow once"
+
+msgid "Allow purchase actions without asking"
+msgstr "Allow purchase actions without asking"
+
+msgid "Allow writing"
+msgstr "Allow writing"
+
+msgid "Allowed once"
+msgstr "Allowed once"
+
+msgid "Already have an account?"
+msgstr "Already have an account?"
+
+msgid "Always act"
+msgstr "Always act"
+
+msgid "Always allow this tool"
+msgstr "Always allow this tool"
+
+msgid "Always allowed"
+msgstr "Always allowed"
+
+msgid "And what would you like to call me?"
+msgstr "And what would you like to call me?"
+
+msgid "Answer"
+msgstr "Answer"
+
+msgid "Answered"
+msgstr "Answered"
+
+#. placeholder {0}: selectedAskActionLabel(answer, actions)
+msgid "Answered: {0}"
+msgstr "Answered: {0}"
+
+msgid "Answered: {answer}"
+msgstr "Answered: {answer}"
+
+msgid "API key"
+msgstr "API key"
+
+msgid "API key header"
+msgstr "API key header"
+
+msgid "Appearance"
+msgstr "Appearance"
+
+msgid "Approval boundaries"
+msgstr "Approval boundaries"
+
+msgid "Approvals"
+msgstr "Approvals"
+
+msgid "Approvals choose which actions wait for your OK."
+msgstr "Approvals choose which actions wait for your OK."
+
+msgid "Approve"
+msgstr "Approve"
+
+msgid "Approve this server to let your agent use its tools."
+msgstr "Approve this server to let your agent use its tools."
+
+msgid "Archive"
+msgstr "Archive"
+
+msgid "archived"
+msgstr "archived"
+
+msgid "Archived"
+msgstr "Archived"
+
+msgid "Archived. Chat, memory, and files kept."
+msgstr "Archived. Chat, memory, and files kept."
+
+msgid "Arguments"
+msgstr "Arguments"
+
+msgid "Artifacts"
+msgstr "Artifacts"
+
+#. placeholder {0}: rule.matchValue
+msgid "Ask before {0}"
+msgstr "Ask before {0}"
+
+#. placeholder {0}: rule.matchValue
+msgid "Ask before {0} actions"
+msgstr "Ask before {0} actions"
+
+#. placeholder {0}: rule.matchValue
+msgid "Ask before {0} connector"
+msgstr "Ask before {0} connector"
+
+msgid "Ask before email actions"
+msgstr "Ask before email actions"
+
+msgid "Ask before purchase actions"
+msgstr "Ask before purchase actions"
+
+msgid "Ask before purchases"
+msgstr "Ask before purchases"
+
+msgid "Ask before sending external email"
+msgstr "Ask before sending external email"
+
+msgid "Ask me anything, I'll do the work"
+msgstr "Ask me anything, I'll do the work"
+
+msgid "Ask me anything, or tell me what you're working toward."
+msgstr "Ask me anything, or tell me what you're working toward."
+
+msgid "Ask the server owner to configure this provider."
+msgstr "Ask the server owner to configure this provider."
+
+msgid "Asleep"
+msgstr "Asleep"
+
+#. placeholder {0}: preset.time
+msgid "at {0}"
+msgstr "at {0}"
+
+msgid "at {timeSelect}"
+msgstr "at {timeSelect}"
+
+msgid "Attach file"
+msgstr "Attach file"
+
+msgid "Attachment"
+msgstr "Attachment"
+
+msgid "Authorization code or callback URL"
+msgstr "Authorization code or callback URL"
+
+msgid "Authorization timed out. Please try again."
+msgstr "Authorization timed out. Please try again."
+
+msgid "Authorize"
+msgstr "Authorize"
+
+msgid "Authorize this server so agents can use its tools. A popup opens."
+msgstr "Authorize this server so agents can use its tools. A popup opens."
+
+msgid "Automated senders"
+msgstr "Automated senders"
+
+msgid "Automated senders will appear after they post here."
+msgstr "Automated senders will appear after they post here."
+
+msgid "Available after the routine is saved"
+msgstr "Available after the routine is saved"
+
+msgid "Avatar Studio"
+msgstr "Avatar Studio"
+
+msgid "Avatars"
+msgstr "Avatars"
+
+msgid "Back"
+msgstr "Back"
+
+msgid "Back to sign in"
+msgstr "Back to sign in"
+
+msgid "Back to steps"
+msgstr "Back to steps"
+
+msgid "Back to the conversation"
+msgstr "Back to the conversation"
+
+msgid "Base URL"
+msgstr "Base URL"
+
+msgid "Bearer token"
+msgstr "Bearer token"
+
+msgid "Blocked"
+msgstr "Blocked"
+
+msgid "Booting live desktop…"
+msgstr "Booting live desktop…"
+
+#. placeholder {0}: computerBot?.name ?? active?.name
+msgid "Booting up {0}’s computer"
+msgstr "Booting up {0}’s computer"
+
+msgid "bot"
+msgstr "bot"
+
+msgid "Bot"
+msgstr "Bot"
+
+#. js-lingui-explicit-id
+msgid "Bot"
+msgstr "Bot"
+
+msgid "Bot screen"
+msgstr "Bot screen"
+
+msgid "Bot screen preview"
+msgstr "Bot screen preview"
+
+msgid "Bot to link"
+msgstr "Bot to link"
+
+msgid "Bots"
+msgstr "Bots"
+
+msgid "Bots act without asking by default. Add an exception only when you want to review a type of action first."
+msgstr "Bots act without asking by default. Add an exception only when you want to review a type of action first."
+
+msgid "Bots are working"
+msgstr "Bots are working"
+
+msgid "Brain label"
+msgstr "Brain label"
+
+msgid "Browse MCP servers"
+msgstr "Browse MCP servers"
+
+msgid "Built-in skills can't be edited."
+msgstr "Built-in skills can't be edited."
+
+msgid "Call"
+msgstr "Call"
+
+msgid "Can't connect"
+msgstr "Can't connect"
+
+msgid "Can't reach the server."
+msgstr "Can't reach the server."
+
+msgid "Cancel"
+msgstr "Cancel"
+
+#. placeholder {0}: goal.title
+msgid "Cancel \"{0}\"?"
+msgstr "Cancel \"{0}\"?"
+
+msgid "Cancel Goal"
+msgstr "Cancel Goal"
+
+msgid "Cancel new bot"
+msgstr "Cancel new bot"
+
+msgid "Cancel reply"
+msgstr "Cancel reply"
+
+msgid "cancelled"
+msgstr "cancelled"
+
+msgid "Cancelled"
+msgstr "Cancelled"
+
+msgid "Cancelling…"
+msgstr "Cancelling…"
+
+msgid "Card view"
+msgstr "Card view"
+
+msgid "Central bank holds its rate; lenders trim five-year fixed"
+msgstr "Central bank holds its rate; lenders trim five-year fixed"
+
+msgid "Change password"
+msgstr "Change password"
+
+msgid "Changing…"
+msgstr "Changing…"
+
+msgid "Channels"
+msgstr "Channels"
+
+msgid "Chart failed to render: {error}"
+msgstr "Chart failed to render: {error}"
+
+msgid "Chat apps"
+msgstr "Chat apps"
+
+msgid "Chat apps, group channels, and agent connections."
+msgstr "Chat apps, group channels, and agent connections."
+
+msgid "Chat Settings"
+msgstr "Chat Settings"
+
+msgid "Check for updates"
+msgstr "Check for updates"
+
+msgid "Check in."
+msgstr "Check in."
+
+msgid "Check your email"
+msgstr "Check your email"
+
+msgid "Check-ins"
+msgstr "Check-ins"
+
+msgid "Checked daily"
+msgstr "Checked daily"
+
+msgid "Checked hourly"
+msgstr "Checked hourly"
+
+msgid "Checked weekly"
+msgstr "Checked weekly"
+
+msgid "Checking…"
+msgstr "Checking…"
+
+msgid "Choose a bot…"
+msgstr "Choose a bot…"
+
+msgid "Choose a new password"
+msgstr "Choose a new password"
+
+msgid "Choose the Muse's color"
+msgstr "Choose the Muse's color"
+
+msgid "Choose which connected model Nova uses."
+msgstr "Choose which connected model Nova uses."
+
+msgid "Clear"
+msgstr "Clear"
+
+#. placeholder {0}: bot.name
+msgid "Clear {0}’s conversation?"
+msgstr "Clear {0}’s conversation?"
+
+msgid "Clear conversation"
+msgstr "Clear conversation"
+
+msgid "Clearing…"
+msgstr "Clearing…"
+
+msgid "Client ID"
+msgstr "Client ID"
+
+msgid "Client secret"
+msgstr "Client secret"
+
+msgid "Close"
+msgstr "Close"
+
+msgid "Close chart"
+msgstr "Close chart"
+
+msgid "Close computer"
+msgstr "Close computer"
+
+msgid "Close image preview"
+msgstr "Close image preview"
+
+msgid "Close integrations"
+msgstr "Close integrations"
+
+msgid "Close MCP servers"
+msgstr "Close MCP servers"
+
+msgid "Close memory settings"
+msgstr "Close memory settings"
+
+msgid "Close messaging settings"
+msgstr "Close messaging settings"
+
+msgid "Close model settings"
+msgstr "Close model settings"
+
+msgid "Close panel"
+msgstr "Close panel"
+
+msgid "Close preview"
+msgstr "Close preview"
+
+msgid "Close user settings"
+msgstr "Close user settings"
+
+msgid "Close voice settings"
+msgstr "Close voice settings"
+
+msgid "Cloud"
+msgstr "Cloud"
+
+msgid "Code"
+msgstr "Code"
+
+msgid "Collapse sidebar"
+msgstr "Collapse sidebar"
+
+msgid "Color"
+msgstr "Color"
+
+msgid "Color {color}"
+msgstr "Color {color}"
+
+msgid "Coming soon"
+msgstr "Coming soon"
+
+msgid "Coming up"
+msgstr "Coming up"
+
+msgid "Command"
+msgstr "Command"
+
+msgid "Complete"
+msgstr "Complete"
+
+msgid "Computer"
+msgstr "Computer"
+
+msgid "Computer failed to boot"
+msgstr "Computer failed to boot"
+
+msgid "Computer is asleep"
+msgstr "Computer is asleep"
+
+msgid "Computer is asleep. Open it to wake."
+msgstr "Computer is asleep. Open it to wake."
+
+msgid "Computer is stopped"
+msgstr "Computer is stopped"
+
+msgid "Computers"
+msgstr "Computers"
+
+msgid "Computers are off. Set SANDBOX_PROVIDER=docker with SANDBOX_SUPERVISOR_TOKEN, or set SANDBOX_PROVIDER to e2b, daytona, or box with its API key. Recreate the stack after changing .env."
+msgstr "Computers are off. Set SANDBOX_PROVIDER=docker with SANDBOX_SUPERVISOR_TOKEN, or set SANDBOX_PROVIDER to e2b, daytona, or box with its API key. Recreate the stack after changing .env."
+
+msgid "Configure a plugin catalog on the server to connect apps."
+msgstr "Configure a plugin catalog on the server to connect apps."
+
+msgid "Configured by deployment"
+msgstr "Configured by deployment"
+
+msgid "Configured servers"
+msgstr "Configured servers"
+
+msgid "Confirm delete"
+msgstr "Confirm delete"
+
+msgid "Confirm password"
+msgstr "Confirm password"
+
+msgid "Connect"
+msgstr "Connect"
+
+#. placeholder {0}: selected.name
+msgid "Connect {0}"
+msgstr "Connect {0}"
+
+msgid "Connect API key"
+msgstr "Connect API key"
+
+msgid "Connect Executor"
+msgstr "Connect Executor"
+
+msgid "Connect MCP server “{name}”"
+msgstr "Connect MCP server “{name}”"
+
+msgid "Connect OAuth"
+msgstr "Connect OAuth"
+
+msgid "Connect this provider to use it as your personal model."
+msgstr "Connect this provider to use it as your personal model."
+
+msgid "Connect Treg"
+msgstr "Connect Treg"
+
+msgid "Connected"
+msgstr "Connected"
+
+#. placeholder {0}: credential.label
+msgid "Connected · {0}"
+msgstr "Connected · {0}"
+
+#. placeholder {0}: selected.name
+msgid "Connected {0}."
+msgstr "Connected {0}."
+
+#. placeholder {0}: selected.label
+#. placeholder {0}: selectedLabelRef.current ?? "this model"
+msgid "Connected and using {0}."
+msgstr "Connected and using {0}."
+
+msgid "Connected. Its tools are available from your next message."
+msgstr "Connected. Its tools are available from your next message."
+
+msgid "Connecting…"
+msgstr "Connecting…"
+
+#. placeholder {0}: item.name
+msgid "Connection to {0} is still pending. You can close this and check again."
+msgstr "Connection to {0} is still pending. You can close this and check again."
+
+msgid "Context"
+msgstr "Context"
+
+msgid "Context limit"
+msgstr "Context limit"
+
+msgid "Continue"
+msgstr "Continue"
+
+msgid "Continue in Background"
+msgstr "Continue in Background"
+
+msgid "Continue with email"
+msgstr "Continue with email"
+
+msgid "Conversation"
+msgstr "Conversation"
+
+msgid "Copy"
+msgstr "Copy"
+
+msgid "Could not add"
+msgstr "Could not add"
+
+msgid "Could not add MCP server"
+msgstr "Could not add MCP server"
+
+msgid "Could not approve this server"
+msgstr "Could not approve this server"
+
+msgid "Could not authorize this app"
+msgstr "Could not authorize this app"
+
+msgid "Could not change password"
+msgstr "Could not change password"
+
+msgid "Could not change the default model"
+msgstr "Could not change the default model"
+
+msgid "Could not check teaching status. Refresh the view to continue."
+msgstr "Could not check teaching status. Refresh the view to continue."
+
+msgid "Could not clear conversation"
+msgstr "Could not clear conversation"
+
+msgid "Could not complete action"
+msgstr "Could not complete action"
+
+msgid "Could not complete OAuth"
+msgstr "Could not complete OAuth"
+
+msgid "Could not complete the update. Try again."
+msgstr "Could not complete the update. Try again."
+
+msgid "Could not connect"
+msgstr "Could not connect"
+
+#. placeholder {0}: registration.name
+msgid "Could not connect {0}"
+msgstr "Could not connect {0}"
+
+msgid "Could not connect this provider"
+msgstr "Could not connect this provider"
+
+msgid "Could not connect this service."
+msgstr "Could not connect this service."
+
+msgid "Could not connect this voice provider"
+msgstr "Could not connect this voice provider"
+
+msgid "Could not connect to the computer screen"
+msgstr "Could not connect to the computer screen"
+
+msgid "Could not continue"
+msgstr "Could not continue"
+
+msgid "Could not create bot"
+msgstr "Could not create bot"
+
+msgid "Could not create section"
+msgstr "Could not create section"
+
+msgid "Could not create space"
+msgstr "Could not create space"
+
+msgid "Could not create your bot"
+msgstr "Could not create your bot"
+
+msgid "Could not delete bot"
+msgstr "Could not delete bot"
+
+msgid "Could not delete group"
+msgstr "Could not delete group"
+
+msgid "Could not delete MCP server"
+msgstr "Could not delete MCP server"
+
+msgid "Could not delete routine"
+msgstr "Could not delete routine"
+
+msgid "Could not delete skill"
+msgstr "Could not delete skill"
+
+msgid "Could not delete space"
+msgstr "Could not delete space"
+
+msgid "Could not delete this artifact."
+msgstr "Could not delete this artifact."
+
+msgid "Could not delete this."
+msgstr "Could not delete this."
+
+msgid "Could not delete."
+msgstr "Could not delete."
+
+msgid "Could not disconnect memory provider"
+msgstr "Could not disconnect memory provider"
+
+msgid "Could not disconnect OAuth"
+msgstr "Could not disconnect OAuth"
+
+msgid "Could not disconnect this voice provider"
+msgstr "Could not disconnect this voice provider"
+
+msgid "Could not disconnect."
+msgstr "Could not disconnect."
+
+msgid "Could not dismiss"
+msgstr "Could not dismiss"
+
+#. placeholder {0}: props.name
+msgid "Could not download {0}. Try again."
+msgstr "Could not download {0}. Try again."
+
+msgid "Could not download {name}. Try again."
+msgstr "Could not download {name}. Try again."
+
+msgid "Could not forget this."
+msgstr "Could not forget this."
+
+msgid "Could not install connector"
+msgstr "Could not install connector"
+
+msgid "Could not load"
+msgstr "Could not load"
+
+msgid "Could not load Activity"
+msgstr "Could not load Activity"
+
+msgid "Could not load approval rules"
+msgstr "Could not load approval rules"
+
+msgid "Could not load artifacts."
+msgstr "Could not load artifacts."
+
+msgid "Could not load bots. Reload to try again."
+msgstr "Could not load bots. Reload to try again."
+
+msgid "Could not load Goals"
+msgstr "Could not load Goals"
+
+msgid "Could not load integrations"
+msgstr "Could not load integrations"
+
+msgid "Could not load MCP servers"
+msgstr "Could not load MCP servers"
+
+msgid "Could not load Memory"
+msgstr "Could not load Memory"
+
+msgid "Could not load memory."
+msgstr "Could not load memory."
+
+msgid "Could not load model settings"
+msgstr "Could not load model settings"
+
+msgid "Could not load more"
+msgstr "Could not load more"
+
+msgid "Could not load past tasks."
+msgstr "Could not load past tasks."
+
+msgid "Could not load skill"
+msgstr "Could not load skill"
+
+msgid "Could not load skills."
+msgstr "Could not load skills."
+
+msgid "Could not load the Feed."
+msgstr "Could not load the Feed."
+
+msgid "Could not load the Goal log"
+msgstr "Could not load the Goal log"
+
+msgid "Could not load this artifact."
+msgstr "Could not load this artifact."
+
+msgid "Could not load this chat."
+msgstr "Could not load this chat."
+
+msgid "Could not load this file."
+msgstr "Could not load this file."
+
+msgid "Could not load this service."
+msgstr "Could not load this service."
+
+msgid "Could not load this."
+msgstr "Could not load this."
+
+msgid "Could not load voice settings"
+msgstr "Could not load voice settings"
+
+msgid "Could not load voice settings."
+msgstr "Could not load voice settings."
+
+msgid "Could not load your Library."
+msgstr "Could not load your Library."
+
+msgid "Could not open local settings. Start the local server and create its owner account, then try again."
+msgstr "Could not open local settings. Start the local server and create its owner account, then try again."
+
+msgid "Could not open this skill."
+msgstr "Could not open this skill."
+
+msgid "Could not play a sample."
+msgstr "Could not play a sample."
+
+msgid "Could not play a test clip"
+msgstr "Could not play a test clip"
+
+msgid "Could not reach the server"
+msgstr "Could not reach the server"
+
+msgid "Could not reach this model server"
+msgstr "Could not reach this model server"
+
+msgid "Could not remove"
+msgstr "Could not remove"
+
+msgid "Could not remove connector"
+msgstr "Could not remove connector"
+
+msgid "Could not remove group"
+msgstr "Could not remove group"
+
+msgid "Could not remove rule"
+msgstr "Could not remove rule"
+
+msgid "Could not rename connection"
+msgstr "Could not rename connection"
+
+msgid "Could not rename section"
+msgstr "Could not rename section"
+
+msgid "Could not render chart"
+msgstr "Could not render chart"
+
+msgid "Could not reset password"
+msgstr "Could not reset password"
+
+msgid "Could not revoke connection"
+msgstr "Could not revoke connection"
+
+msgid "Could not run routine"
+msgstr "Could not run routine"
+
+msgid "Could not save"
+msgstr "Could not save"
+
+msgid "Could not save Auto Review"
+msgstr "Could not save Auto Review"
+
+msgid "Could not save group"
+msgstr "Could not save group"
+
+msgid "Could not save model"
+msgstr "Could not save model"
+
+msgid "Could not save routine"
+msgstr "Could not save routine"
+
+msgid "Could not save rule"
+msgstr "Could not save rule"
+
+msgid "Could not save skill"
+msgstr "Could not save skill"
+
+msgid "Could not save that choice"
+msgstr "Could not save that choice"
+
+msgid "Could not save that voice"
+msgstr "Could not save that voice"
+
+msgid "Could not save that voice."
+msgstr "Could not save that voice."
+
+msgid "Could not save this choice"
+msgstr "Could not save this choice"
+
+msgid "Could not save your name"
+msgstr "Could not save your name"
+
+msgid "Could not save."
+msgstr "Could not save."
+
+msgid "Could not search catalog"
+msgstr "Could not search catalog"
+
+msgid "Could not send reset email"
+msgstr "Could not send reset email"
+
+msgid "Could not send that"
+msgstr "Could not send that"
+
+msgid "Could not start OAuth"
+msgstr "Could not start OAuth"
+
+msgid "Could not start teaching"
+msgstr "Could not start teaching"
+
+msgid "Could not submit this answer"
+msgstr "Could not submit this answer"
+
+msgid "Could not take control"
+msgstr "Could not take control"
+
+msgid "Could not update"
+msgstr "Could not update"
+
+msgid "Could not update agent access"
+msgstr "Could not update agent access"
+
+msgid "Could not update computer"
+msgstr "Could not update computer"
+
+msgid "Could not update reaction"
+msgstr "Could not update reaction"
+
+msgid "Could not update the default memory scope"
+msgstr "Could not update the default memory scope"
+
+msgid "Couldn't load messaging settings"
+msgstr "Couldn't load messaging settings"
+
+msgid "Couldn't update avatars"
+msgstr "Couldn't update avatars"
+
+msgid "Couldn't update messaging settings"
+msgstr "Couldn't update messaging settings"
+
+msgid "Create"
+msgstr "Create"
+
+#. placeholder {0}: bot.name
+msgid "Create a section and move {0} into it."
+msgstr "Create a section and move {0} into it."
+
+msgid "Create account"
+msgstr "Create account"
+
+msgid "Create new Bot"
+msgstr "Create new Bot"
+
+msgid "Create new Group"
+msgstr "Create new Group"
+
+msgid "Create new Space"
+msgstr "Create new Space"
+
+msgid "Create Routine"
+msgstr "Create Routine"
+
+msgid "Create space"
+msgstr "Create space"
+
+msgid "Created"
+msgstr "Created"
+
+msgid "Creating…"
+msgstr "Creating…"
+
+msgid "Credential"
+msgstr "Credential"
+
+msgid "credential saved"
+msgstr "credential saved"
+
+msgid "Credentials are encrypted and never sent to the model."
+msgstr "Credentials are encrypted and never sent to the model."
+
+msgid "Cron"
+msgstr "Cron"
+
+msgid "Cron expression"
+msgstr "Cron expression"
+
+msgid "Current password"
+msgstr "Current password"
+
+msgid "Customer support"
+msgstr "Customer support"
+
+msgid "Customize bot avatar"
+msgstr "Customize bot avatar"
+
+msgid "Dark"
+msgstr "Dark"
+
+msgid "day"
+msgstr "day"
+
+msgid "Day-to-day work"
+msgstr "Day-to-day work"
+
+msgid "days"
+msgstr "days"
+
+msgid "Decks"
+msgstr "Decks"
+
+msgid "Decline"
+msgstr "Decline"
+
+msgid "Default"
+msgstr "Default"
+
+#. placeholder {0}: thinkingLevelLabel(defaultThinkingLevel)
+msgid "Default ({0})"
+msgstr "Default ({0})"
+
+msgid "Default scope"
+msgstr "Default scope"
+
+msgid "Delete"
+msgstr "Delete"
+
+#. placeholder {0}: pendingDelete.name
+msgid "Delete \"{0}\"?"
+msgstr "Delete \"{0}\"?"
+
+#. placeholder {0}: artifact.name
+msgid "Delete {0}"
+msgstr "Delete {0}"
+
+#. placeholder {0}: bot.name
+#. placeholder {0}: item.name
+msgid "Delete {0}?"
+msgstr "Delete {0}?"
+
+msgid "Delete group"
+msgstr "Delete group"
+
+msgid "Delete memories too"
+msgstr "Delete memories too"
+
+msgid "Delete this skill?"
+msgstr "Delete this skill?"
+
+msgid "deleted"
+msgstr "deleted"
+
+msgid "Deleting…"
+msgstr "Deleting…"
+
+msgid "Denied"
+msgstr "Denied"
+
+msgid "Deny"
+msgstr "Deny"
+
+msgid "Deployment default"
+msgstr "Deployment default"
+
+msgid "Describe a Goal"
+msgstr "Describe a Goal"
+
+msgid "Describe what this bot does"
+msgstr "Describe what this bot does"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Desktop app"
+msgstr "Desktop app"
+
+msgid "Desktop update"
+msgstr "Desktop update"
+
+msgid "Didn't finish"
+msgstr "Didn't finish"
+
+msgid "Direct MCP"
+msgstr "Direct MCP"
+
+msgid "Discard"
+msgstr "Discard"
+
+msgid "Disconnect"
+msgstr "Disconnect"
+
+msgid "Disconnecting…"
+msgstr "Disconnecting…"
+
+msgid "Dismiss"
+msgstr "Dismiss"
+
+msgid "Dismiss error"
+msgstr "Dismiss error"
+
+msgid "Dismiss the intro"
+msgstr "Dismiss the intro"
+
+msgid "Dismissed. Reconnect anytime from MCP settings."
+msgstr "Dismissed. Reconnect anytime from MCP settings."
+
+msgid "Display name"
+msgstr "Display name"
+
+msgid "Do it"
+msgstr "Do it"
+
+msgid "Do not type passwords into the demo. Use Take control for credentials."
+msgstr "Do not type passwords into the demo. Use Take control for credentials."
+
+msgid "Docker"
+msgstr "Docker"
+
+msgid "Docker limits access to your computer for added security. Using {hostLabel} lets bots work with your local files and tools."
+msgstr "Docker limits access to your computer for added security. Using {hostLabel} lets bots work with your local files and tools."
+
+msgid "Documents"
+msgstr "Documents"
+
+msgid "Don’t have an account?"
+msgstr "Don’t have an account?"
+
+msgid "Done"
+msgstr "Done"
+
+msgid "Download"
+msgstr "Download"
+
+#. placeholder {0}: artifact.name
+#. placeholder {0}: props.name
+msgid "Download {0}"
+msgstr "Download {0}"
+
+msgid "Download {name}"
+msgstr "Download {name}"
+
+msgid "Download as markdown"
+msgstr "Download as markdown"
+
+msgid "Download as Markdown"
+msgstr "Download as Markdown"
+
+msgid "Download Executor"
+msgstr "Download Executor"
+
+msgid "Downloading…"
+msgstr "Downloading…"
+
+msgid "Draft"
+msgstr "Draft"
+
+msgid "Draft my client follow-up email and check with me before sending it"
+msgstr "Draft my client follow-up email and check with me before sending it"
+
+msgid "Draft talking points per client"
+msgstr "Draft talking points per client"
+
+msgid "Drafts"
+msgstr "Drafts"
+
+#. placeholder {0}: due.date
+msgid "Due {0}"
+msgstr "Due {0}"
+
+msgid "Duplicate"
+msgstr "Duplicate"
+
+msgid "e.g. Hivenet Agent, Presales, Timesheets bot"
+msgstr "e.g. Hivenet Agent, Presales, Timesheets bot"
+
+msgid "Earlier"
+msgstr "Earlier"
+
+msgid "Earlier message"
+msgstr "Earlier message"
+
+msgid "Edit first"
+msgstr "Edit first"
+
+msgid "Edit Profile"
+msgstr "Edit Profile"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Empty"
+msgstr "Empty"
+
+msgid "Engage when... Ignore..."
+msgstr "Engage when... Ignore..."
+
+msgid "Enter a whole number from 1 to {MAX_MODEL_CONTEXT_WINDOW} for the context limit."
+msgstr "Enter a whole number from 1 to {MAX_MODEL_CONTEXT_WINDOW} for the context limit."
+
+msgid "Enter a whole number from 1 to {MAX_MODEL_MAX_TOKENS} for maximum output tokens."
+msgstr "Enter a whole number from 1 to {MAX_MODEL_MAX_TOKENS} for maximum output tokens."
+
+msgid "Enter a whole number from 1 to 1000 for the image limit."
+msgstr "Enter a whole number from 1 to 1000 for the image limit."
+
+#. placeholder {0}: oauth.verificationUri.replace(/^https:\/\//, "")
+msgid "Enter this code at <0>{0}</0>"
+msgstr "Enter this code at <0>{0}</0>"
+
+msgid "Every"
+msgstr "Every"
+
+msgid "every {intervalAmountSelect} {intervalUnitSelect}"
+msgstr "every {intervalAmountSelect} {intervalUnitSelect}"
+
+msgid "Every day"
+msgstr "Every day"
+
+msgid "Every hour"
+msgstr "Every hour"
+
+msgid "Every Monday"
+msgstr "Every Monday"
+
+msgid "Every month"
+msgstr "Every month"
+
+msgid "Every week"
+msgstr "Every week"
+
+msgid "Example"
+msgstr "Example"
+
+msgid "Example: what a morning with me looks like"
+msgstr "Example: what a morning with me looks like"
+
+msgid "Executor token"
+msgstr "Executor token"
+
+msgid "Expand"
+msgstr "Expand"
+
+msgid "Expand sidebar"
+msgstr "Expand sidebar"
+
+msgid "Export"
+msgstr "Export"
+
+msgid "Export this week's list from the CRM and drop it in the shared folder"
+msgstr "Export this week's list from the CRM and drop it in the shared folder"
+
+msgid "External conversation"
+msgstr "External conversation"
+
+msgid "Extra high"
+msgstr "Extra high"
+
+msgid "failed"
+msgstr "failed"
+
+msgid "Failed"
+msgstr "Failed"
+
+msgid "Failed to send message"
+msgstr "Failed to send message"
+
+msgid "Failed to stop"
+msgstr "Failed to stop"
+
+#. js-lingui-explicit-id
+msgid "Failed."
+msgstr "Failed."
+
+msgid "Failure handling"
+msgstr "Failure handling"
+
+msgid "Feed"
+msgstr "Feed"
+
+msgid "Files"
+msgstr "Files"
+
+msgid "Filter by date"
+msgstr "Filter by date"
+
+msgid "Filters"
+msgstr "Filters"
+
+msgid "Find models"
+msgstr "Find models"
+
+msgid "Finding…"
+msgstr "Finding…"
+
+#. placeholder {0}: new URL(oauth.verificationUri).hostname
+msgid "Finish signing in at <0>{0}</0>. The final page may not load; paste its URL or code here."
+msgstr "Finish signing in at <0>{0}</0>. The final page may not load; paste its URL or code here."
+
+msgid "finished"
+msgstr "finished"
+
+#. js-lingui-explicit-id
+msgid "Finished."
+msgstr "Finished."
+
+msgid "Finishing MCP connection…"
+msgstr "Finishing MCP connection…"
+
+msgid "First, what should I call you?"
+msgstr "First, what should I call you?"
+
+msgid "Flag drift from each target mix"
+msgstr "Flag drift from each target mix"
+
+msgid "Flag unexpected actions"
+msgstr "Flag unexpected actions"
+
+msgid "Follow"
+msgstr "Follow"
+
+msgid "Follow a topic"
+msgstr "Follow a topic"
+
+msgid "Follow a topic, like OSFI guidance"
+msgstr "Follow a topic, like OSFI guidance"
+
+msgid "Forget this"
+msgstr "Forget this"
+
+msgid "Forgot password?"
+msgstr "Forgot password?"
+
+msgid "Free"
+msgstr "Free"
+
+msgid "Fri 9:00"
+msgstr "Fri 9:00"
+
+msgid "From"
+msgstr "From"
+
+#. placeholder {0}: formatRelativeTime(ask.createdAt)
+msgid "From {sourceLabel} · {0}"
+msgstr "From {sourceLabel} · {0}"
+
+msgid "From Q3 portfolio review · 7:40"
+msgstr "From Q3 portfolio review · 7:40"
+
+#. placeholder {0}: formatRelativeTime(post.createdAt)
+msgid "From your goal · {0}"
+msgstr "From your goal · {0}"
+
+msgid "Fullscreen"
+msgstr "Fullscreen"
+
+msgid "General"
+msgstr "General"
+
+msgid "Get credentials"
+msgstr "Get credentials"
+
+msgid "Get notified when this Bot finishes or needs input"
+msgstr "Get notified when this Bot finishes or needs input"
+
+msgid "Getting ready"
+msgstr "Getting ready"
+
+msgid "Git event"
+msgstr "Git event"
+
+msgid "Give {botName} something bigger than a message. I'll plan it, keep working on it, and check in with you."
+msgstr "Give {botName} something bigger than a message. I'll plan it, keep working on it, and check in with you."
+
+msgid "Give me a Goal, I'll keep going"
+msgstr "Give me a Goal, I'll keep going"
+
+msgid "Goal options"
+msgstr "Goal options"
+
+msgid "Goals"
+msgstr "Goals"
+
+msgid "Got it"
+msgstr "Got it"
+
+msgid "Group"
+msgstr "Group"
+
+msgid "Group settings"
+msgstr "Group settings"
+
+msgid "Group updates"
+msgstr "Group updates"
+
+msgid "Groups"
+msgstr "Groups"
+
+msgid "Hand back to {museName}"
+msgstr "Hand back to {museName}"
+
+msgid "Hang up"
+msgstr "Hang up"
+
+msgid "Hang up first, then enter the code on screen."
+msgstr "Hang up first, then enter the code on screen."
+
+msgid "Hang up, then enter the code on screen."
+msgstr "Hang up, then enter the code on screen."
+
+msgid "header"
+msgstr "header"
+
+msgid "Header name"
+msgstr "Header name"
+
+msgid "Header value"
+msgstr "Header value"
+
+msgid "Hear a sample"
+msgstr "Hear a sample"
+
+msgid "Help me prepare the Q3 client portfolio review"
+msgstr "Help me prepare the Q3 client portfolio review"
+
+msgid "Here's my plan"
+msgstr "Here's my plan"
+
+msgid "Hi {trimmedName}, I'm {botName}. Here's how we'll work together."
+msgstr "Hi {trimmedName}, I'm {botName}. Here's how we'll work together."
+
+msgid "Hi, I'm {botName}. Here's how we'll work together."
+msgstr "Hi, I'm {botName}. Here's how we'll work together."
+
+msgid "Hi, I'm Nova — <0>already on it.</0>"
+msgstr "Hi, I'm Nova — <0>already on it.</0>"
+
+msgid "Hi, I'm Nova."
+msgstr "Hi, I'm Nova."
+
+msgid "Hi, this is how I'll sound when I read replies out loud."
+msgstr "Hi, this is how I'll sound when I read replies out loud."
+
+msgid "Hide context panel"
+msgstr "Hide context panel"
+
+msgid "Hide password"
+msgstr "Hide password"
+
+msgid "High"
+msgstr "High"
+
+msgid "hour"
+msgstr "hour"
+
+msgid "hours"
+msgstr "hours"
+
+msgid "How often"
+msgstr "How often"
+
+msgid "How to check"
+msgstr "How to check"
+
+msgid "How will we know it worked?"
+msgstr "How will we know it worked?"
+
+msgid "I already have an account"
+msgstr "I already have an account"
+
+msgid "I check on your Goals about every hour."
+msgstr "I check on your Goals about every hour."
+
+msgid "I check on your Goals every few hours."
+msgstr "I check on your Goals every few hours."
+
+msgid "I have my own computer, browser and files."
+msgstr "I have my own computer, browser and files."
+
+msgid "I keep working on your Goals throughout the day."
+msgstr "I keep working on your Goals throughout the day."
+
+msgid "I only work when you ask."
+msgstr "I only work when you ask."
+
+msgid "I read these before every conversation. Edit anything that's wrong."
+msgstr "I read these before every conversation. Edit anything that's wrong."
+
+msgid "I use these to pick up where we left off."
+msgstr "I use these to pick up where we left off."
+
+msgid "I won't work on Goals or message you during quiet hours."
+msgstr "I won't work on Goals or message you during quiet hours."
+
+msgid "I'd like to change the plan"
+msgstr "I'd like to change the plan"
+
+msgid "I'll ask when I need you"
+msgstr "I'll ask when I need you"
+
+msgid "I'll message you with progress at these times. Times use {timezone}."
+msgstr "I'll message you with progress at these times. Times use {timezone}."
+
+msgid "I'll plan, research, draft and follow up in the background, and always ask before anything I can't undo."
+msgstr "I'll plan, research, draft and follow up in the background, and always ask before anything I can't undo."
+
+msgid "I'll show ideas here as I learn what's useful to you."
+msgstr "I'll show ideas here as I learn what's useful to you."
+
+msgid "I'm always looking for new ways to help. My favourite ideas show up here."
+msgstr "I'm always looking for new ways to help. My favourite ideas show up here."
+
+msgid "I’m done"
+msgstr "I’m done"
+
+msgid "Ideas"
+msgstr "Ideas"
+
+msgid "If you heard that, voice is ready."
+msgstr "If you heard that, voice is ready."
+
+msgid "Ignore"
+msgstr "Ignore"
+
+msgid "Images"
+msgstr "Images"
+
+msgid "Import OpenAPI JSON"
+msgstr "Import OpenAPI JSON"
+
+#. placeholder {0}: due.weeks
+msgid "in {0} weeks"
+msgstr "in {0} weeks"
+
+msgid "In progress"
+msgstr "In progress"
+
+msgid "Inbox & email"
+msgstr "Inbox & email"
+
+msgid "Inherit default"
+msgstr "Inherit default"
+
+msgid "Inputs"
+msgstr "Inputs"
+
+msgid "Instance API key"
+msgstr "Instance API key"
+
+msgid "Instruction"
+msgstr "Instruction"
+
+msgid "Integration domain"
+msgstr "Integration domain"
+
+msgid "Integration options"
+msgstr "Integration options"
+
+msgid "Integrations"
+msgstr "Integrations"
+
+msgid "Interrupt"
+msgstr "Interrupt"
+
+msgid "Interval"
+msgstr "Interval"
+
+msgid "Interval amount"
+msgstr "Interval amount"
+
+msgid "Interval unit"
+msgstr "Interval unit"
+
+msgid "Isolated"
+msgstr "Isolated"
+
+msgid "Isolated preview — no access to your account"
+msgstr "Isolated preview — no access to your account"
+
+msgid "It starts fresh, with only what Nova knows about you."
+msgstr "It starts fresh, with only what Nova knows about you."
+
+msgid "It starts with a summary of this conversation."
+msgstr "It starts with a summary of this conversation."
+
+msgid "It starts with this summary: “{preview}”"
+msgstr "It starts with this summary: “{preview}”"
+
+msgid "It won't be used anymore. This can't be undone."
+msgstr "It won't be used anymore. This can't be undone."
+
+msgid "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
+msgstr "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
+
+msgid "Jump to latest"
+msgstr "Jump to latest"
+
+msgid "Jump to replied message"
+msgstr "Jump to replied message"
+
+#. placeholder {0}: accessibleReplyExcerpt(message.replyQuote)
+msgid "Jump to replied message: “{0}”"
+msgstr "Jump to replied message: “{0}”"
+
+#. placeholder {0}: accessibleReplyExcerpt(previewMessageText(replyPreview))
+msgid "Jump to replied message: {0}"
+msgstr "Jump to replied message: {0}"
+
+msgid "just now"
+msgstr "just now"
+
+msgid "Keep current"
+msgstr "Keep current"
+
+msgid "Keep it"
+msgstr "Keep it"
+
+msgid "Keep memories"
+msgstr "Keep memories"
+
+msgid "key"
+msgstr "key"
+
+msgid "Knowledge"
+msgstr "Knowledge"
+
+msgid "Knows our conversation"
+msgstr "Knows our conversation"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "Last thing — connect the brain I'll think with."
+msgstr "Last thing — connect the brain I'll think with."
+
+msgid "Later"
+msgstr "Later"
+
+msgid "Learned"
+msgstr "Learned"
+
+msgid "Leave"
+msgstr "Leave"
+
+msgid "Let's get started"
+msgstr "Let's get started"
+
+msgid "Library"
+msgstr "Library"
+
+msgid "Library view"
+msgstr "Library view"
+
+msgid "Light"
+msgstr "Light"
+
+msgid "Linear issue"
+msgstr "Linear issue"
+
+msgid "Link a chat app"
+msgstr "Link a chat app"
+
+msgid "List view"
+msgstr "List view"
+
+msgid "Listen"
+msgstr "Listen"
+
+msgid "Listening"
+msgstr "Listening"
+
+msgid "Listening…"
+msgstr "Listening…"
+
+msgid "Live"
+msgstr "Live"
+
+msgid "Load earlier"
+msgstr "Load earlier"
+
+msgid "Load earlier messages"
+msgstr "Load earlier messages"
+
+msgid "Load more"
+msgstr "Load more"
+
+msgid "Load older"
+msgstr "Load older"
+
+msgid "Loading integrations…"
+msgstr "Loading integrations…"
+
+msgid "Loading memory settings…"
+msgstr "Loading memory settings…"
+
+msgid "Loading model catalog…"
+msgstr "Loading model catalog…"
+
+msgid "Loading preview…"
+msgstr "Loading preview…"
+
+msgid "Loading rules…"
+msgstr "Loading rules…"
+
+msgid "Loading tools…"
+msgstr "Loading tools…"
+
+msgid "Loading voice providers…"
+msgstr "Loading voice providers…"
+
+msgid "Loading…"
+msgstr "Loading…"
+
+msgid "Local"
+msgstr "Local"
+
+msgid "Local access lets bots run commands without asking. Avoid it on shared or public servers."
+msgstr "Local access lets bots run commands without asking. Avoid it on shared or public servers."
+
+msgid "Local Server Settings"
+msgstr "Local Server Settings"
+
+msgid "Log out"
+msgstr "Log out"
+
+msgid "Logging out…"
+msgstr "Logging out…"
+
+msgid "Low"
+msgstr "Low"
+
+msgid "Made for you"
+msgstr "Made for you"
+
+msgid "Make sure nothing is still running on this computer."
+msgstr "Make sure nothing is still running on this computer."
+
+msgid "Manage MCP servers"
+msgstr "Manage MCP servers"
+
+msgid "Manage messaging settings"
+msgstr "Manage messaging settings"
+
+msgid "Manage the Space semantic memory provider."
+msgstr "Manage the Space semantic memory provider."
+
+msgid "Manual"
+msgstr "Manual"
+
+msgid "Manual setup required"
+msgstr "Manual setup required"
+
+msgid "Mark as Read"
+msgstr "Mark as Read"
+
+msgid "Mark as Unread"
+msgstr "Mark as Unread"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Maximize"
+msgstr "Maximize"
+
+msgid "Maximum images per request"
+msgstr "Maximum images per request"
+
+msgid "Maximum output tokens"
+msgstr "Maximum output tokens"
+
+msgid "MCP endpoint"
+msgstr "MCP endpoint"
+
+msgid "MCP servers"
+msgstr "MCP servers"
+
+msgid "Medium"
+msgstr "Medium"
+
+msgid "Meet Nova"
+msgstr "Meet Nova"
+
+msgid "Meet Nova."
+msgstr "Meet Nova."
+
+msgid "Members ({GROUP_MEMBER_MIN}–{GROUP_MEMBER_MAX})"
+msgstr "Members ({GROUP_MEMBER_MIN}–{GROUP_MEMBER_MAX})"
+
+msgid "Memory"
+msgstr "Memory"
+
+msgid "Memory scope"
+msgstr "Memory scope"
+
+msgid "Mentions"
+msgstr "Mentions"
+
+msgid "Mentions only"
+msgstr "Mentions only"
+
+msgid "Menu"
+msgstr "Menu"
+
+msgid "Message"
+msgstr "Message"
+
+#. js-lingui-explicit-id
+msgid "Message"
+msgstr "Message"
+
+msgid "Message {activeName}"
+msgstr "Message {activeName}"
+
+msgid "Message {activeName}…"
+msgstr "Message {activeName}…"
+
+msgid "Message composer"
+msgstr "Message composer"
+
+msgid "Message event"
+msgstr "Message event"
+
+msgid "Message from {peer}"
+msgstr "Message from {peer}"
+
+msgid "Message this side chat"
+msgstr "Message this side chat"
+
+msgid "Message…"
+msgstr "Message…"
+
+msgid "Messaged {peer}"
+msgstr "Messaged {peer}"
+
+msgid "Messaging"
+msgstr "Messaging"
+
+msgid "Microphone failed"
+msgstr "Microphone failed"
+
+msgid "Minimal"
+msgstr "Minimal"
+
+msgid "Minimize"
+msgstr "Minimize"
+
+msgid "minute"
+msgstr "minute"
+
+msgid "minutes"
+msgstr "minutes"
+
+msgid "Model"
+msgstr "Model"
+
+msgid "Model id"
+msgstr "Model id"
+
+msgid "Model options"
+msgstr "Model options"
+
+msgid "Model spend uses your provider keys."
+msgstr "Model spend uses your provider keys."
+
+msgid "Model updated."
+msgstr "Model updated."
+
+msgid "Models"
+msgstr "Models"
+
+msgid "Models for the server owner’s default space."
+msgstr "Models for the server owner’s default space."
+
+msgid "Models from server"
+msgstr "Models from server"
+
+msgid "Monthly"
+msgstr "Monthly"
+
+msgid "More"
+msgstr "More"
+
+#. placeholder {0}: artifact.name
+msgid "More actions for {0}"
+msgstr "More actions for {0}"
+
+msgid "More computer actions"
+msgstr "More computer actions"
+
+msgid "Mortgage rates · 6:15"
+msgstr "Mortgage rates · 6:15"
+
+msgid "Move them to your shared memory."
+msgstr "Move them to your shared memory."
+
+msgid "Move to"
+msgstr "Move to"
+
+msgid "Muse name"
+msgstr "Muse name"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Name this bot"
+msgstr "Name this bot"
+
+msgid "Name this routine"
+msgstr "Name this routine"
+
+msgid "Navigate"
+msgstr "Navigate"
+
+msgid "Needs a restart"
+msgstr "Needs a restart"
+
+msgid "Needs you"
+msgstr "Needs you"
+
+msgid "New"
+msgstr "New"
+
+msgid "New bot"
+msgstr "New bot"
+
+msgid "New open-work item"
+msgstr "New open-work item"
+
+msgid "New password"
+msgstr "New password"
+
+msgid "New section"
+msgstr "New section"
+
+msgid "New side chat"
+msgstr "New side chat"
+
+msgid "New skill"
+msgstr "New skill"
+
+msgid "New space"
+msgstr "New space"
+
+msgid "No agent connections yet."
+msgstr "No agent connections yet."
+
+msgid "No apps match your search."
+msgstr "No apps match your search."
+
+msgid "No artifacts found."
+msgstr "No artifacts found."
+
+msgid "no auth"
+msgstr "no auth"
+
+msgid "No authentication"
+msgstr "No authentication"
+
+msgid "No bots"
+msgstr "No bots"
+
+msgid "No bots match"
+msgstr "No bots match"
+
+msgid "No chat apps linked yet."
+msgstr "No chat apps linked yet."
+
+msgid "No exceptions. Actions run automatically."
+msgstr "No exceptions. Actions run automatically."
+
+msgid "No group chats yet."
+msgstr "No group chats yet."
+
+msgid "No longer active"
+msgstr "No longer active"
+
+msgid "No managed app catalog is configured on this deployment."
+msgstr "No managed app catalog is configured on this deployment."
+
+msgid "No matching artifacts on this page."
+msgstr "No matching artifacts on this page."
+
+msgid "No matching models"
+msgstr "No matching models"
+
+msgid "No MCP or API tool sources installed yet."
+msgstr "No MCP or API tool sources installed yet."
+
+msgid "No MCP servers yet."
+msgstr "No MCP servers yet."
+
+msgid "No messages with {peerBotName} yet."
+msgstr "No messages with {peerBotName} yet."
+
+msgid "No model catalog is available."
+msgstr "No model catalog is available."
+
+msgid "No providers found."
+msgstr "No providers found."
+
+msgid "No remote MCP servers found"
+msgstr "No remote MCP servers found"
+
+msgid "No results"
+msgstr "No results"
+
+msgid "No runs yet"
+msgstr "No runs yet"
+
+msgid "No skills yet"
+msgstr "No skills yet"
+
+msgid "No steps recorded"
+msgstr "No steps recorded"
+
+msgid "No tasks yet"
+msgstr "No tasks yet"
+
+msgid "No team conversations yet."
+msgstr "No team conversations yet."
+
+msgid "No tools available."
+msgstr "No tools available."
+
+msgid "No trigger"
+msgstr "No trigger"
+
+msgid "None yet"
+msgstr "None yet"
+
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Not connected"
+msgstr "Not connected"
+
+msgid "Not in the plugin catalog"
+msgstr "Not in the plugin catalog"
+
+msgid "Not now"
+msgstr "Not now"
+
+msgid "Not yet"
+msgstr "Not yet"
+
+msgid "Nothing here yet."
+msgstr "Nothing here yet."
+
+msgid "Nothing is still running"
+msgstr "Nothing is still running"
+
+msgid "Nothing matches your search."
+msgstr "Nothing matches your search."
+
+msgid "Nothing remembered yet"
+msgstr "Nothing remembered yet"
+
+msgid "Nothing remembered yet."
+msgstr "Nothing remembered yet."
+
+msgid "Nothing scheduled yet."
+msgstr "Nothing scheduled yet."
+
+msgid "Nothing to suggest yet"
+msgstr "Nothing to suggest yet"
+
+msgid "Nothing yet"
+msgstr "Nothing yet"
+
+msgid "Nothing yet — once I do something, it shows up here."
+msgstr "Nothing yet — once I do something, it shows up here."
+
+msgid "Nothing yet."
+msgstr "Nothing yet."
+
+msgid "Notifications"
+msgstr "Notifications"
+
+msgid "Nova"
+msgstr "Nova"
+
+msgid "Nova is working"
+msgstr "Nova is working"
+
+msgid "Nova prepares your meetings, researches, drafts and follows up in the background — and always asks before anything it can't undo."
+msgstr "Nova prepares your meetings, researches, drafts and follows up in the background — and always asks before anything it can't undo."
+
+#. placeholder {0}: selected.label
+msgid "Now using {0}."
+msgstr "Now using {0}."
+
+msgid "OAuth authorization was cancelled."
+msgstr "OAuth authorization was cancelled."
+
+msgid "OAuth connected"
+msgstr "OAuth connected"
+
+msgid "OAuth connection failed"
+msgstr "OAuth connection failed"
+
+msgid "OAuth expired"
+msgstr "OAuth expired"
+
+msgid "Off"
+msgstr "Off"
+
+msgid "On a schedule"
+msgstr "On a schedule"
+
+#. placeholder {0}: preset.time
+msgid "on the 1st at {0}"
+msgstr "on the 1st at {0}"
+
+msgid "On track"
+msgstr "On track"
+
+msgid "One step per line"
+msgstr "One step per line"
+
+msgid "One yes before I send this"
+msgstr "One yes before I send this"
+
+msgid "Open"
+msgstr "Open"
+
+#. placeholder {0}: artifact.name
+#. placeholder {0}: data.name
+#. placeholder {0}: props.name
+msgid "Open {0}"
+msgstr "Open {0}"
+
+msgid "Open {name} in new tab"
+msgstr "Open {name} in new tab"
+
+msgid "Open goal"
+msgstr "Open goal"
+
+msgid "Open in full window"
+msgstr "Open in full window"
+
+msgid "Open in new tab"
+msgstr "Open in new tab"
+
+msgid "Open what's waiting on you"
+msgstr "Open what's waiting on you"
+
+msgid "Open work"
+msgstr "Open work"
+
+msgid "OpenAI-compatible server URL"
+msgstr "OpenAI-compatible server URL"
+
+msgid "Opened its thread."
+msgstr "Opened its thread."
+
+msgid "Opening chat…"
+msgstr "Opening chat…"
+
+msgid "Opening your Space…"
+msgstr "Opening your Space…"
+
+msgid "Optional"
+msgstr "Optional"
+
+msgid "Optional controls most people never need"
+msgstr "Optional controls most people never need"
+
+msgid "Optional header value"
+msgstr "Optional header value"
+
+msgid "Or connect an API key"
+msgstr "Or connect an API key"
+
+msgid "Or paste an API key"
+msgstr "Or paste an API key"
+
+msgid "Organic"
+msgstr "Organic"
+
+msgid "Organization API key"
+msgstr "Organization API key"
+
+msgid "Other model…"
+msgstr "Other model…"
+
+msgid "Outcome"
+msgstr "Outcome"
+
+msgid "PagerDuty incident"
+msgstr "PagerDuty incident"
+
+msgid "Pages"
+msgstr "Pages"
+
+msgid "Pages, documents and files your Muse makes will appear here."
+msgstr "Pages, documents and files your Muse makes will appear here."
+
+msgid "Panel sections"
+msgstr "Panel sections"
+
+msgid "Park"
+msgstr "Park"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "Password recovery is not configured for this server"
+msgstr "Password recovery is not configured for this server"
+
+msgid "Password updated"
+msgstr "Password updated"
+
+msgid "Passwords do not match"
+msgstr "Passwords do not match"
+
+msgid "Paste a replacement key"
+msgstr "Paste a replacement key"
+
+msgid "Paste the OpenAI-compatible address from your server. Nova adds /v1 if needed."
+msgstr "Paste the OpenAI-compatible address from your server. Nova adds /v1 if needed."
+
+msgid "Paste your API key"
+msgstr "Paste your API key"
+
+msgid "Pause"
+msgstr "Pause"
+
+msgid "Paused"
+msgstr "Paused"
+
+msgid "Pending"
+msgstr "Pending"
+
+msgid "Personal credential"
+msgstr "Personal credential"
+
+msgid "Pick my color."
+msgstr "Pick my color."
+
+msgid "Pin"
+msgstr "Pin"
+
+msgid "Plan"
+msgstr "Plan"
+
+msgid "Plan my week"
+msgstr "Plan my week"
+
+msgid "Plan to review"
+msgstr "Plan to review"
+
+msgid "Plan waiting for you"
+msgstr "Plan waiting for you"
+
+msgid "Plans"
+msgstr "Plans"
+
+msgid "Playing…"
+msgstr "Playing…"
+
+msgid "POST to"
+msgstr "POST to"
+
+msgid "Prepares"
+msgstr "Prepares"
+
+#. placeholder {0}: props.name
+msgid "Preview {0}"
+msgstr "Preview {0}"
+
+msgid "Preview isn't available for this file type — download it to view it."
+msgstr "Preview isn't available for this file type — download it to view it."
+
+msgid "Private"
+msgstr "Private"
+
+msgid "Private workspace with its own bots and groups."
+msgstr "Private workspace with its own bots and groups."
+
+msgid "Proactivity"
+msgstr "Proactivity"
+
+msgid "Project ID"
+msgstr "Project ID"
+
+msgid "Propose meeting slots"
+msgstr "Propose meeting slots"
+
+msgid "Provider"
+msgstr "Provider"
+
+msgid "Providers"
+msgstr "Providers"
+
+msgid "Pull holdings and returns for 12 clients"
+msgstr "Pull holdings and returns for 12 clients"
+
+msgid "Pull request"
+msgstr "Pull request"
+
+msgid "Q3 client portfolio review"
+msgstr "Q3 client portfolio review"
+
+msgid "Questions"
+msgstr "Questions"
+
+msgid "Questions and approvals collect in Waiting on you; answer in one tap."
+msgstr "Questions and approvals collect in Waiting on you; answer in one tap."
+
+msgid "Quiet hours"
+msgstr "Quiet hours"
+
+msgid "Quiet hours end"
+msgstr "Quiet hours end"
+
+msgid "Quiet hours start"
+msgstr "Quiet hours start"
+
+msgid "Quote"
+msgstr "Quote"
+
+msgid "React"
+msgstr "React"
+
+msgid "Reactions"
+msgstr "Reactions"
+
+msgid "Read replies aloud"
+msgstr "Read replies aloud"
+
+msgid "read-only"
+msgstr "read-only"
+
+msgid "Reasoning effort"
+msgstr "Reasoning effort"
+
+msgid "Recall and write"
+msgstr "Recall and write"
+
+msgid "Recall only"
+msgstr "Recall only"
+
+msgid "Reconnect OAuth"
+msgstr "Reconnect OAuth"
+
+msgid "Reconnecting"
+msgstr "Reconnecting"
+
+msgid "Recording may have started, but the view could not refresh"
+msgstr "Recording may have started, but the view could not refresh"
+
+msgid "Recording started. Refresh the view to continue."
+msgstr "Recording started. Refresh the view to continue."
+
+#. placeholder {0}: recording.goal
+msgid "Recording: {0}"
+msgstr "Recording: {0}"
+
+msgid "Recover computer"
+msgstr "Recover computer"
+
+#. placeholder {0}: update.name
+msgid "Recovering {0}’s Computer"
+msgstr "Recovering {0}’s Computer"
+
+msgid "Recovering Team Computer"
+msgstr "Recovering Team Computer"
+
+msgid "Recovering…"
+msgstr "Recovering…"
+
+msgid "Recovery failed"
+msgstr "Recovery failed"
+
+msgid "Recovery is unavailable until the previous operation has stopped."
+msgstr "Recovery is unavailable until the previous operation has stopped."
+
+msgid "Recovery restores the last saved workspace. Unsaved work may be lost."
+msgstr "Recovery restores the last saved workspace. Unsaved work may be lost."
+
+msgid "Recreating the computer"
+msgstr "Recreating the computer"
+
+msgid "Refresh view"
+msgstr "Refresh view"
+
+msgid "Refreshing…"
+msgstr "Refreshing…"
+
+msgid "Release"
+msgstr "Release"
+
+msgid "Release computer"
+msgstr "Release computer"
+
+msgid "Release interrupted computer?"
+msgstr "Release interrupted computer?"
+
+msgid "Remove"
+msgstr "Remove"
+
+#. placeholder {0}: attachment.file.name
+msgid "Remove {0}"
+msgstr "Remove {0}"
+
+msgid "Remove check-in"
+msgstr "Remove check-in"
+
+msgid "Remove Git event"
+msgstr "Remove Git event"
+
+#. placeholder {0}: mention.name
+msgid "Remove mention {0}"
+msgstr "Remove mention {0}"
+
+msgid "Remove message trigger"
+msgstr "Remove message trigger"
+
+msgid "Remove schedule"
+msgstr "Remove schedule"
+
+#. placeholder {0}: selectedSkill.name
+msgid "Remove skill {0}"
+msgstr "Remove skill {0}"
+
+msgid "Remove webhook"
+msgstr "Remove webhook"
+
+msgid "Removed with chat, computer, and memory."
+msgstr "Removed with chat, computer, and memory."
+
+msgid "Removed, but list refresh failed"
+msgstr "Removed, but list refresh failed"
+
+msgid "Removed: "
+msgstr "Removed: "
+
+msgid "Removing…"
+msgstr "Removing…"
+
+msgid "Rename section"
+msgstr "Rename section"
+
+msgid "Reopen"
+msgstr "Reopen"
+
+msgid "Replace API key"
+msgstr "Replace API key"
+
+msgid "Replace key"
+msgstr "Replace key"
+
+msgid "Replay the intro"
+msgstr "Replay the intro"
+
+msgid "Reply"
+msgstr "Reply"
+
+msgid "Reply cancelled"
+msgstr "Reply cancelled"
+
+#. placeholder {0}: replyNameRef.current
+msgid "Replying to {0}"
+msgstr "Replying to {0}"
+
+msgid "Replying to {replyName}"
+msgstr "Replying to {replyName}"
+
+msgid "Replying to {replyName}: “{replyQuote}”"
+msgstr "Replying to {replyName}: “{replyQuote}”"
+
+msgid "Research & writing"
+msgstr "Research & writing"
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "Reset computer"
+msgstr "Reset computer"
+
+msgid "Reset computer?"
+msgstr "Reset computer?"
+
+msgid "Reset password"
+msgstr "Reset password"
+
+msgid "Reset your password"
+msgstr "Reset your password"
+
+msgid "Resetting…"
+msgstr "Resetting…"
+
+msgid "Restart to update"
+msgstr "Restart to update"
+
+msgid "Restore the last saved workspace. Unsaved work on the computer is lost."
+msgstr "Restore the last saved workspace. Unsaved work on the computer is lost."
+
+msgid "Restoring your workspace"
+msgstr "Restoring your workspace"
+
+msgid "Resume"
+msgstr "Resume"
+
+msgid "Retry now"
+msgstr "Retry now"
+
+msgid "Retry screen"
+msgstr "Retry screen"
+
+msgid "Return to Nova"
+msgstr "Return to Nova"
+
+#. placeholder {0}: doc.revision
+msgid "rev {0}"
+msgstr "rev {0}"
+
+msgid "Review"
+msgstr "Review"
+
+msgid "Revoke"
+msgstr "Revoke"
+
+msgid "Robot"
+msgstr "Robot"
+
+msgid "Room guidance"
+msgstr "Room guidance"
+
+msgid "Rotate key"
+msgstr "Rotate key"
+
+msgid "Routine"
+msgstr "Routine"
+
+msgid "Routines"
+msgstr "Routines"
+
+msgid "Run at"
+msgstr "Run at"
+
+msgid "Run history"
+msgstr "Run history"
+
+msgid "Run time must be in the future."
+msgstr "Run time must be in the future."
+
+msgid "running"
+msgstr "running"
+
+msgid "Running"
+msgstr "Running"
+
+msgid "Running · Stop"
+msgstr "Running · Stop"
+
+msgid "Running…"
+msgstr "Running…"
+
+msgid "Runs when this bot receives a verified message from this provider."
+msgstr "Runs when this bot receives a verified message from this provider."
+
+msgid "Save"
+msgstr "Save"
+
+msgid "Save changes"
+msgstr "Save changes"
+
+msgid "Save check-ins"
+msgstr "Save check-ins"
+
+msgid "Saved"
+msgstr "Saved"
+
+msgid "Saved, but list refresh failed"
+msgstr "Saved, but list refresh failed"
+
+msgid "Saved."
+msgstr "Saved."
+
+msgid "Saved. Rotate to reveal."
+msgstr "Saved. Rotate to reveal."
+
+msgid "Saving your workspace"
+msgstr "Saving your workspace"
+
+msgid "Saving..."
+msgstr "Saving..."
+
+msgid "Saving…"
+msgstr "Saving…"
+
+msgid "Say something bigger and I'll propose a plan; you approve it; I work in the background, check in, and show progress in Goals."
+msgstr "Say something bigger and I'll propose a plan; you approve it; I work in the background, check in, and show progress in Goals."
+
+msgid "Say something. Silence sends it."
+msgstr "Say something. Silence sends it."
+
+msgid "Say yes or no, or answer in a sentence."
+msgstr "Say yes or no, or answer in a sentence."
+
+msgid "Search"
+msgstr "Search"
+
+msgid "Search apps"
+msgstr "Search apps"
+
+msgid "Search artifacts…"
+msgstr "Search artifacts…"
+
+msgid "Search bots and switch conversations"
+msgstr "Search bots and switch conversations"
+
+msgid "Search by domain"
+msgstr "Search by domain"
+
+msgid "Search integrations.sh"
+msgstr "Search integrations.sh"
+
+msgid "Search models"
+msgstr "Search models"
+
+msgid "Search providers"
+msgstr "Search providers"
+
+msgid "Search your Library"
+msgstr "Search your Library"
+
+msgid "Search your Library…"
+msgstr "Search your Library…"
+
+msgid "Searching…"
+msgstr "Searching…"
+
+msgid "Sections"
+msgstr "Sections"
+
+msgid "Select a bot"
+msgstr "Select a bot"
+
+msgid "Send"
+msgstr "Send"
+
+msgid "Send <0>{linkCode}</0> to the line from your chat app within 10 minutes. You'll get a confirmation reply once linked."
+msgstr "Send <0>{linkCode}</0> to the line from your chat app within 10 minutes. You'll get a confirmation reply once linked."
+
+msgid "Send answer"
+msgstr "Send answer"
+
+msgid "Send it"
+msgstr "Send it"
+
+msgid "Send reset link"
+msgstr "Send reset link"
+
+msgid "Sending…"
+msgstr "Sending…"
+
+msgid "Sentry alert"
+msgstr "Sentry alert"
+
+msgid "Serenity endpoint is required."
+msgstr "Serenity endpoint is required."
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Server integrations"
+msgstr "Server integrations"
+
+msgid "Server name"
+msgstr "Server name"
+
+msgid "Server URL"
+msgstr "Server URL"
+
+msgid "Service"
+msgstr "Service"
+
+msgid "Settings"
+msgstr "Settings"
+
+msgid "Settings: General"
+msgstr "Settings: General"
+
+msgid "Settings: Usage"
+msgstr "Settings: Usage"
+
+msgid "Setup help"
+msgstr "Setup help"
+
+msgid "Shared"
+msgstr "Shared"
+
+msgid "Shared chat with 2-6 bots. They all reply in the same thread."
+msgstr "Shared chat with 2-6 bots. They all reply in the same thread."
+
+msgid "Shared documents"
+msgstr "Shared documents"
+
+msgid "Show computer"
+msgstr "Show computer"
+
+msgid "Show context panel"
+msgstr "Show context panel"
+
+msgid "Show list"
+msgstr "Show list"
+
+msgid "Show more"
+msgstr "Show more"
+
+msgid "Show password"
+msgstr "Show password"
+
+msgid "Show replies as they're written"
+msgstr "Show replies as they're written"
+
+msgid "Show settings"
+msgstr "Show settings"
+
+msgid "Side chat"
+msgstr "Side chat"
+
+msgid "Sign in"
+msgstr "Sign in"
+
+msgid "Sign up"
+msgstr "Sign up"
+
+msgid "Skill"
+msgstr "Skill"
+
+#. placeholder {0}: skill.name
+msgid "Skill {0}"
+msgstr "Skill {0}"
+
+msgid "Skill instructions"
+msgstr "Skill instructions"
+
+msgid "Skills"
+msgstr "Skills"
+
+msgid "Skip"
+msgstr "Skip"
+
+msgid "Skip or deploy key"
+msgstr "Skip or deploy key"
+
+msgid "Skipped"
+msgstr "Skipped"
+
+#. placeholder {0}: skipped.join(", ")
+msgid "Skipped {0}"
+msgstr "Skipped {0}"
+
+msgid "Slack message"
+msgstr "Slack message"
+
+msgid "Slack not enabled"
+msgstr "Slack not enabled"
+
+msgid "Sources"
+msgstr "Sources"
+
+msgid "Space default"
+msgstr "Space default"
+
+msgid "Space interrupts · Esc hangs up"
+msgstr "Space interrupts · Esc hangs up"
+
+msgid "Spaces"
+msgstr "Spaces"
+
+msgid "Speak"
+msgstr "Speak"
+
+msgid "Speak + transcribe"
+msgstr "Speak + transcribe"
+
+msgid "Speak only"
+msgstr "Speak only"
+
+msgid "Speak this reply"
+msgstr "Speak this reply"
+
+msgid "Speaking…"
+msgstr "Speaking…"
+
+msgid "Speaks and listens"
+msgstr "Speaks and listens"
+
+msgid "Speaks only"
+msgstr "Speaks only"
+
+msgid "Start a new goal"
+msgstr "Start a new goal"
+
+#. placeholder {0}: botDisplayName ?? "Nova"
+msgid "Start it, and {0} works on it in the background."
+msgstr "Start it, and {0} works on it in the background."
+
+msgid "Start recording"
+msgstr "Start recording"
+
+msgid "Start this Goal"
+msgstr "Start this Goal"
+
+msgid "Start this plan"
+msgstr "Start this plan"
+
+msgid "Starting"
+msgstr "Starting"
+
+msgid "Starting…"
+msgstr "Starting…"
+
+msgid "Steps"
+msgstr "Steps"
+
+msgid "Still working on this."
+msgstr "Still working on this."
+
+msgid "Stop"
+msgstr "Stop"
+
+#. placeholder {0}: topic.topic
+msgid "Stop following {0}"
+msgstr "Stop following {0}"
+
+msgid "Stop speaking"
+msgstr "Stop speaking"
+
+msgid "Stop teaching"
+msgstr "Stop teaching"
+
+#. js-lingui-explicit-id
+msgid "Stopped."
+msgstr "Stopped."
+
+msgid "Stored encrypted"
+msgstr "Stored encrypted"
+
+msgid "Stored securely. Never shown here."
+msgstr "Stored securely. Never shown here."
+
+msgid "Stream replies"
+msgstr "Stream replies"
+
+msgid "subagent"
+msgstr "subagent"
+
+msgid "Submit"
+msgstr "Submit"
+
+msgid "Summarize this week's rate-change news into a one-pager"
+msgstr "Summarize this week's rate-change news into a one-pager"
+
+msgid "Supports images"
+msgstr "Supports images"
+
+msgid "Supports thinking"
+msgstr "Supports thinking"
+
+msgid "Switch bot"
+msgstr "Switch bot"
+
+msgid "Switching…"
+msgstr "Switching…"
+
+msgid "System"
+msgstr "System"
+
+msgid "Take over anytime."
+msgstr "Take over anytime."
+
+msgid "Talking points are ready for 5 of 12 clients. Two drifted more than 8% from target. Want me to propose meeting slots?"
+msgstr "Talking points are ready for 5 of 12 clients. Two drifted more than 8% from target. Want me to propose meeting slots?"
+
+msgid "Talking points are ready for all 12 clients"
+msgstr "Talking points are ready for all 12 clients"
+
+msgid "Tap the face to change the color"
+msgstr "Tap the face to change the color"
+
+msgid "Teach a task"
+msgstr "Teach a task"
+
+msgid "Teaching in progress. Stop teaching before sending a new message."
+msgstr "Teaching in progress. Stop teaching before sending a new message."
+
+msgid "Team"
+msgstr "Team"
+
+msgid "Team Computer"
+msgstr "Team Computer"
+
+msgid "Team conversations"
+msgstr "Team conversations"
+
+msgid "Teams message"
+msgstr "Teams message"
+
+msgid "Teams not enabled"
+msgstr "Teams not enabled"
+
+msgid "Tell me something to remember, like how you like reports written."
+msgstr "Tell me something to remember, like how you like reports written."
+
+msgid "Test"
+msgstr "Test"
+
+msgid "Test run"
+msgstr "Test run"
+
+msgid "The key is stored encrypted and only used for voice."
+msgstr "The key is stored encrypted and only used for voice."
+
+msgid "The Muse stops working on this Goal."
+msgstr "The Muse stops working on this Goal."
+
+msgid "The quarterly client review email is drafted and ready for your yes."
+msgstr "The quarterly client review email is drafted and ready for your yes."
+
+msgid "The selected memory provider is not available in this build."
+msgstr "The selected memory provider is not available in this build."
+
+msgid "Thinking"
+msgstr "Thinking"
+
+msgid "This bot runs on this computer, not a Linux desktop. Shell and files use your home folder."
+msgstr "This bot runs on this computer, not a Linux desktop. Shell and files use your home folder."
+
+msgid "This can't be undone."
+msgstr "This can't be undone."
+
+msgid "This cannot be undone."
+msgstr "This cannot be undone."
+
+msgid "This chat is view-only"
+msgstr "This chat is view-only"
+
+msgid "this computer"
+msgstr "this computer"
+
+#. placeholder {0}: pendingDelete.versionCount
+msgid "This deletes all {0} versions of this artifact. This can't be undone."
+msgstr "This deletes all {0} versions of this artifact. This can't be undone."
+
+#. placeholder {0}: pendingDelete.versionCount
+msgid "This deletes all {0} versions of this. This can't be undone."
+msgstr "This deletes all {0} versions of this. This can't be undone."
+
+msgid "This file is not valid UTF-8 text."
+msgstr "This file is not valid UTF-8 text."
+
+msgid "this Mac"
+msgstr "this Mac"
+
+msgid "This month"
+msgstr "This month"
+
+msgid "This permanently removes every message and stops current work. The chat remains available."
+msgstr "This permanently removes every message and stops current work. The chat remains available."
+
+msgid "This reset link is invalid or expired"
+msgstr "This reset link is invalid or expired"
+
+msgid "This server cannot be assigned without a bot."
+msgstr "This server cannot be assigned without a bot."
+
+msgid "This server did not request browser authorization."
+msgstr "This server did not request browser authorization."
+
+msgid "This server is already connected. Disconnect it first to authorize again."
+msgstr "This server is already connected. Disconnect it first to authorize again."
+
+msgid "This subscription sign-in is not available in Nova yet. Use a deployment credential or choose another provider."
+msgstr "This subscription sign-in is not available in Nova yet. Use a deployment credential or choose another provider."
+
+msgid "This week"
+msgstr "This week"
+
+msgid "Three of your clients renew this quarter. Fixed looks better than it did last month; I can draft a note for each."
+msgstr "Three of your clients renew this quarter. Fixed looks better than it did last month; I can draft a note for each."
+
+msgid "Time of day"
+msgstr "Time of day"
+
+msgid "Times use {timezone}."
+msgstr "Times use {timezone}."
+
+msgid "Title"
+msgstr "Title"
+
+msgid "To do"
+msgstr "To do"
+
+msgid "To:"
+msgstr "To:"
+
+msgid "Today"
+msgstr "Today"
+
+msgid "Today {time}"
+msgstr "Today {time}"
+
+msgid "Tomorrow {time}"
+msgstr "Tomorrow {time}"
+
+msgid "Tool sources"
+msgstr "Tool sources"
+
+msgid "Tools"
+msgstr "Tools"
+
+msgid "Topics I follow for you"
+msgstr "Topics I follow for you"
+
+msgid "Treat like a person"
+msgstr "Treat like a person"
+
+msgid "Treg token"
+msgstr "Treg token"
+
+msgid "Try again"
+msgstr "Try again"
+
+msgid "Try it"
+msgstr "Try it"
+
+msgid "Try one"
+msgstr "Try one"
+
+#. placeholder {0}: card.example
+msgid "Try: \"{0}\""
+msgstr "Try: \"{0}\""
+
+msgid "Two portfolios drifted past 8% from target; I put them first and drafted a rebalancing note for each."
+msgstr "Two portfolios drifted past 8% from target; I put them first and drafted a rebalancing note for each."
+
+msgid "Type your answer"
+msgstr "Type your answer"
+
+msgid "Unassigned"
+msgstr "Unassigned"
+
+msgid "Uninstall"
+msgstr "Uninstall"
+
+msgid "Unlink"
+msgstr "Unlink"
+
+msgid "Unpin"
+msgstr "Unpin"
+
+#. placeholder {0}: pending.file.name
+msgid "Unsupported file type: {0}"
+msgstr "Unsupported file type: {0}"
+
+msgid "Until"
+msgstr "Until"
+
+msgid "Up to date"
+msgstr "Up to date"
+
+msgid "Update computer"
+msgstr "Update computer"
+
+msgid "Update failed"
+msgstr "Update failed"
+
+msgid "Update progress"
+msgstr "Update progress"
+
+msgid "Updates"
+msgstr "Updates"
+
+#. placeholder {0}: update.name
+msgid "Updating {0}’s Computer"
+msgstr "Updating {0}’s Computer"
+
+msgid "Updating Team Computer"
+msgstr "Updating Team Computer"
+
+msgid "Updating…"
+msgstr "Updating…"
+
+msgid "Usage"
+msgstr "Usage"
+
+msgid "USD/CAD moved past 1.38. Want me to refresh the client note?"
+msgstr "USD/CAD moved past 1.38. Want me to refresh the client note?"
+
+msgid "Use {hostLabel}"
+msgstr "Use {hostLabel}"
+
+msgid "Use a found model"
+msgstr "Use a found model"
+
+msgid "Use default guidance"
+msgstr "Use default guidance"
+
+msgid "Use the new plan"
+msgstr "Use the new plan"
+
+msgid "Use this model"
+msgstr "Use this model"
+
+msgid "Username"
+msgstr "Username"
+
+msgid "Uses your time zone, {timezone}."
+msgstr "Uses your time zone, {timezone}."
+
+msgid "Verify and add"
+msgstr "Verify and add"
+
+msgid "Verifying…"
+msgstr "Verifying…"
+
+msgid "Version"
+msgstr "Version"
+
+msgid "View all"
+msgstr "View all"
+
+msgid "View details"
+msgstr "View details"
+
+msgid "Voice"
+msgstr "Voice"
+
+msgid "Waiting for sign-in…"
+msgstr "Waiting for sign-in…"
+
+msgid "Waiting on you"
+msgstr "Waiting on you"
+
+msgid "Waiting…"
+msgstr "Waiting…"
+
+#. placeholder {0}: active.name
+msgid "Watch {0} work"
+msgstr "Watch {0} work"
+
+msgid "Watches"
+msgstr "Watches"
+
+msgid "Webhook"
+msgstr "Webhook"
+
+msgid "Weekdays"
+msgstr "Weekdays"
+
+msgid "Welcome back."
+msgstr "Welcome back."
+
+msgid "What about its memories?"
+msgstr "What about its memories?"
+
+msgid "What can you do?"
+msgstr "What can you do?"
+
+msgid "What do you give me each time?"
+msgstr "What do you give me each time?"
+
+msgid "What do you want back?"
+msgstr "What do you want back?"
+
+msgid "What do you want me on first?"
+msgstr "What do you want me on first?"
+
+msgid "What do you want to get done?"
+msgstr "What do you want to get done?"
+
+msgid "What do you want to look at?"
+msgstr "What do you want to look at?"
+
+msgid "What I finished while you were away, and what's new on the topics you follow."
+msgstr "What I finished while you were away, and what's new on the topics you follow."
+
+msgid "What I remember"
+msgstr "What I remember"
+
+msgid "What I've done"
+msgstr "What I've done"
+
+msgid "What result will you demonstrate?"
+msgstr "What result will you demonstrate?"
+
+msgid "What should I ask you about first?"
+msgstr "What should I ask you about first?"
+
+msgid "What should I do if it goes wrong?"
+msgstr "What should I do if it goes wrong?"
+
+msgid "What should this routine do each time it runs?"
+msgstr "What should this routine do each time it runs?"
+
+msgid "What this bot is for"
+msgstr "What this bot is for"
+
+msgid "What to return"
+msgstr "What to return"
+
+msgid "What we've done"
+msgstr "What we've done"
+
+msgid "When a webhook fires"
+msgstr "When a webhook fires"
+
+msgid "When I do something you'll want again, I'll offer to save it. You can also teach me on my computer, or paste steps and ask me to keep them."
+msgstr "When I do something you'll want again, I'll offer to save it. You can also teach me on my computer, or paste steps and ask me to keep them."
+
+msgid "When I need a decision or an answer, it'll show up here."
+msgstr "When I need a decision or an answer, it'll show up here."
+
+msgid "When should this run?"
+msgstr "When should this run?"
+
+msgid "When to run"
+msgstr "When to run"
+
+msgid "When to use"
+msgstr "When to use"
+
+msgid "Where should bots run?"
+msgstr "Where should bots run?"
+
+msgid "With context"
+msgstr "With context"
+
+msgid "Working"
+msgstr "Working"
+
+msgid "Working on it"
+msgstr "Working on it"
+
+msgid "Working on its own"
+msgstr "Working on its own"
+
+msgid "Working…"
+msgstr "Working…"
+
+msgid "Yes, go ahead"
+msgstr "Yes, go ahead"
+
+msgid "Yesterday"
+msgstr "Yesterday"
+
+msgid "You"
+msgstr "You"
+
+msgid "You can close this tab if it does not redirect automatically."
+msgstr "You can close this tab if it does not redirect automatically."
+
+msgid "You can close this window."
+msgstr "You can close this window."
+
+msgid "You have control"
+msgstr "You have control"
+
+msgid "You're all caught up"
+msgstr "You're all caught up"
+
+msgid "You're all caught up."
+msgstr "You're all caught up."
+
+msgid "Your AI, <0>already on it.</0>"
+msgstr "Your AI, <0>already on it.</0>"
+
+msgid "Your briefing for Thursday's credit committee is ready, risks on page 2."
+msgstr "Your briefing for Thursday's credit committee is ready, risks on page 2."
+
+msgid "Your computer · your model · asks before anything it can't undo"
+msgstr "Your computer · your model · asks before anything it can't undo"
+
+msgid "Your email address"
+msgstr "Your email address"
+
+msgid "Your name"
+msgstr "Your name"

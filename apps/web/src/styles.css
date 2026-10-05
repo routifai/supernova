@@ -1,0 +1,140 @@
+@import "tailwindcss";
+@import "@aiden/ui-web/styles.css";
+@import "@fontsource-variable/geist/wght.css";
+@import "@fontsource-variable/geist-mono/wght.css";
+@import "@fontsource-variable/instrument-sans/wght.css";
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource/instrument-serif/400-italic.css";
+
+@source "../../packages/ui-web/src/**/*.{ts,tsx}";
+@source "./src/**/*.{ts,tsx}";
+
+/* Muse edition type and elevation (docs/muse/DESIGN.md). */
+@theme {
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+  --shadow-float: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 32px -12px rgb(0 0 0 / 0.14);
+}
+
+@keyframes museFloat {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -4px;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Muse edition: content scrolls, but scrollbars stay out of sight and nothing pans
+   sideways. */
+[data-product="muse"] .rk-scroll,
+[data-product="muse"] main {
+  scrollbar-width: none;
+}
+[data-product="muse"] .rk-scroll::-webkit-scrollbar,
+[data-product="muse"] main ::-webkit-scrollbar {
+  display: none;
+}
+[data-product="muse"] main {
+  overflow-x: hidden;
+}
+[data-product="muse"] main pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Muse edition body type: Instrument Sans pairs with the Instrument Serif titles. */
+/* Muse edition: fixed pixel sizes read tiny on very wide windows, so scale the whole
+   interface up on large screens. */
+/* Embedded frames (the computer screen, page previews) size themselves from their own
+   viewport, so they cancel the zoom and render 1:1; percentage sizes keep their boxes. */
+@media (min-width: 1600px) {
+  [data-product="muse"] #root {
+    zoom: 1.1;
+  }
+  [data-product="muse"] #root iframe {
+    zoom: calc(1 / 1.1);
+  }
+}
+@media (min-width: 1900px) {
+  [data-product="muse"] #root {
+    zoom: 1.2;
+  }
+  [data-product="muse"] #root iframe {
+    zoom: calc(1 / 1.2);
+  }
+}
+
+[data-product="muse"] body,
+[data-product="muse"] #root {
+  font-family: "Instrument Sans Variable", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+}
+
+.rk-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.rk-scroll {
+  scrollbar-color: var(--scrollbar) transparent;
+  scrollbar-width: thin;
+}
+.rk-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.rk-scroll::-webkit-scrollbar-thumb {
+  background: var(--scrollbar);
+  border-radius: 3px;
+}
+.rk-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
+
+.app-drag {
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.app-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+@keyframes rkPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Muse: the transcript fades out under the top edge once scrolled, like a
+   reading view. The mask only uses alpha, so it follows both themes. */
+[data-product="muse"] [data-fade-top][data-scrolled="true"] {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 88px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 88px);
+}
+
+/* Muse glass shell (docs/muse/DESIGN.md "Background wash"): the shell root's own
+   background — large, heavily-blurred color blobs behind the whole signed-in shell.
+   Plain radial gradients fading to transparent, not a blur filter, so it paints once
+   and stays cheap however the panels above it resize. Colors come only from the wash
+   tokens. */
+[data-product="muse"] .muse-wash {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(760px 620px at 6% -8%, var(--wash-1), transparent 60%),
+    radial-gradient(700px 640px at 98% 14%, var(--wash-2), transparent 58%),
+    radial-gradient(820px 680px at 46% 112%, var(--wash-3), transparent 62%);
+}
