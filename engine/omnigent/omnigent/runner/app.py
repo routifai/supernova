@@ -1460,6 +1460,24 @@ def _apply_memory_profile_to_body(body: _JsonObject, block: str | None) -> _Json
     return new_body
 
 
+def _prepend_turn_blocks(body: _JsonObject, blocks: Sequence[str], conv_id: str) -> _JsonObject:
+    """Prepend each of *blocks* to *body*'s content in turn (the last ends up first).
+
+    Logs at DEBUG which blocks went in (first line of each), so a turn's prefix can be checked
+    without dumping the person's profile.
+    """
+    for block in blocks:
+        body = _apply_memory_profile_to_body(body, block)
+    if _logger.isEnabledFor(logging.DEBUG):
+        _logger.debug(
+            "turn prefix for %s: %s",
+            conv_id,
+            [(b.split("\n", 1)[0][:60], len(b)) for b in blocks],
+            extra={"session_id": conv_id},
+        )
+    return body
+
+
 def _wrap_as_message_event(body: _JsonObject) -> _JsonObject:
     """
     Adapt a ``CreateResponseRequest``-shaped body into a
@@ -4470,6 +4488,9 @@ def create_runner_app(
                         "detail": _client_safe_error_detail(exc, context="spec resolve"),
                     },
                 )
+        # The session's persisted /model override; the recovery turns started at the end of
+        # init carry it so they run on the same model as every later turn.
+        _model_override: str | None = None
         if spec_entry is not None:
             spec = _unwrap_spec_entry(spec_entry)
             raw_sub_agent_name = body.get("sub_agent_name")
@@ -5034,6 +5055,7 @@ def create_runner_app(
                     "model": body.get("model", agent_id),
                     # Recovery has no live server dispatch carrying renderer state.
                     "browser_renderer_available": False,
+                    **({"model_override": _model_override} if _model_override else {}),
                 }
                 _turn_task = asyncio.create_task(
                     _run_turn_bg(msg_body, session_id),
@@ -5064,6 +5086,7 @@ def create_runner_app(
                     "agent_id": agent_id,
                     "model": body.get("model", agent_id),
                     "browser_renderer_available": False,
+                    **({"model_override": _model_override} if _model_override else {}),
                     "content": [
                         {
                             "type": "input_text",
@@ -9290,15 +9313,15 @@ def create_runner_app(
             )
 
     async def _apply_turn_prefix_blocks(body: _JsonObject, conv_id: str) -> _JsonObject:
-        """Prepend the Super Chat per-turn blocks (Memory Profile, local time) to the content.
+        """Prepend the Super Chat per-turn blocks (Memory Profile, Projects, local time).
 
         Called only for ``superside-chat`` turns; the blocks come from the one
         ``superchat.prompt_prefix`` hook, fetched fresh each turn (the SDK's system prompt is
         frozen per warm client, so a per-message block is the seam that still reaches it).
         """
-        for block in await turn_prefix_blocks(server_client, conv_id):
-            body = _apply_memory_profile_to_body(body, block)
-        return body
+        workspace = await _session_runtime_cwd(conv_id)
+        blocks = await turn_prefix_blocks(server_client, conv_id, workspace)
+        return _prepend_turn_blocks(body, blocks, conv_id)
 
     def _discard_comment_relay(session_id: str, relay: ClaudeNativeToolRelay) -> None:
         """Unbind and close *relay*, unless another path already replaced it.
@@ -11446,6 +11469,12 @@ def create_runner_app(
             if _stop_resp is not None:
                 return _stop_resp
             await _cancel_inprocess_turn(conversation_id)
+            return Response(status_code=204)
+
+        if body_type == "workspace_change":
+            # The server stored a new working directory; drop every cached copy so the next
+            # tool call re-reads it (tools resolve it per call via ``_session_runtime_cwd``).
+            _forget_session_workspace(conversation_id)
             return Response(status_code=204)
 
         if body_type == "effort_change":
@@ -13865,6 +13894,20 @@ def create_runner_app(
         _session_sub_agent_resolved.pop(session_id, None)
         if agent_id:
             _spec_cache.pop(agent_id, None)
+
+    def _forget_session_workspace(session_id: str) -> None:
+        """Drop the cached working directory (and what was derived from it).
+
+        The server's session row is the one source; the next read re-fetches it. A tool call
+        already running keeps the directory it started in.
+        """
+        # Bump first so an in-flight fetch discards its stale write.
+        _session_cache_generations[session_id] = _session_cache_generations.get(session_id, 0) + 1
+        _session_workspace_cache.pop(session_id, None)
+        _session_snapshot_cache.pop(session_id, None)
+        _session_init_envelopes.pop(session_id, None)
+        _session_skills_cache.pop(session_id, None)
+        _session_fs_registries.pop(session_id, None)
 
     async def _invalidate_session_agent_state(session_id: str, new_agent_id: str | None) -> None:
         """Clear all agent-derived caches and release the harness subprocess.
