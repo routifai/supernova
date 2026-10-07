@@ -252,6 +252,40 @@ def resolve_rollover_threshold(
     return max(threshold, floor)
 
 
+def split_at_latest_compaction(
+    items: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    """Split a chronological record into ``(items_after_checkpoint, latest_compaction)``.
+
+    The checkpoint covers the record up to its ``last_item_id`` (the anchor
+    captured when the rollover STARTED), not up to its own position: a turn
+    that ran while the summarizer was working lands in the record before the
+    compaction item but after the anchor, and must stay in the context.
+    So the result is the items after the anchor (when it precedes the
+    compaction item) minus the compaction item itself, plus everything after
+    the compaction item. An absent or unknown anchor (e.g. a native
+    forwarder's synthetic boundary id) falls back to "everything after the
+    compaction item". ``(items, None)`` when there is no compaction.
+    """
+    idx = next(
+        (i for i in range(len(items) - 1, -1, -1) if items[i].get("type") == "compaction"),
+        None,
+    )
+    if idx is None:
+        return items, None
+    compaction = items[idx]
+    anchor_id = compaction.get("last_item_id")
+    anchor_idx = next(
+        (i for i in range(idx) if anchor_id and items[i].get("id") == anchor_id), None
+    )
+    during = (
+        [it for it in items[anchor_idx + 1 : idx] if it.get("type") != "compaction"]
+        if anchor_idx is not None
+        else []
+    )
+    return during + items[idx + 1 :], compaction
+
+
 def resolve_keep_tokens(labels: Mapping[str, str] | None) -> int:
     """Resolve ``omnigent.context.rollover_keep_tokens``, default 16,000."""
     labels = labels or {}
@@ -712,7 +746,7 @@ def _related_chat_preview(items: list[ConversationItem]) -> str | None:
     return None
 
 
-def _side_chat_seed(
+def side_chat_seed_checkpoint(
     conv_store: ConversationStore, conversation: Conversation
 ) -> tuple[str | None, str | None]:
     """``(summary, item_id)`` of a ``with_context`` Side Chat's seed, else ``(None, None)``.
@@ -754,7 +788,7 @@ def _side_chat_seed(
 def _chat_summary(
     conv_store: ConversationStore, conversation: Conversation, preview: str | None
 ) -> dict[str, Any]:
-    seed_summary, seed_item_id = _side_chat_seed(conv_store, conversation)
+    seed_summary, seed_item_id = side_chat_seed_checkpoint(conv_store, conversation)
     return {
         "id": conversation.id,
         "title": conversation.title,

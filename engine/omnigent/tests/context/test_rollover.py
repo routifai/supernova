@@ -978,7 +978,7 @@ def test_side_chat_seed_is_this_chats_checkpoint_not_the_copied_parents() -> Non
     """The fork's deep copy carries the parent's own compactions before the seed."""
     from types import SimpleNamespace
 
-    from omnigent.context.rollover import _side_chat_seed
+    from omnigent.context.rollover import side_chat_seed_checkpoint
     from omnigent.entities import CompactionData
     from omnigent.stores.conversation_store import SIDE_CHAT_START_LABEL_KEY
 
@@ -996,7 +996,7 @@ def test_side_chat_seed_is_this_chats_checkpoint_not_the_copied_parents() -> Non
             return SimpleNamespace(data=items, has_more=False, last_id=items[-1].id)
 
     conv = SimpleNamespace(id="side1", labels={SIDE_CHAT_START_LABEL_KEY: "with_context"})
-    assert _side_chat_seed(Store(), conv) == ("the seed", "cmp_seed")  # type: ignore[arg-type]
+    assert side_chat_seed_checkpoint(Store(), conv) == ("the seed", "cmp_seed")  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize("header_name", ["SIDE_CHAT_SEED_HEADER", "CHECKPOINT_HEADER"])
@@ -1030,3 +1030,43 @@ def test_person_facing_summary_reads_a_seed_stored_before_the_marker_prefix() ->
     assert person_facing_summary(f"{legacy}\n\nBody") == "Body"
     assert person_facing_summary(None) is None
     assert person_facing_summary(SIDE_CHAT_SEED_HEADER) is None
+
+
+# ── split_at_latest_compaction ────────────────────────────────────────────
+
+
+def _split_item(item_id: str, item_type: str = "message", **extra: Any) -> dict[str, Any]:
+    return {"id": item_id, "type": item_type, **extra}
+
+
+def test_split_without_compaction_returns_everything() -> None:
+    from omnigent.context.rollover import split_at_latest_compaction
+
+    items = [_split_item("u1"), _split_item("a1")]
+    assert split_at_latest_compaction(items) == (items, None)
+
+
+def test_split_keeps_items_that_landed_between_anchor_and_checkpoint() -> None:
+    from omnigent.context.rollover import split_at_latest_compaction
+
+    ckpt = _split_item("c1", "compaction", last_item_id="a1")
+    items = [
+        _split_item("u1"),
+        _split_item("a1"),
+        _split_item("u2"),  # turn that ran while the rollover summarized
+        _split_item("a2"),
+        ckpt,
+        _split_item("u3"),
+    ]
+    after, found = split_at_latest_compaction(items)
+    assert found is ckpt
+    assert [i["id"] for i in after] == ["u2", "a2", "u3"]
+
+
+def test_split_with_unknown_anchor_falls_back_to_after_the_checkpoint() -> None:
+    from omnigent.context.rollover import split_at_latest_compaction
+
+    ckpt = _split_item("c1", "compaction", last_item_id="compact_boundary_x")
+    items = [_split_item("u1"), ckpt, _split_item("u2")]
+    after, _ = split_at_latest_compaction(items)
+    assert [i["id"] for i in after] == ["u2"]
