@@ -1118,6 +1118,11 @@ class SqlConversationLabel(ConversationBase):
     value: Mapped[str] = mapped_column(String(LABEL_VALUE_MAX_LEN))
     updated_at: Mapped[int] = mapped_column(Integer)
 
+    __table_args__ = (
+        # Finds the sessions carrying one label value (e.g. a caller's Super Chat).
+        Index("ix_conversation_labels_key_value", "workspace_id", "key", "value"),
+    )
+
 
 class SqlComment(OmnigentBase):
     """SQLAlchemy model for the ``comments`` table.
@@ -1627,6 +1632,8 @@ class SqlScheduledTask(OmnigentBase):
     # wakes it. ``agent_type`` names the sub-agent Type within the parent's agent.
     parent_session_id: Mapped[str | None] = mapped_column(Uuid16, nullable=True)
     agent_type: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    # Explicit product marker set at creation (e.g. ``followed_topic``); ``None`` = unmarked.
+    kind: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[int] = mapped_column(Integer)
     updated_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
@@ -1653,7 +1660,7 @@ class SqlOwnerPreferences(OmnigentBase):
     Per-owner gating preferences for parent-bound scheduled runs.
 
     :param user_id: Owner identity (``"local"`` in single-user mode).
-    :param proactivity: ``off`` / ``low`` / ``normal``. ``off`` skips every
+    :param proactivity: ``off`` / ``low`` / ``normal`` / ``high``. ``off`` skips every
         parent-bound fire for the owner.
     :param quiet_start: Local ``HH:MM`` the quiet window starts, or ``None``.
     :param quiet_end: Local ``HH:MM`` the quiet window ends, or ``None``.
@@ -1679,7 +1686,8 @@ class SqlOwnerPreferences(OmnigentBase):
 
     __table_args__ = (
         CheckConstraint(
-            "proactivity IN ('off', 'low', 'normal')", name="ck_owner_preferences_proactivity"
+            "proactivity IN ('off', 'low', 'normal', 'high')",
+            name="ck_owner_preferences_proactivity",
         ),
     )
 

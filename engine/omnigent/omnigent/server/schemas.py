@@ -1999,6 +1999,30 @@ class BackgroundTaskInfo(BaseModel):
     command: str | None = None
 
 
+class SessionProject(BaseModel):
+    """The Project a session has open: its folder ``slug`` and card ``name``."""
+
+    slug: str
+    name: str
+
+
+class SessionSuperchat(BaseModel):
+    """Where a session sits in a Super Chat family.
+
+    :param kind: ``"super"``, ``"side"``, ``"helper"``, or ``None``.
+    :param root_id: The family's Super Chat.
+    :param parent_id: A Side Chat's Super Chat, or a Helper's direct parent.
+    :param seed_item_id: The item a with-context Side Chat's own messages start after.
+    :param project: The Project the session has open, or ``None``.
+    """
+
+    kind: Literal["super", "side", "helper"] | None = None
+    root_id: str | None = None
+    parent_id: str | None = None
+    seed_item_id: str | None = None
+    project: SessionProject | None = None
+
+
 class SessionResponse(BaseModel):
     """
     API representation of a session.
@@ -2322,6 +2346,9 @@ class SessionResponse(BaseModel):
     # ``labels``); set/cleared via ``PATCH /v1/sessions/{id}`` and filtered on
     # ``GET /v1/sessions?project=``.
     project_id: str | None = None
+    # Super Chat lineage and open Project (``GET /v1/sessions/{id}`` only); ``None`` outside a
+    # Super Chat family. See :class:`SessionSuperchat`.
+    superchat: SessionSuperchat | None = None
 
 
 class UpdateSessionRequest(BaseModel):
@@ -2769,13 +2796,17 @@ class SideChatOpenResponse(BaseModel):
         server derived.
     :param start: Echoes the request's ``start``.
     :param first_message_error: Set when the Side Chat was created but its
-        ``first_message`` could not be delivered; the caller may resend it.
+        ``first_message`` could not be delivered, after the server's own bounded retry;
+        the caller may resend it.
+    :param first_message_error_code: The failure's code: the events route's error code
+        (e.g. ``runner_unavailable``, ``invalid_input``) or ``transport_error``.
     """
 
     conversation_id: str
     title: str | None = None
     start: Literal["with_context", "blank"]
     first_message_error: str | None = None
+    first_message_error_code: str | None = None
 
 
 class ReadStatePutRequest(BaseModel):

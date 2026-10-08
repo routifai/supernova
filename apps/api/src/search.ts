@@ -1,7 +1,8 @@
 import {
   type OmnigentClientConfig,
   omnigentClientConfigFromEnv,
-  searchOmnigentMessages,
+  omnigentClientFor,
+  searchOmnigentFamily,
 } from "@aiden/adapters";
 import type { Actor, MessageBlock, SearchHit } from "@aiden/contracts";
 import { extractLinksFromText, matchesSearchQuery, snippetAroundMatch } from "@aiden/core";
@@ -46,8 +47,8 @@ export async function querySpaceSearch(
   prisma: PrismaClient,
   actor: Actor,
   q: string,
-  /** When the engine is connected, a Muse's Conversation is searched there (its messages live
-   * in the engine's transcript), not in Nova's thread rows. */
+  /** When the engine is connected, a Muse's Conversation and side chats are searched there (its
+   * messages live in the engine's transcript), not in Nova's thread rows. */
   engine?: { client: OmnigentClientConfig; email: string },
 ): Promise<SearchHit[]> {
   const query = q.trim();
@@ -271,14 +272,14 @@ export async function querySpaceSearch(
     });
     const found = await Promise.all(
       sessions.map((session) =>
-        searchOmnigentMessages(engine.client, engine.email, session.omnigentSessionId, query).then(
-          (messages) => ({ bot: session.bot, messages }),
+        searchOmnigentFamily(engine.client, engine.email, session.omnigentSessionId, query).then(
+          (messages) => ({ bot: session.bot, root: session.omnigentSessionId, messages }),
           // One Muse's engine failing must not take the whole search down.
-          () => ({ bot: session.bot, messages: [] }),
+          () => ({ bot: session.bot, root: session.omnigentSessionId, messages: [] }),
         ),
       ),
     );
-    for (const { bot, messages } of found) {
+    for (const { bot, root, messages } of found) {
       for (const message of messages) {
         pushInto(
           contentHits,
@@ -289,6 +290,8 @@ export async function querySpaceSearch(
             title: bot.name,
             snippet: snippetAroundMatch(message.text, query),
             messageId: message.id,
+            // A hit in a side chat opens that chat; the Conversation has no chat id.
+            ...(message.sessionId === root ? {} : { chatId: message.sessionId }),
             seq: 0,
           },
           contentBudget,
@@ -399,8 +402,9 @@ export async function engineSearch(
   actor: Actor,
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<{ client: OmnigentClientConfig; email: string } | undefined> {
-  const client = omnigentClientConfigFromEnv(env);
-  if (!client) return undefined;
+  const connection = omnigentClientConfigFromEnv(env);
+  if (!connection) return undefined;
+  const client = omnigentClientFor(connection, actor.spaceId);
   const user = await prisma.user.findUnique({
     where: { id: actor.userId },
     select: { email: true },
