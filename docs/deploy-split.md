@@ -51,11 +51,25 @@ openssl rand -hex 32   # run once per secret listed in the table in section 4
 openssl rand -base64 32   # only for OMNIGENT_VAULT_KEY
 ```
 
-## 1. Computers VPS (OVH, Beauharnois, Ubuntu 24.04)
+## 1. Computers VPS (OVH, Beauharnois, Ubuntu)
 
-1. In the OVHcloud control panel order a VPS (the VPS-4 plan), location **Beauharnois (Canada)**,
-   image **Ubuntu 24.04**, and add your SSH public key. Note the public IPv4 address.
-   Pick a size that fits `friends x AIDEN_COMPUTER_MEMORY` plus about 3 GB.
+**Quick path.** Order the VPS with your SSH key (step 1 below), then from your machine run:
+
+```bash
+SANDBOX_SUPERVISOR_TOKEN=<the engine's OMNIGENT_COMPUTER_SUPERVISOR_TOKEN> \
+  infra/compose/setup-computers-vps.sh <vps-ip> ubuntu
+```
+
+It creates the key-only `deploy` user, adds swap on small VMs, installs Docker, ships
+`git archive HEAD`, applies `harden-host.sh`, writes `.env.computers`, builds and starts the stack,
+and checks `/health` and the 401 on `/computers`. Without a domain, `COMPUTERS_HOST` defaults to
+`<ip-with-dashes>.sslip.io`. Set the printed URL as the engine's
+`OMNIGENT_COMPUTER_SUPERVISOR_URL`. The manual steps below do the same by hand.
+
+
+1. In the OVHcloud control panel order a VPS, location **Beauharnois (Canada)**,
+   image **Ubuntu** (24.04 or newer), and add your SSH public key. Note the public IPv4 address.
+   Pick a size that fits `friends x NOVA_COMPUTER_MEMORY` plus about 3 GB.
 2. DNS: at your domain registrar add an **A record** `computers.<your-domain>` pointing at that IP.
 3. First login. OVH creates a default user (shown in the order mail, often `ubuntu`); then create
    the deploy user the hardening script expects:
@@ -93,7 +107,7 @@ openssl rand -base64 32   # only for OMNIGENT_VAULT_KEY
    cp .env.computers.example .env.computers
    sed -i "s/^SANDBOX_SUPERVISOR_TOKEN=.*/SANDBOX_SUPERVISOR_TOKEN=$(openssl rand -hex 32)/" .env.computers
    sed -i "s/^DOCKER_GID=.*/DOCKER_GID=$(stat -c %g /var/run/docker.sock)/" .env.computers
-   nano .env.computers      # set COMPUTERS_HOST; adjust AIDEN_COMPUTER_* if needed
+   nano .env.computers      # set COMPUTERS_HOST; adjust NOVA_COMPUTER_* if needed
    grep SANDBOX_SUPERVISOR_TOKEN .env.computers   # copy this value for Railway
    sudo docker compose --env-file .env.computers -f infra/compose/docker-compose.computers.yml up -d --build
    ```
@@ -198,7 +212,7 @@ proxied by the web server inside the container, so nothing in front buffers or c
 
 1. Open the nova-app URL, register (owner), and send a message to your Muse.
 2. First message creates the Computer on the VPS; allow a minute. On the VPS:
-   `sudo docker ps` shows an `aiden-bot-...` container.
+   `sudo docker ps` shows an `nova-bot-...` container.
 3. Logs: Railway, service, Deployments, View logs. VPS:
    `sudo docker compose --env-file .env.computers -f infra/compose/docker-compose.computers.yml logs -f supervisor`.
    Logs rotate (10 MB x 3 per service).
