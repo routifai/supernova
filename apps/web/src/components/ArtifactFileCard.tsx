@@ -12,14 +12,15 @@ import {
 import { i18n } from "@lingui/core";
 import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Code2, Download, ExternalLink, FileText, Maximize2, X } from "lucide-react";
+import { Code2, Download, ExternalLink, FileText, X } from "lucide-react";
 import type { RefObject } from "react";
 import { useEffect, useRef, useState } from "react";
-import { artifactKind, isPreviewableArtifactKind, kindLabel } from "../lib/artifact-kind";
+import { artifactKind, kindLabel } from "../lib/artifact-kind";
 import type { ArtifactTarget } from "../lib/artifact-open";
 import { downloadArtifact, downloadArtifactBytes, fetchArtifactBytes } from "../lib/artifact-open";
 import { useObjectUrl } from "../lib/use-object-url";
-import { ArtifactPreviewCard, GlassAction } from "./ArtifactPreviewCard";
+import { ArtifactPreviewThumbnail, hasLivePreview } from "./ArtifactPreviewThumbnail";
+import { MEDIA_ACTION, MediaArt, MediaFrame, MediaTile } from "./MediaTile";
 import { PdfViewer } from "./PdfViewer";
 import { SandboxedHtmlViewer } from "./SandboxedHtmlViewer";
 
@@ -37,6 +38,9 @@ type ArtifactFileCardProps = {
 const PREVIEWABLE_MIME_TYPES = new Set(["text/markdown", "text/html", "application/pdf"]);
 const TEXT_MIME_TYPES = new Set(["text/markdown", "text/html"]);
 const EMPTY_BYTES = new Uint8Array(0);
+/** A file card's small action (Open, Download): one hairline, ink-2, a little brighter on hover. */
+const _FILE_ACTION =
+  "inline-flex h-7 items-center gap-1.5 rounded-lg border border-line px-2.5 text-[12.5px] font-medium text-ink-2 transition-colors hover:bg-selection hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring";
 
 export function ArtifactFileCard(props: ArtifactFileCardProps) {
   const { t } = useLingui();
@@ -56,31 +60,53 @@ export function ArtifactFileCard(props: ArtifactFileCardProps) {
     }
   }
 
-  if (props.museMode && isPreviewableArtifactKind(kind)) {
+  if (props.museMode) {
+    // Every file in the Conversation is the same card: a thumbnail on the left, the name and
+    // a quiet meta line, then its actions in one row. Kinds the dialog can't show download.
+    const openable = previewable || isAttachmentImageMimeType(props.mimeType);
+    const open = () => (openable ? setPreviewOpen(true) : void startDownload());
+    const artifact = {
+      id: props.artifactId,
+      mimeType: props.mimeType,
+      size: props.size,
+      name: props.name,
+    };
     return (
       <>
-        <ArtifactPreviewCard
-          size="compact"
-          artifact={{
-            id: props.artifactId,
-            mimeType: props.mimeType,
-            size: props.size,
-            name: props.name,
-          }}
+        <MediaTile
+          openRef={previewButton}
+          kind={kind}
+          brand={kind === "document" ? t`Nova Report` : kindLabel(kind)}
           title={props.name}
-          meta={`${kindLabel(kind)} · ${formatBytes(props.size)}`}
-          buttonLabel={t`Preview ${props.name}`}
-          buttonRef={previewButton}
-          onOpen={() => setPreviewOpen(true)}
-          actions={
+          art={
+            hasLivePreview(artifact) ? (
+              <MediaFrame>
+                <ArtifactPreviewThumbnail artifact={artifact} />
+              </MediaFrame>
+            ) : (
+              <MediaArt kind={kind} />
+            )
+          }
+          meta={
             <>
-              <GlassAction label={t`Open ${props.name}`} onClick={() => setPreviewOpen(true)}>
-                <Maximize2 size={14} strokeWidth={1.8} />
-              </GlassAction>
-              <GlassAction label={t`Download ${props.name}`} onClick={() => void startDownload()}>
-                <Download size={14} strokeWidth={1.8} />
-              </GlassAction>
+              <b className="font-semibold">{kindLabel(kind)}</b> • {formatBytes(props.size)}
             </>
+          }
+          openLabel={openable ? t`Open` : t`Download`}
+          openAriaLabel={openable ? t`Open ${props.name}` : t`Download ${props.name}`}
+          onOpen={open}
+          actions={
+            openable ? (
+              <button
+                type="button"
+                aria-label={t`Download ${props.name}`}
+                title={t`Download`}
+                onClick={() => void startDownload()}
+                className={MEDIA_ACTION}
+              >
+                <Download strokeWidth={2} aria-hidden="true" />
+              </button>
+            ) : undefined
           }
         />
         {downloadError ? <DownloadError message={downloadError} /> : null}

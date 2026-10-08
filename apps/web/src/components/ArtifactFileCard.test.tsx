@@ -136,9 +136,9 @@ it("shows the same live preview as the Library for a freshly attached HTML artif
     const iframe = view.container.querySelector("iframe");
     expect(iframe?.getAttribute("srcdoc")).toContain("Ukrainian Hello");
     expect(view.container.textContent).toContain("Ukrainian Hello");
-    // The old standalone "PAGE" eyebrow is gone; the same information now lives in
-    // the overlay's quiet meta line.
-    expect(view.container.textContent).toContain("Page · 2.4 KB");
+    // The result tile: the kind as its brand line, and "Kind • size" beside the Open pill.
+    expect(view.container.querySelector('[data-testid="media-tile"]')).toBeTruthy();
+    expect(view.container.textContent).toContain("Page • 2.4 KB");
     expect(view.container.textContent).not.toContain("PAGE");
   } finally {
     await view.cleanup();
@@ -161,10 +161,8 @@ it("gives the open and download actions accessible names, and opens the preview 
     museMode: true,
   });
   try {
-    const previewCard = buttonsNamed(view.container, "Preview Ukrainian Hello");
     const openAction = buttonsNamed(view.container, "Open Ukrainian Hello");
     const downloadAction = buttonsNamed(view.container, "Download Ukrainian Hello");
-    expect(previewCard).toHaveLength(1);
     expect(openAction).toHaveLength(1);
     expect(downloadAction).toHaveLength(1);
 
@@ -200,7 +198,7 @@ it("keeps the plain row outside muse mode, without eagerly fetching a preview", 
   }
 });
 
-it("falls back to the plain row in muse mode for a non-previewable kind", async () => {
+it("gives a PDF the same muse card, with its type icon and no thumbnail fetch", async () => {
   const view = await renderCard({
     target: { botId: "bot-1" },
     artifactId: "artifact-3",
@@ -213,6 +211,8 @@ it("falls back to the plain row in muse mode for a non-previewable kind", async 
     expect(view.container.querySelector("iframe")).toBeNull();
     expect(api.getById).not.toHaveBeenCalled();
     expect(view.container.textContent).toContain("Q3 report.pdf");
+    expect(buttonsNamed(view.container, "Open Q3 report.pdf")).toHaveLength(1);
+    expect(buttonsNamed(view.container, "Download Q3 report.pdf")).toHaveLength(1);
   } finally {
     await view.cleanup();
   }
