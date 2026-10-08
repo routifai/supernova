@@ -47,7 +47,44 @@ describe("mapRelatedChatToSummary", () => {
       archived: true,
       live: true,
       unread: true,
+      anchorItemId: null,
+      forkCount: 0,
+      forkState: null,
+      forkSummary: null,
+      forkParentId: null,
+      anchorSnippet: null,
+      replies: null,
+      project: null,
       updatedAt: new Date(1_700_000_100 * 1000).toISOString(),
+    });
+  });
+
+  it("maps a fork's anchor and the forks hanging off a chat", () => {
+    const mapped = mapRelatedChatToSummary({
+      id: "conv_fork",
+      title: "6.6% and margin",
+      created_at: 0,
+      updated_at: 0,
+      last_message_preview: null,
+      start: "with_context",
+      anchor_item_id: "msg_9",
+      fork_count: 2,
+      fork_state: "added",
+      fork_summary: "Bars by segment",
+      fork_parent_id: "conv_super",
+      anchor_snippet: "6.4%, set on 28 September…",
+      replies: 4,
+      project: { slug: "q3-pricing", name: "Q3 Pricing" },
+    });
+    expect(mapped).toMatchObject({
+      anchorItemId: "msg_9",
+      forkCount: 2,
+      forkState: "added",
+      forkSummary: "Bars by segment",
+      forkParentId: "conv_super",
+      anchorSnippet: "6.4%, set on 28 September…",
+      replies: 4,
+      project: { slug: "q3-pricing", name: "Q3 Pricing" },
     });
   });
 

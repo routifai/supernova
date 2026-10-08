@@ -35,6 +35,14 @@ export function mapRelatedChatToSummary(raw: OmnigentRelatedChat): ChatSummary {
     archived: Boolean(raw.archived),
     live: Boolean(raw.live),
     unread: Boolean(raw.unread),
+    anchorItemId: raw.anchor_item_id ?? null,
+    forkCount: raw.fork_count ?? 0,
+    forkState: raw.fork_state ?? null,
+    forkSummary: raw.fork_summary ?? null,
+    forkParentId: raw.fork_parent_id ?? null,
+    anchorSnippet: raw.anchor_snippet ?? null,
+    replies: raw.replies ?? null,
+    project: raw.project ?? null,
     updatedAt: epochSecondsToIso(raw.updated_at),
   };
 }
@@ -67,6 +75,8 @@ export function mapSideChatCreateToSummary(
     ...(created.first_message_error_code || created.first_message_error
       ? { firstMessageErrorCode: created.first_message_error_code ?? "unknown" }
       : {}),
+    anchorItemId: created.anchor_item_id ?? null,
+    forkCount: 0,
     updatedAt: new Date().toISOString(),
   };
 }

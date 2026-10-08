@@ -74,9 +74,27 @@ export const ChatSummarySchema = z.object({
   /** `chats.createSide` only: the chat exists but its first message did not send (the engine's
    * error code); the person resends in it. */
   firstMessageErrorCode: z.string().nullable().optional(),
+  /** A Fork (ADR 0010): the message it started from; absent for a plain Side Chat. */
+  anchorItemId: z.string().nullable().optional(),
+  /** How many forks hang off this chat's messages. */
+  forkCount: z.number().int().nonnegative().optional(),
+  /** A Fork's own state, its added summary, the chat holding its anchor (the Conversation, or
+   * the fork it came from), the anchor's text (cut to ~120 characters) and its reply count. */
+  forkState: z.enum(["open", "added", "archived"]).nullable().optional(),
+  forkSummary: z.string().nullable().optional(),
+  forkParentId: z.string().nullable().optional(),
+  anchorSnippet: z.string().nullable().optional(),
+  replies: z.number().int().nonnegative().nullable().optional(),
+  /** The Project the chat has open (ADR 0008). */
+  project: z.object({ slug: z.string(), name: z.string() }).nullable().optional(),
   updatedAt: z.string(),
 });
 export type ChatSummary = z.infer<typeof ChatSummarySchema>;
+
+/** `chats.createFork` refusals: a fork of a fork of a fork (start a plain Side Chat instead),
+ * or an anchor that is not a message of that chat. */
+export const FORK_TOO_DEEP = "FORK_TOO_DEEP";
+export const FORK_ANCHOR_INVALID = "FORK_ANCHOR_INVALID";
 
 /** One event of a Muse's live family stream (the Conversation, its Side Chats and Helpers).
  * Ids only: the client refetches what changed. `open` is local to the relay: the stream just
