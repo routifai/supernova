@@ -2505,6 +2505,49 @@ class SqlVaultSecret(OmnigentBase):
     __table_args__ = (Index("ix_vault_secrets_owner", "workspace_id", "user_id", "name"),)
 
 
+class SqlModelConnection(OmnigentBase):
+    """
+    SQLAlchemy model for the ``model_connection`` table: a sealed model-provider key.
+
+    The primary key ``(workspace_id, scope, owner_id, provider)`` keeps it to one key per provider
+    per owner: saving another replaces the row. Providers are validated in code, not by a CHECK.
+
+    :param scope: ``user`` (a person's own key) or ``org`` (shared by the workspace).
+    :param owner_id: The user id for scope ``user``; ``''`` for scope ``org``.
+    :param provider: Upstream name from :mod:`omnigent.model_credentials.upstreams`.
+    :param ciphertext: AES-GCM envelope of the key (never plaintext).
+    :param hint: Last 4 characters of the key, for display.
+    :param validated_at: Epoch seconds of the last successful provider probe.
+    :param status: ``valid`` or ``invalid``.
+    :param label: Optional free-text name shown to the owner.
+    """
+
+    __tablename__ = "model_connection"
+
+    workspace_id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        nullable=False,
+        server_default="0",
+        default=current_workspace_id,
+    )
+    scope: Mapped[str] = mapped_column(String(8), primary_key=True)
+    owner_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    provider: Mapped[str] = mapped_column(String(32), primary_key=True)
+    ciphertext: Mapped[str] = mapped_column(Text, nullable=False)
+    hint: Mapped[str] = mapped_column(String(8), nullable=False)
+    validated_at: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(8), nullable=False, server_default="valid")
+    label: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    created_at: Mapped[int] = mapped_column(Integer, nullable=False)
+    updated_at: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("scope IN ('org', 'user')", name="ck_model_connection_scope"),
+        CheckConstraint("status IN ('valid', 'invalid')", name="ck_model_connection_status"),
+    )
+
+
 class SqlVaultRequest(OmnigentBase):
     """
     SQLAlchemy model for the ``vault_requests`` table: a one-time secure-entry request.

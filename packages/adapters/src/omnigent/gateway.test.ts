@@ -1,7 +1,13 @@
 import type { PrismaClient, ThreadEvents } from "@nova/db";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { OmnigentApiError } from "./client.js";
-import { failRunUnsupportedOnOmnigent, runTurnOnOmnigent } from "./gateway.js";
+import {
+  ENGINE_FAILED_MESSAGE,
+  ENGINE_INTERRUPTED_MESSAGE,
+  failRunUnsupportedOnOmnigent,
+  publicRunError,
+  runTurnOnOmnigent,
+} from "./gateway.js";
 
 const {
   adoptOmnigentMuse,
@@ -463,5 +469,39 @@ describe("runTurnOnOmnigent", () => {
         expect.objectContaining({ outcome: "failed", error: "Chat is not available right now." }),
       );
     });
+
+    it("never shows an engine API failure's status or body", async () => {
+      getOmnigentMuse.mockRejectedValue(
+        new OmnigentApiError(
+          'omnigent get muse failed (400): {"error":{"code":"invalid_input","message":"Unresolved environment variable"}}',
+          "invalid_input",
+        ),
+      );
+      const events = fakeEvents();
+      await runTurnOnOmnigent({ prisma: fakePrisma(), events, ...DEPS_BASE }, "run-1", "worker-1");
+
+      expect(events.finalizeRun).toHaveBeenCalledWith(
+        expect.objectContaining({
+          outcome: "failed",
+          error: "Nova couldn't start. Try again in a moment.",
+        }),
+      );
+    });
+  });
+});
+
+describe("publicRunError", () => {
+  it("says the turn was interrupted when the engine connection drops", () => {
+    expect(publicRunError(new TypeError("terminated"))).toBe(ENGINE_INTERRUPTED_MESSAGE);
+    expect(publicRunError(new TypeError("fetch failed"))).toBe(ENGINE_INTERRUPTED_MESSAGE);
+    const reset = Object.assign(new Error("socket hang up"), { code: "ECONNRESET" });
+    expect(publicRunError(reset)).toBe(ENGINE_INTERRUPTED_MESSAGE);
+  });
+
+  it("never shows a raw error message", () => {
+    expect(publicRunError(new Error("steering continuation has no user message text"))).toBe(
+      ENGINE_FAILED_MESSAGE,
+    );
+    expect(publicRunError("boom")).toBe(ENGINE_FAILED_MESSAGE);
   });
 });

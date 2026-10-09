@@ -30,6 +30,13 @@ SANDBOX_UNAVAILABLE = "sandbox_unavailable"  # the computer/sandbox the turn run
 # Not a failure (stored at ``level: info``): the sandbox was replaced by a fresh one and files
 # it held that were not saved elsewhere are gone. The chat goes on.
 WORKSPACE_RESET = "workspace_reset"
+MODEL_KEY_REQUIRED = "model_key_required"  # the owner has not saved a model API key (Settings)
+# The chosen model is not served by the owner's connection (e.g. a Claude-only key, a GPT model).
+MODEL_NOT_SUPPORTED = "model_not_supported"
+# The owner's (or their organization's) monthly model budget is used up and set to stop.
+MODEL_BUDGET_EXHAUSTED = "model_budget_exhausted"
+# An admin suspended the account behind the request; only an admin can lift it.
+ACCOUNT_SUSPENDED = "account_suspended"
 INTERNAL = "internal"  # anything else: our bug or an unclassified failure
 
 PUBLIC_ERROR_CODES: frozenset[str] = frozenset(
@@ -43,6 +50,10 @@ PUBLIC_ERROR_CODES: frozenset[str] = frozenset(
         TIMEOUT,
         SANDBOX_UNAVAILABLE,
         WORKSPACE_RESET,
+        MODEL_KEY_REQUIRED,
+        MODEL_NOT_SUPPORTED,
+        MODEL_BUDGET_EXHAUSTED,
+        ACCOUNT_SUSPENDED,
         INTERNAL,
     }
 )
@@ -59,6 +70,10 @@ _BY_ERROR_TYPE: dict[str, str] = {
     "api_error": PROVIDER_UNAVAILABLE,
     "server_error": PROVIDER_UNAVAILABLE,
     "timeout_error": TIMEOUT,
+    "model_budget_exhausted": MODEL_BUDGET_EXHAUSTED,
+    # The error type wins over the status, so the proxy's 403 reads as a suspension, not as a
+    # rejected key (``auth_failed``).
+    "account_suspended": ACCOUNT_SUSPENDED,
 }
 
 # HTTP status -> code. 402 is "payment required"; 413 is the API's request-too-large.

@@ -1883,6 +1883,8 @@ def create_app(
     app.state.background_title_coordinator = background_title_coordinator
     app.state.host_registry = host_registry
     app.state.host_store = host_store
+    app.state.file_store = file_store
+    app.state.artifact_store = artifact_store
     if host_store is not None:
         host_registry.launch_authorizer = partial(
             host_store.admit_launch, require_account_owner=runner_account_store is not None
@@ -3868,6 +3870,12 @@ def create_app(
             prefix="/v1",
             tags=["hosts"],
         )
+        # Model proxy: a Computer's model calls are made with its owner's own key, which
+        # stays in the engine (see omnigent.model_credentials.proxy). The saved-key store is
+        # read at request time; without it the route answers model_key_required.
+        from omnigent.model_credentials.proxy import create_model_proxy_router
+
+        app.include_router(create_model_proxy_router(host_store), prefix="/v1", tags=["hosts"])
 
     # Per-user connection routes (/v1/connections/{provider}/*): connect /
     # callback / status / disconnect. One registry entry per provider; each is

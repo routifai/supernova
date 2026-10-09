@@ -202,6 +202,20 @@ class ErrorCode:
         assistant message of the chat it is opened from (HTTP 422).
     :cvar FORK_TOO_DEEP: A fork was asked of a fork of a fork; forks nest one
         level only (HTTP 422).
+    :cvar MODEL_PROVIDER_UNREACHABLE: The model provider (Anthropic, OpenRouter) could not
+        be reached or answered unexpectedly while checking a key; retrying later may help.
+    :cvar MODEL_NOT_SUPPORTED: The model asked for cannot be served by the connection the
+        session owner's key belongs to (a Claude-only key asked for another vendor's model).
+        HTTP 400: the caller must pick a different model or add a connection that serves it.
+    :cvar MODEL_BUDGET_EXHAUSTED: The session owner (or their organization) reached a monthly
+        model budget set to stop at the limit. HTTP 402: raising the limit or waiting for the
+        next month lets the same request succeed.
+    :cvar ACCOUNT_SUSPENDED: An admin suspended the caller's account. HTTP 403: nothing the
+        caller does changes it until an admin resumes the account.
+    :cvar MODEL_KEY_REQUIRED: The session owner has not saved a model API key (Anthropic or
+        OpenRouter) and the deployment bills model calls to the owner's key. HTTP 412, like
+        ``HARNESS_NOT_CONFIGURED``: the request is valid and a retry cannot succeed until
+        the user adds a key in Settings.
     :cvar NOT_A_FORK: The session is not a fork (a side chat with an anchor)
         (HTTP 422).
     :cvar UNAUTHORIZED: No valid authentication credentials (HTTP 401).
@@ -269,6 +283,11 @@ class ErrorCode:
     FORK_ANCHOR_INVALID = "fork_anchor_invalid"
     FORK_TOO_DEEP = "fork_too_deep"
     NOT_A_FORK = "not_a_fork"
+    MODEL_PROVIDER_UNREACHABLE = "model_provider_unreachable"
+    MODEL_KEY_REQUIRED = "model_key_required"
+    MODEL_NOT_SUPPORTED = "model_not_supported"
+    MODEL_BUDGET_EXHAUSTED = "model_budget_exhausted"
+    ACCOUNT_SUSPENDED = "account_suspended"
 
 
 # Single source of truth for error code → HTTP status.
@@ -317,6 +336,11 @@ _CODE_TO_HTTP_STATUS: dict[str, int] = {
     ErrorCode.FORK_ANCHOR_INVALID: 422,
     ErrorCode.FORK_TOO_DEEP: 422,
     ErrorCode.NOT_A_FORK: 422,
+    ErrorCode.MODEL_PROVIDER_UNREACHABLE: 502,
+    ErrorCode.MODEL_KEY_REQUIRED: 412,
+    ErrorCode.MODEL_NOT_SUPPORTED: 400,
+    ErrorCode.MODEL_BUDGET_EXHAUSTED: 402,
+    ErrorCode.ACCOUNT_SUSPENDED: 403,
 }
 
 
@@ -362,6 +386,11 @@ _CODE_TO_CATEGORY: dict[str, ErrorCategory] = {
     ErrorCode.FORK_ANCHOR_INVALID: ErrorCategory.USER,
     ErrorCode.FORK_TOO_DEEP: ErrorCategory.USER,
     ErrorCode.NOT_A_FORK: ErrorCategory.USER,
+    ErrorCode.MODEL_PROVIDER_UNREACHABLE: ErrorCategory.UPSTREAM,
+    ErrorCode.MODEL_KEY_REQUIRED: ErrorCategory.USER,
+    ErrorCode.MODEL_NOT_SUPPORTED: ErrorCategory.USER,
+    ErrorCode.MODEL_BUDGET_EXHAUSTED: ErrorCategory.USER,
+    ErrorCode.ACCOUNT_SUSPENDED: ErrorCategory.USER,
 }
 
 
@@ -412,6 +441,11 @@ _CODE_TO_IMPACT: dict[str, ErrorImpact] = {
     ErrorCode.FORK_ANCHOR_INVALID: ErrorImpact.BENIGN,
     ErrorCode.FORK_TOO_DEEP: ErrorImpact.BENIGN,
     ErrorCode.NOT_A_FORK: ErrorImpact.BENIGN,
+    ErrorCode.MODEL_PROVIDER_UNREACHABLE: ErrorImpact.TRANSIENT,
+    ErrorCode.MODEL_KEY_REQUIRED: ErrorImpact.BENIGN,
+    ErrorCode.MODEL_NOT_SUPPORTED: ErrorImpact.BENIGN,
+    ErrorCode.MODEL_BUDGET_EXHAUSTED: ErrorImpact.BENIGN,
+    ErrorCode.ACCOUNT_SUSPENDED: ErrorImpact.BENIGN,
 }
 
 
@@ -457,6 +491,11 @@ _CODE_TO_PHASE: dict[str, ErrorPhase] = {
     ErrorCode.FORK_ANCHOR_INVALID: ErrorPhase.REQUEST,
     ErrorCode.FORK_TOO_DEEP: ErrorPhase.REQUEST,
     ErrorCode.NOT_A_FORK: ErrorPhase.REQUEST,
+    ErrorCode.MODEL_PROVIDER_UNREACHABLE: ErrorPhase.REQUEST,
+    ErrorCode.MODEL_KEY_REQUIRED: ErrorPhase.REQUEST,
+    ErrorCode.MODEL_NOT_SUPPORTED: ErrorPhase.REQUEST,
+    ErrorCode.MODEL_BUDGET_EXHAUSTED: ErrorPhase.REQUEST,
+    ErrorCode.ACCOUNT_SUSPENDED: ErrorPhase.REQUEST,
 }
 
 

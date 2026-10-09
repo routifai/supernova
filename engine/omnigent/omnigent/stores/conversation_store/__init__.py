@@ -1384,6 +1384,39 @@ class ConversationStore(ABC):
         ...
 
     @abstractmethod
+    def sum_workspace_cost(self, since_day_utc: str) -> float:
+        """
+        Sum every user's LLM spend in this workspace over UTC days ``>= since_day_utc``.
+
+        Backs the organization-wide model budget.
+        :param since_day_utc: Inclusive lower-bound UTC day, e.g. ``"2026-06-01"``.
+        :returns: The summed ``cost_usd``, or ``0.0`` when no rows fall in the range.
+        """
+        ...
+
+    def list_workspace_daily_costs(
+        self,
+        since_day_utc: str,  # noqa: ARG002
+    ) -> list[tuple[str, str, float]]:
+        """
+        Return every user's per-day cost rows in this workspace from ``since_day_utc`` onward.
+
+        Backs the admin usage report. Stores without a cost rollup return no rows.
+
+        :param since_day_utc: Inclusive lower-bound UTC day as ``"YYYY-MM-DD"``.
+        :returns: ``(user_id, day_utc, cost_usd)`` tuples, ascending by day then user.
+        """
+        return []
+
+    def owner_session_stats(self) -> dict[str, tuple[int, int]]:
+        """
+        Return ``{user_id: (top-level session count, latest session update epoch)}`` by owner.
+
+        Backs the admin user list. Stores that cannot aggregate by owner return ``{}``.
+        """
+        return {}
+
+    @abstractmethod
     def list_daily_costs(self, user_id: str, since_day_utc: str) -> list[tuple[str, float]]:
         """
         Return per-day cost rows for a user from ``since_day_utc`` onward.

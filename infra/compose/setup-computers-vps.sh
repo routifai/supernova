@@ -18,7 +18,18 @@ DEPLOY_USER=deploy
 : "${SANDBOX_SUPERVISOR_TOKEN:?Set SANDBOX_SUPERVISOR_TOKEN (same value as the engine OMNIGENT_COMPUTER_SUPERVISOR_TOKEN)}"
 COMPUTERS_HOST="${COMPUTERS_HOST:-${IP//./-}.sslip.io}"
 REPO_ROOT="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
-SSH_OPTS=(-o StrictHostKeyChecking=accept-new -o ServerAliveInterval=30 -o ConnectTimeout=15)
+# One shared connection per user for the whole run: many short logins in a row trip the
+# firewall's SSH rate limit and fail2ban.
+CONTROL_DIR="$(mktemp -d)"
+close_ssh() {
+  for u in "${FIRST_USER}" "${DEPLOY_USER}"; do
+    ssh -O exit -o "ControlPath=${CONTROL_DIR}/%r" "${u}@${IP}" 2>/dev/null || true
+  done
+  rm -rf "${CONTROL_DIR}"
+}
+trap close_ssh EXIT
+SSH_OPTS=(-o StrictHostKeyChecking=accept-new -o ServerAliveInterval=30 -o ConnectTimeout=15
+  -o ControlMaster=auto -o ControlPersist=10m -o "ControlPath=${CONTROL_DIR}/%r")
 
 # Remote scripts, run with sudo on the VPS.
 read -r -d '' CREATE_DEPLOY_USER <<'REMOTE' || true
@@ -88,7 +99,10 @@ echo "shipped $(git -C "${REPO_ROOT}" rev-parse --short HEAD)"
 
 step "3/6 Docker daemon defaults and host hardening (SSH key only, firewall: 22, 80, 443)"
 as_deploy 'sudo install -m 644 ~/nova/infra/compose/docker-daemon.json /etc/docker/daemon.json && sudo systemctl restart docker'
-as_deploy "sudo DEPLOY_USER=${DEPLOY_USER} bash ~/nova/infra/compose/harden-host.sh"
+# Never ban the machine running this setup (its address as the VPS sees it).
+# shellcheck disable=SC2016 # SSH_CONNECTION is read on the VPS.
+admin_ip="$(as_deploy 'echo "${SSH_CONNECTION%% *}"')"
+as_deploy "sudo DEPLOY_USER=${DEPLOY_USER} FAIL2BAN_IGNORE_IP=${admin_ip} bash ~/nova/infra/compose/harden-host.sh"
 as_deploy true
 echo "fresh SSH session as deploy works after hardening"
 
@@ -105,7 +119,9 @@ cpus="$(as_deploy nproc)"
 } | as_deploy 'umask 077; cat >~/nova/.env.computers; echo "DOCKER_GID=$(stat -c %g /var/run/docker.sock)" >>~/nova/.env.computers'
 
 step "5/6 Build and start (the Computer image takes a while the first time)"
-as_deploy 'cd ~/nova && sudo docker compose --env-file .env.computers -f infra/compose/docker-compose.computers.yml up -d --build && sudo docker builder prune -f >/dev/null'
+# Caddy bind-mounts its config from ~/nova, which step 2 replaces with a fresh copy; recreate it
+# so it reads the new file instead of the old, deleted one.
+as_deploy 'cd ~/nova && sudo docker compose --env-file .env.computers -f infra/compose/docker-compose.computers.yml up -d --build && sudo docker compose --env-file .env.computers -f infra/compose/docker-compose.computers.yml up -d --force-recreate caddy && sudo docker builder prune -f >/dev/null'
 
 step "6/6 Check https://${COMPUTERS_HOST}"
 for _ in $(seq 1 30); do

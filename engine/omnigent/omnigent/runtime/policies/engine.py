@@ -551,6 +551,7 @@ class PolicyEngine:
         if not updates:
             return
         from omnigent.policies.schema import (
+            OWNER_BUDGET_ASK_APPROVED_STATE_KEY,
             SESSION_COST_ASK_APPROVED_STATE_KEY,
             SESSION_COST_UNPRICED_APPROVED_KEY,
             USER_DAILY_ASK_APPROVED_STATE_KEY,
@@ -567,6 +568,8 @@ class PolicyEngine:
         for op in updates:
             if op.key == USER_DAILY_ASK_APPROVED_STATE_KEY:
                 self._record_user_daily_ask_approved(op.value)
+            elif op.key == OWNER_BUDGET_ASK_APPROVED_STATE_KEY:
+                self._record_owner_budget_ask_approved(op.value)
             elif (
                 op.key in (SESSION_COST_ASK_APPROVED_STATE_KEY, SESSION_COST_UNPRICED_APPROVED_KEY)
                 and self._root_conversation_id != self._conversation_id
@@ -637,6 +640,30 @@ class PolicyEngine:
         # approval stays current via _apply_one(self._session_state, ...).
         if self._user_daily_cost is not None:
             self._user_daily_cost["ask_approved_usd"] = approved
+
+    def _record_owner_budget_ask_approved(self, value: Any) -> None:
+        """
+        Persist the check-in level the owner approved for one monthly model budget scope.
+
+        *value* is ``{"scope": "user"|"org", "level": float}``. It is kept per owner and scope
+        (see :meth:`omnigent.model_credentials.budget.ModelBudgetStore.set_approval`) and lapses
+        when the month turns. A no-op without an owner grant, a bound budget store or a
+        well-formed *value*.
+        """
+        from omnigent.model_credentials.budget import get_budgets, month_start
+
+        budgets = get_budgets()
+        owner = self._store.get_session_owner_authority(self._conversation_id)
+        scope = value.get("scope") if isinstance(value, dict) else None
+        try:
+            level = float(value["level"])
+        except (TypeError, KeyError, ValueError):
+            return
+        if budgets is None or owner is None or scope not in ("user", "org"):
+            return
+        budgets.store.set_approval(owner.user_id, month_start()[:7], scope, level)
+        if self._user_daily_cost is not None:
+            self._user_daily_cost[f"{scope}_ask_level"] = level
 
     def record_usage(
         self,

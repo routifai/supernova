@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import dataclasses
 import shlex
 from typing import Any
 from urllib.parse import urlsplit
@@ -21,12 +22,28 @@ from omnigent.inference_config import (
     resolve_bound_provider,
     validate_inference_credentials,
 )
+from omnigent.model_credentials.org import apply_overlay
+from omnigent.model_credentials.proxy import KEY_REQUIRED_MESSAGE
+from omnigent.model_credentials.store import resolve_model_connection
+from omnigent.model_credentials.upstreams import harness_family, preferred_providers
 from omnigent.models import model_catalog
-from omnigent.models.model_catalog import ModelEntry, ResolvedModelProvider
+from omnigent.models.model_catalog import (
+    ModelEntry,
+    ResolvedModelProvider,
+    model_family_conflict,
+    model_family_token,
+)
 from omnigent.models.model_metadata import ModelCapability, ModelWireAPI
-from omnigent.onboarding.provider_config import ProviderEntry, load_providers, resolve_secret
+from omnigent.onboarding.provider_config import (
+    MODEL_CONNECTION,
+    ProviderEntry,
+    load_providers,
+    resolve_secret,
+)
 from omnigent.server.auth import RESERVED_USER_LOCAL
 from omnigent.server.databricks_identity import resolve_databricks_token
+
+MODEL_PROXY_AUTH_COMMAND = "python3 -m omnigent.host.model_credential token"
 
 
 def _invalid(message: str) -> OmnigentError:
@@ -118,6 +135,26 @@ def _alias(model: str, tiers: dict[str, str]) -> str:
     return model
 
 
+def snapshot_uses_model_proxy(snapshot: dict[str, Any] | None) -> bool:
+    """Whether the session's harness reaches its model through the engine's model proxy.
+
+    Such a session's spend is recorded by the proxy (the one source of truth for its traffic), so
+    the per-turn pricing in the session relay must not add it again.
+    """
+    if not snapshot or not isinstance(snapshot.get("runtime_config"), dict):
+        return False
+    runtime = snapshot["runtime_config"]
+    try:
+        binding = binding_for_harness(runtime, snapshot["harness"])
+    except (KeyError, ValueError):
+        return False
+    provider = runtime.get("providers", {}).get(binding.provider) if binding else None
+    return isinstance(provider, dict) and any(
+        isinstance(family, dict) and family.get("auth_command") == MODEL_PROXY_AUTH_COMMAND
+        for family in provider.values()
+    )
+
+
 def _binding_key(config: dict[str, Any], harness: str) -> str:
     canonical = normalize_inference_harness(harness)
     for key in config["inference"]["harnesses"]:
@@ -146,6 +183,44 @@ def _resolve_alias(provider: ProviderEntry, harness: str, model: str) -> str:
     return next(iter(resolved), model)
 
 
+def _unfit(provider: ProviderEntry, harness: str, model: str) -> bool:
+    """Whether *model* cannot run on *harness* through *provider*.
+
+    A Claude-only harness served by a person's own key (``connection: model``) must end on a
+    Claude id: an id whose family cannot be told (an alias or a custom name) is not trusted there.
+    """
+    if model_family_conflict(harness, model) is not None:
+        return True
+    return (
+        provider.connection == MODEL_CONNECTION
+        and harness_family(harness) == "claude"
+        and model_family_token(model) != "claude"
+    )
+
+
+def catalog_row_details(snapshot: dict[str, Any], model: str) -> dict[str, Any]:
+    """Wire API, family token and configured pricing for one catalog row of a saved snapshot."""
+    config = snapshot["runtime_config"]
+    harness = snapshot["harness"]
+    binding = binding_for_harness(config, harness)
+    details: dict[str, Any] = {
+        "family": model_family_token(model),
+        "wire_api": None,
+        "pricing": None,
+    }
+    if binding is None:
+        return details
+    provider = load_providers(config)[binding.provider]
+    try:
+        details["wire_api"] = _wire(provider, harness, model).value
+        family = provider.families[_family(provider, harness, model)]
+    except OmnigentError:
+        return details
+    if family.pricing is not None:
+        details["pricing"] = dataclasses.asdict(family.pricing)
+    return details
+
+
 class SandboxInferenceService:
     """Load a static target once, then discover through its saved configuration."""
 
@@ -160,14 +235,28 @@ class SandboxInferenceService:
             return None
         return await resolve_databricks_token(owner, store=store, client=client)
 
+    async def _org_overlay_entry(self, harness: str) -> dict[str, Any] | None:
+        """The organization's overlay for *harness*, if an admin set one."""
+        store = getattr(self._state, "model_org_overlay", None)
+        if store is None:
+            return None
+        overlay = await asyncio.to_thread(store.get)
+        return overlay.get(normalize_inference_harness(harness))
+
     async def prepare(
         self,
         provider: str | None,
         harness: str,
         user_id: str | None,
         agent_auth: object = None,
+        *,
+        org_overlay: bool = True,
     ) -> dict[str, Any] | None:
-        """Capture nonsecret launch inputs and verify the selected provider's catalog."""
+        """Capture nonsecret launch inputs and verify the selected provider's catalog.
+
+        The organization's model overlay narrows the harness binding unless *org_overlay* is
+        ``False`` (the admin route that validates an overlay against the bare binding).
+        """
         deployment = getattr(self._state, "sandbox_config", None)
         if deployment is None:
             return None
@@ -215,6 +304,59 @@ class SandboxInferenceService:
                     raise _invalid(
                         "Databricks connection is unavailable. Reconnect your account."
                     ) from None
+        # ``connection: model`` gateways: the owner's saved key stays in the engine; the Computer
+        # is pointed at the engine's model proxy and authenticates with its own launch token.
+        model_names = [
+            name
+            for name, entry in load_providers(raw).items()
+            if entry.kind == "gateway" and entry.connection == MODEL_CONNECTION
+        ]
+        model_providers: dict[str, str] = {}
+        if model_names:
+            model_store = getattr(self._state, "model_connection_store", None)
+            # Operator env providers (config, not connections) would be tried here on None.
+            saved = (
+                await asyncio.to_thread(
+                    resolve_model_connection,
+                    model_store,
+                    owner_id=owner,
+                    preferred=preferred_providers(harness_family(harness)),
+                )
+                if model_store is not None
+                else None
+            )
+            if saved is None:
+                if bound is not None and bound.name in model_names:
+                    raise OmnigentError(KEY_REQUIRED_MESSAGE, code=ErrorCode.MODEL_KEY_REQUIRED)
+            else:
+                proxy_url = _endpoint(f"{target.server_url.rstrip('/')}/v1/model/{saved.provider}")
+                # Anthropic Messages at the proxy root serves claude-sdk (and pi's Claude ids).
+                # OpenRouter also serves any other model on Chat Completions, which pi uses at
+                # ``<proxy>/v1`` (pi appends ``/chat/completions``): the openai family.
+                for name in model_names:
+                    model_providers[name] = saved.provider
+                    entry_raw = raw["providers"][name]
+                    keep = {"models", "pricing", "context_window", "max_output_tokens"}
+                    families = {"anthropic": {"base_url": proxy_url}}
+                    if saved.provider == "openrouter":
+                        families["openai"] = {"base_url": f"{proxy_url}/v1", "wire_api": "chat"}
+                    runtime["providers"][name] = {
+                        "kind": "gateway",
+                        "default": entry_raw.get("default", False),
+                        "display_name": entry_raw.get("display_name"),
+                        **{
+                            family_name: {
+                                **{
+                                    key: value
+                                    for key, value in entry_raw.get(family_name, {}).items()
+                                    if key in keep
+                                },
+                                **extra,
+                                "auth_command": MODEL_PROXY_AUTH_COMMAND,
+                            }
+                            for family_name, extra in families.items()
+                        },
+                    }
         if bound is not None and bound.kind == "databricks" and bound.connection != "databricks":
             raise _invalid("Sandbox Databricks inference requires connection: databricks.")
         if bound is not None and bound.name in connected_names and connection is None:
@@ -268,6 +410,7 @@ class SandboxInferenceService:
                     _endpoint(original_family["base_url"])
             for family in providers[name].families.values():
                 _endpoint(family.base_url)
+        overlay_entry = await self._org_overlay_entry(harness) if org_overlay else None
         for saved_harness, saved in runtime["inference"]["harnesses"].items():
             entry = providers[saved["provider"]]
             # An unconnected Unity reference remains unusable, never late-bound.
@@ -284,6 +427,10 @@ class SandboxInferenceService:
                 saved["default_model"] = _resolve_alias(
                     entry, saved_harness, saved["default_model"]
                 )
+        if overlay_entry:
+            apply_overlay(
+                runtime["inference"]["harnesses"][_binding_key(runtime, harness)], overlay_entry
+            )
         target_id = f"sandbox:{target.provider or 'default'}"
         snapshot: dict[str, Any] = {
             "version": 1,
@@ -293,6 +440,8 @@ class SandboxInferenceService:
                 {
                     "model_discovery": discovery,
                     "connections": connections,
+                    "model_providers": model_providers,
+                    "org_overlay": overlay_entry,
                     "target_id": target_id,
                     "harness": harness,
                 },
@@ -342,6 +491,7 @@ class SandboxInferenceService:
         result: dict[str, Any],
         binding: HarnessInferenceBinding,
         provider: ProviderEntry,
+        harness: str,
     ) -> dict[str, Any]:
         """Serve the operator's curated list when no server discovery is configured.
 
@@ -355,7 +505,7 @@ class SandboxInferenceService:
                 "or a model_allowlist for this harness."
             )
             return result
-        ids = list(binding.model_allowlist)
+        ids = [m for m in binding.model_allowlist if not _unfit(provider, harness, m)]
         if not ids:
             result.update(status="empty", error="No models are permitted for this harness.")
             return result
@@ -406,7 +556,7 @@ class SandboxInferenceService:
             if not workspace and not isinstance(
                 snapshot.get("model_discovery", {}).get(provider.name), dict
             ):
-                return self._static_catalog(result, binding, provider)
+                return self._static_catalog(result, binding, provider, harness)
             if workspace:
                 connection = await self._connection(snapshot["owner_id"])
                 if connection is None:
@@ -428,7 +578,8 @@ class SandboxInferenceService:
             available = {
                 entry.id: entry
                 for entry in entries
-                if (
+                if not _unfit(provider, harness, entry.id)
+                and (
                     not entry.metadata.wire_apis
                     or (
                         bool(_configured_wires(provider) & entry.metadata.wire_apis)

@@ -16,14 +16,7 @@ import {
   latestAnswerableAskMessageId,
   userVisibleMessages,
 } from "@nova/core";
-import {
-  AvatarStyleProvider,
-  BotAvatar,
-  Button,
-  cn,
-  GroupAvatar,
-  type GroupAvatarMember,
-} from "@nova/ui-web";
+import { AvatarStyleProvider, Button, cn, GroupAvatar, type GroupAvatarMember } from "@nova/ui-web";
 import { Menu, Monitor, PanelRightClose, PanelRightOpen, Plus } from "lucide-react";
 import type { ReactNode } from "react";
 import {
@@ -60,6 +53,7 @@ import { HostComputerPrompt } from "./HostComputerPrompt";
 import { ApprovalCards } from "./muse/asks";
 import { ContextPanel, useContextPanelCollapsed } from "./muse/chrome/ContextPanel";
 import { ConversationHeader, TOOLBAR_BUTTON } from "./muse/chrome/ConversationHeader";
+import { ConversationModelPicker } from "./muse/chrome/ConversationModelPicker";
 import { conversationLayout } from "./muse/chrome/conversationLayout";
 import {
   EmptyConversationLead,
@@ -864,7 +858,7 @@ export function ShellPage() {
             : "flex min-w-0 flex-1 flex-col bg-background"
         }
       >
-        {museMode && active ? (
+        {museMode && active && (museView !== "conversation" || activeChat) ? (
           <div className="flex h-12 shrink-0 items-center gap-2 px-3 md:hidden">
             <button
               type="button"
@@ -951,6 +945,7 @@ export function ShellPage() {
                     identityCollapsed={contextPanelCollapsed || panel !== null}
                     onOpenWaiting={() => setWaitingOpen(true)}
                     isNew={shownStart}
+                    onOpenMenu={() => setNavOpen(true)}
                     project={conversationProject}
                     onOpenProject={openProjectFiles}
                     leading={
@@ -960,6 +955,7 @@ export function ShellPage() {
                     }
                     actions={
                       <>
+                        <ConversationModelPicker botId={active.id} />
                         <button
                           type="button"
                           title={
@@ -1011,13 +1007,6 @@ export function ShellPage() {
                           <GroupAvatar
                             members={activeSnapshot?.members ?? activeGroup?.members ?? []}
                             size={26}
-                          />
-                        ) : active && !museMode ? (
-                          <BotAvatar
-                            color={active.color}
-                            identity={active.id}
-                            size={26}
-                            status={active.status}
                           />
                         ) : null}
                         <span className="min-w-0">
@@ -1467,7 +1456,7 @@ export function ShellPage() {
       <ArtifactPanelProvider value={chatArtifacts.api}>
         {museMode ? (
           // The window ground around Nova's rounded content window.
-          <div className="muse-wash flex h-full md:p-2">
+          <div className="muse-wash pt-safe pb-safe ps-safe pe-safe flex h-full md:p-2">
             {active ? (
               <OrbHomeProvider home={orbHome}>
                 <NovaPresence

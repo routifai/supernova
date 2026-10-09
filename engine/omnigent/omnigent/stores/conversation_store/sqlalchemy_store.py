@@ -1838,6 +1838,16 @@ class SqlAlchemyConversationStore(ConversationStore):
             ).scalar_one()
             return float(total or 0.0)
 
+    def sum_workspace_cost(self, since_day_utc: str) -> float:
+        """Sum every user's spend over UTC days ``>= since_day_utc`` (see the abstract method)."""
+        with self._session("sum_workspace_cost") as session:
+            total = session.execute(
+                select(func.coalesce(func.sum(SqlUserDailyCost.cost_usd), 0.0))
+                .where(SqlUserDailyCost.workspace_id == current_workspace_id())
+                .where(SqlUserDailyCost.day_utc >= since_day_utc)
+            ).scalar_one()
+            return float(total or 0.0)
+
     def list_daily_costs(self, user_id: str, since_day_utc: str) -> list[tuple[str, float]]:
         with self._session("list_daily_costs") as session:
             rows = session.execute(
@@ -1848,6 +1858,46 @@ class SqlAlchemyConversationStore(ConversationStore):
                 .order_by(SqlUserDailyCost.day_utc.asc())
             ).all()
             return [(row.day_utc, float(row.cost_usd)) for row in rows]
+
+    def list_workspace_daily_costs(self, since_day_utc: str) -> list[tuple[str, str, float]]:
+        with self._session("list_workspace_daily_costs") as session:
+            rows = session.execute(
+                select(
+                    SqlUserDailyCost.user_id, SqlUserDailyCost.day_utc, SqlUserDailyCost.cost_usd
+                )
+                .where(SqlUserDailyCost.workspace_id == current_workspace_id())
+                .where(SqlUserDailyCost.day_utc >= since_day_utc)
+                .order_by(SqlUserDailyCost.day_utc.asc(), SqlUserDailyCost.user_id.asc())
+            ).all()
+            return [(row.user_id, row.day_utc, float(row.cost_usd)) for row in rows]
+
+    def owner_session_stats(self) -> dict[str, tuple[int, int]]:
+        from omnigent.server.auth import LEVEL_OWNER
+
+        if self._conv_engine is not self._engine:
+            return {}  # the grants and the sessions live in different databases: no join
+        with self._conv_session("owner_session_stats") as session:
+            rows = session.execute(
+                select(
+                    SqlSessionPermission.user_id,
+                    func.count(SqlConversation.id),
+                    func.max(SqlConversation.updated_at),
+                )
+                .join(
+                    SqlConversation,
+                    and_(
+                        SqlConversation.workspace_id == SqlSessionPermission.workspace_id,
+                        SqlConversation.id == SqlSessionPermission.conversation_id,
+                    ),
+                )
+                .where(
+                    SqlSessionPermission.workspace_id == current_workspace_id(),
+                    SqlSessionPermission.level >= LEVEL_OWNER,
+                    SqlConversation.parent_conversation_id.is_(None),
+                )
+                .group_by(SqlSessionPermission.user_id)
+            ).all()
+            return {row[0]: (int(row[1]), int(row[2] or 0)) for row in rows}
 
     def get_daily_cost_state(self, user_id: str, day_utc: str) -> dict[str, float]:
         """
