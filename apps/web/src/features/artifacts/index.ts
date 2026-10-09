@@ -7,9 +7,12 @@ export { PanelOverflowMenu } from "./PanelOverflowMenu";
 export {
   type ArtifactCardParts,
   type ArtifactExtension,
+  type ArtifactInlineArgs,
   type ArtifactPanelArgs,
   type ArtifactPanelParts,
   ArtifactRegistryProvider,
+  type ArtifactResultArgs,
+  type ArtifactThumbnailArgs,
   type ArtifactViewProps,
   useArtifactCardParts,
   useArtifactExtensions,

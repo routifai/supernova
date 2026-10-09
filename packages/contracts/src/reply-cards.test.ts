@@ -7,13 +7,26 @@ const valid = {
   compare: { columns: ["X"], rows: [{ label: "Row", cells: ["1"] }] },
   plan: { items: [{ text: "Do", status: "doing" }] },
   ask: { question: "Which?", options: [{ id: "a", label: "A" }] },
+  follow_ups: { suggestions: ["Compare with last year", "Show it by region"] },
   quote: { symbol: "ACME", price: 12.5, changePct: -1.2 },
   chart: { kind: "line", x: ["a"], series: [{ name: "s", values: [1] }] },
   person: { name: "Ada" },
   file: { name: "r.pdf", size: 10 },
   secure_entry: { requestId: "req-1", name: "Bank login", site: "bank.example" },
+  passages: { items: [{ artifactId: "a".repeat(32), name: "r.pdf", page: 2, hasThumbnail: true }] },
   progress: { label: "Import", value: 40, status: "running" },
 } as const;
+
+describe("passages card", () => {
+  const parse = (item: object) =>
+    ReplyCardData.passages.safeParse({ items: [{ name: "r.pdf", page: 1, ...item }] }).success;
+
+  it("takes a fileId, a legacy artifactId, and refuses neither", () => {
+    expect(parse({ fileId: "f".repeat(32) })).toBe(true);
+    expect(parse({ artifactId: "a".repeat(32) })).toBe(true);
+    expect(parse({})).toBe(false);
+  });
+});
 
 describe("reply cards", () => {
   it("has a fixture for every kind", () => {
@@ -31,6 +44,25 @@ describe("reply cards", () => {
       parseReplyCard({ card: "progress", data: { ...valid.progress, value: 101 } }),
     ).toBeNull();
     expect(isReplyCardKind("toString")).toBe(false);
+  });
+
+  it("bounds follow-ups to 1-3 non-empty short suggestions", () => {
+    const parse = (suggestions: string[]) =>
+      parseReplyCard({ card: "follow_ups", data: { suggestions } });
+    expect(parse(["a"])).not.toBeNull();
+    expect(parse([])).toBeNull();
+    expect(parse(["a", "b", "c", "d"])).toBeNull();
+    expect(parse([""])).toBeNull();
+    expect(parse(["x".repeat(121)])).toBeNull();
+  });
+
+  it("bounds a clarification (ask) to the options the engine allows", () => {
+    const options = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({ id: `opt-${i}`, label: `Option ${i}` }));
+    expect(
+      parseReplyCard({ card: "ask", data: { question: "Q?", options: options(5) } }),
+    ).not.toBeNull();
+    expect(parseReplyCard({ card: "ask", data: { question: "Q?", options: [] } })).toBeNull();
   });
 
   it("persists an unknown kind as a block without failing the message", () => {

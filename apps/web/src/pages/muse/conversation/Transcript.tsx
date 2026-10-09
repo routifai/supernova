@@ -22,6 +22,7 @@ import {
   ReplyCardSendProvider,
   ReplyCardThreadProvider,
 } from "../../../components/cards/context";
+import { hiddenFollowUpMessageIds } from "../../../components/cards/thread";
 import { forkAnchorFor } from "../../../features/side-chats/forkModel";
 import type { ArtifactTarget } from "../../../lib/artifact-open";
 import { quoteDraftForSelection } from "../../../lib/quote-selection";
@@ -34,6 +35,7 @@ import { MessageHoverActions } from "./MessageHoverActions";
 import { MessageView } from "./MessageView";
 import { hasOpenMuseAsk } from "./messageText";
 import { QuoteSelectionButton } from "./QuoteSelectionButton";
+import { foldGroupRuns, useTranscriptGroup } from "./transcriptGroups";
 import { WorkingRow } from "./WorkingRow";
 
 /** The transcript, with its reply cards resolved across the whole thread (in-place updates,
@@ -45,6 +47,12 @@ export function Transcript({
   /** A reply card's button sends this text as the person's next message. */
   onSendCard?: (text: string) => void;
 }) {
+  // Follow-up chips that are not shown leave no row behind (no ghost bubble or Copy action).
+  const { messages: allMessages, running } = props;
+  const shownMessages = useMemo(() => {
+    const hidden = hiddenFollowUpMessageIds(allMessages, running);
+    return hidden.size === 0 ? allMessages : allMessages.filter((m) => !hidden.has(m.id));
+  }, [allMessages, running]);
   const view = (
     <ReplyCardBotProvider
       botId={
@@ -53,8 +61,8 @@ export function Transcript({
           : undefined
       }
     >
-      <ReplyCardThreadProvider messages={props.messages}>
-        <TranscriptView {...props} />
+      <ReplyCardThreadProvider messages={props.messages} running={props.running}>
+        <TranscriptView {...props} messages={shownMessages} />
       </ReplyCardThreadProvider>
     </ReplyCardBotProvider>
   );
@@ -156,7 +164,7 @@ const TranscriptView = memo(function Transcript({
   aside?: ReactNode;
 }) {
   const { t } = useLingui();
-  const { label: museLiveLabel } = useMuseLiveState({
+  const { label: museLiveLabel, runStartedAt } = useMuseLiveState({
     botId: museFace?.identity ?? "",
     runs: museRuns ?? [],
     messages,
@@ -173,12 +181,17 @@ const TranscriptView = memo(function Transcript({
   );
   const reactionView = useMemo(() => projectMessageReactions(messages), [messages]);
   // Muse: failed replies in a row read as one "3 failed attempts" line (failureNotes.ts).
+  // Charts in a row (a dashboard reply) read as one set across the column.
+  const group = useTranscriptGroup();
   const transcriptRows = useMemo<TranscriptRow[]>(
     () =>
-      museMode
-        ? foldFailureRuns(reactionView.visibleMessages)
-        : reactionView.visibleMessages.map((message) => ({ kind: "message", message })),
-    [museMode, reactionView.visibleMessages],
+      foldGroupRuns(
+        museMode
+          ? foldFailureRuns(reactionView.visibleMessages)
+          : reactionView.visibleMessages.map((message) => ({ kind: "message", message })),
+        group,
+      ),
+    [museMode, reactionView.visibleMessages, group],
   );
   const workingBotName = workingBots.length === 1 ? workingBots[0]?.name : undefined;
   const workingLabel =
@@ -453,6 +466,13 @@ const TranscriptView = memo(function Transcript({
           </button>
         ) : null}
         {transcriptRows.map((row) => {
+          if (row.kind === "group") {
+            return (
+              <div key={row.messages[0]?.id} className="w-full min-w-0 py-1">
+                {group?.render(row.messages)}
+              </div>
+            );
+          }
           if (row.kind === "failures") {
             const last = row.messages.at(-1) as ThreadMessage;
             return (
@@ -599,7 +619,7 @@ const TranscriptView = memo(function Transcript({
         ) ? (
           museMode && museFace ? (
             museLiveLabel ? (
-              <WorkingRow label={museLiveLabel} />
+              <WorkingRow label={museLiveLabel} startedAt={runStartedAt} />
             ) : null
           ) : (
             <ActiveBotGlyph bots={workingBots} label={workingLabel} />

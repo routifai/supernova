@@ -21,12 +21,14 @@ const CAPABILITIES: Record<LayerName, readonly string[]> = {
     "approvals",
     "apps",
     "artifacts",
+    "charts",
     "computer",
     "daily-notes",
     "decks",
     "feed",
     "goals",
     "ideas",
+    "knowledge",
     "memory",
     "models",
     "sheets",
@@ -40,12 +42,14 @@ const CAPABILITIES: Record<LayerName, readonly string[]> = {
     "approvals",
     "apps",
     "artifacts",
+    "charts",
     "computer",
     "daily-notes",
     "decks",
     "feed",
     "goals",
     "ideas",
+    "knowledge",
     "memory",
     "models",
     "sheets",
@@ -64,6 +68,7 @@ const CAPABILITIES: Record<LayerName, readonly string[]> = {
     "feed",
     "goals",
     "ideas",
+    "knowledge",
     "memory",
     "models",
     "sheets",
@@ -77,12 +82,14 @@ const CAPABILITIES: Record<LayerName, readonly string[]> = {
     "approvals",
     "apps",
     "artifacts",
+    "charts",
     "computer",
     "daily-notes",
     "decks",
     "feed",
     "goals",
     "ideas",
+    "knowledge",
     "memory",
     "models",
     "sheets",
@@ -96,12 +103,14 @@ const CAPABILITIES: Record<LayerName, readonly string[]> = {
     "approvals",
     "apps",
     "artifacts",
+    "charts",
     "computer",
     "daily-notes",
     "decks",
     "feed",
     "goals",
     "ideas",
+    "knowledge",
     "memory",
     "models",
     "sheets",
@@ -115,11 +124,18 @@ const CAPABILITIES: Record<LayerName, readonly string[]> = {
 const BASES: Record<string, readonly string[]> = {
   // A deck is a saved HTML artifact (`*.deck.html`); exports are saved back as artifacts.
   decks: ["artifacts"],
+  // A chart is a saved JSON artifact (`*.chart.json`): its tool saves through artifacts, the
+  // web viewer opens in the artifact panel, the api renders its thumbnail from the artifact bytes.
+  charts: ["artifacts"],
   sheets: ["artifacts"],
   apps: ["artifacts"],
   admin: ["models"],
   skills: ["computer"],
   computer: ["artifacts"],
+  // The files it indexes live in the person's Computer workspace (the api resolves the Muse
+  // session through the Computer); files that are also Library artifacts link to the Library.
+  // Embeddings are the engine's model proxy, so nothing here sits on models.
+  knowledge: ["artifacts", "computer"],
 };
 
 /**
@@ -137,6 +153,9 @@ const BASELINE: readonly string[] = [
   "web:components/cards/ReplyCard.tsx -> artifacts",
   "web:pages/muse/conversation/MessageView.test.tsx -> artifacts",
   "web:pages/muse/conversation/MessageView.tsx -> artifacts",
+  // The transcript draws the pages a file search found (the `passages` reply card) as citation
+  // chips; goes away with the block extension point above.
+  "web:components/cards/ReplyCard.tsx -> knowledge",
   // Tests of the apps extension mount the artifact host (ArtifactPanel, LibraryCard) and stub its
   // preview/thumbnail modules by path; they test the seam from the host side.
   "web:features/apps/LibraryCardPublished.test.tsx -> artifacts",
@@ -172,6 +191,7 @@ const BASELINE: readonly string[] = [
   // waiting sheet, the Feed) to refetch; goes away when the composer takes an "answered an ask"
   // callback from the shell.
   "web:pages/muse/conversation/useComposerSend.ts -> approvals",
+  "web:pages/muse/conversation/useComposerSend.test.tsx -> approvals",
   // The Muse's live state (waiting face, sidebar badge) counts the open Asks (useAsks); goes away
   // when the shell passes the count in instead of the state hook reaching into approvals.
   "web:pages/muse/chrome/useMuseLiveState.test.tsx -> approvals",

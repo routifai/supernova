@@ -44,7 +44,7 @@ from omnigent.context.labels import (
 )
 from omnigent.superchat._handler_http import session_kind_and_parent as _session_kind_and_parent
 from omnigent.superchat.feature import HandlerCtx, SpawnRequest, SpawnResult, SubAgentHost
-from omnigent.superchat.features import FEATURE_HANDLERS, notify_result
+from omnigent.superchat.features import FEATURE_HANDLERS, FEATURE_RELAY_OPS, notify_result
 from omnigent.superchat.prompt_prefix import fetch_memory_profile as _fetch_memory_profile_block
 from omnigent.superchat.subagents import (
     count_live_children,
@@ -1105,6 +1105,7 @@ def _ungranted_tool_reason(
     effective_harness: str | None = None,
     *,
     labels: Mapping[str, str] | None = None,
+    relay: bool = False,
 ) -> str | None:
     """Return why *tool_name* is refused for *agent_spec*, or ``None`` if allowed.
 
@@ -1120,6 +1121,8 @@ def _ungranted_tool_reason(
         was actually advertised. ``None`` falls back to the spec.
     :param labels: The session's labels, when known — see
         :func:`_granted_tool_names`.
+    :param relay: The call is the engine's own relay (``/mcp/execute`` with the relay mark), not a
+        model's tool call; only then may a feature's relay-only op through.
     """
     from omnigent.spec.types import AgentSpec as _AgentSpec
 
@@ -1137,6 +1140,8 @@ def _ungranted_tool_reason(
         )
     if tool_name in granted:
         return None
+    if relay and tool_name in FEATURE_RELAY_OPS and is_superside_chat(labels):
+        return None  # a relay op (a thumbnail, the index status): the engine's call, not a model's
     return (
         f"tool {tool_name!r} is not enabled for this agent "
         f"(not in the agent spec's registered tool surface)"
@@ -5000,6 +5005,7 @@ _SCHEDULED_TASK_CREATE_FIELDS = (
     "name",
     "prompt",
     "rrule",
+    "starts_on",
     "agent_id",
     "parent_session_id",
     "agent_type",
@@ -5017,6 +5023,7 @@ _SCHEDULED_TASK_UPDATE_FIELDS = (
     "name",
     "prompt",
     "rrule",
+    "starts_on",
     "agent_id",
     "timezone",
     "model_override",
@@ -7120,6 +7127,7 @@ async def execute_tool(
     filesystem_registry: FilesystemRegistry | None = None,
     effective_harness: str | None = None,
     labels: Mapping[str, str] | None = None,
+    relay: bool = False,
 ) -> str:
     """
     Execute a tool and return the output string.
@@ -7150,6 +7158,8 @@ async def execute_tool(
     :param labels: The session's labels, when known. Decides label-gated
         registrations in the granted-surface check (currently:
         ``session_history`` for a rollover session).
+    :param relay: The call came through ``/mcp/execute`` with the engine's relay mark; it lets a
+        feature's relay-only ops past the granted-surface check (a model's call never sets it).
     :returns: Tool output string.
     """
     if not arguments.strip():
@@ -7161,7 +7171,9 @@ async def execute_tool(
     # MCP dispatch resolves the target against the spec inside the MCP
     # manager; every other branch is gated on the spec's granted surface.
     if mcp_manager is None:
-        refusal = _ungranted_tool_reason(tool_name, agent_spec, effective_harness, labels=labels)
+        refusal = _ungranted_tool_reason(
+            tool_name, agent_spec, effective_harness, labels=labels, relay=relay
+        )
         if refusal is not None:
             return json.dumps({"error": refusal})
     from omnigent.sandbox.copy_on_write import has_copy_on_write

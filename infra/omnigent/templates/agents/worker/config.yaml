@@ -58,8 +58,17 @@ tools:
     - vault_fill
     - artifact_save
     - artifact_list
+    - files_search
+    - files_vsearch
+    - files_query
+    - files_get
+    - files_multi_get
+    - files_read_page
+    - files_status
     - deck_new
     - deck_check
+    - deck_themes
+    - deck_theme_set
     - start_helper
     - sys_session_close
     - sys_session_list

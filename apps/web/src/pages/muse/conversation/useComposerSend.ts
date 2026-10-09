@@ -1,12 +1,14 @@
 import { useLingui } from "@lingui/react/macro";
-import type { Bot, ThreadMessage, ThreadSnapshot } from "@nova/contracts";
+import type { Bot, ThreadMessage, ThreadSnapshot, WorkspaceAttachment } from "@nova/contracts";
 import { ATTACHMENT_MAX_BYTES, ATTACHMENT_MAX_COUNT, type MessageReaction } from "@nova/contracts";
 import {
   attachmentsForThread,
   type ComposerMention,
   inferAttachmentMimeType,
+  isIngestableAttachmentMimeType,
   resolveComposerSendPlan,
 } from "@nova/core";
+import { ORPCError } from "@orpc/client";
 import { type MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { notifyAsksChanged } from "../../../features/approvals";
@@ -24,10 +26,21 @@ import {
 import { isRawEngineError, userFacingError } from "../../../lib/user-facing-error";
 import type { useCreateBot } from "../chrome/useCreateBot";
 import { markFirstRunSeen } from "../intro";
+import { type ComputerFeed, followComputerStart, runWhenComputerReady } from "./computerReady";
 import { quotedMessageText } from "./museTranscript";
-import { type PendingAttachment, readFileAsBase64 } from "./shared";
+import { attachmentsBlockSend, type PendingAttachment, readFileAsBase64 } from "./shared";
 import type { useThreadState } from "./useThreadState";
 import type { useThreadSync } from "./useThreadSync";
+
+/** The Computer is asleep and still waking: the upload could not land yet. */
+function isComputerStarting(error: unknown): boolean {
+  return error instanceof ORPCError && error.code === "SERVICE_UNAVAILABLE";
+}
+
+/** The Computer is awake but did not finish reading the file in time (not "starting"). */
+function isReadTimeout(error: unknown): boolean {
+  return error instanceof ORPCError && error.code === "GATEWAY_TIMEOUT";
+}
 
 /** The composer's side of a conversation: attachments, replies, sending, stopping, answering
  * asks and reacting to messages. */
@@ -62,7 +75,10 @@ export function useComposerSend({
     refreshBots: (includeArchived?: boolean) => Promise<void>;
   };
   flushPendingBrowserNotifications: () => void;
-  computerStore: Pick<ReturnType<typeof useComputerStore>, "computerRef" | "commitComputer">;
+  computerStore: Pick<
+    ReturnType<typeof useComputerStore>,
+    "computerRef" | "commitComputer" | "onComputerChange"
+  >;
   focusPrompt: Pick<ReturnType<typeof useCreateBot>, "cancelFocusPrompt" | "focusPromptBotIdRef">;
 }) {
   const { t } = useLingui();
@@ -71,9 +87,15 @@ export function useComposerSend({
   const { terminalRunReceipts, refreshThreadRef, refreshGroupThreadRef, updateSnapshot } =
     threadOps;
   const { botsRef, refreshBots } = roster;
-  const { computerRef, commitComputer } = computerStore;
+  const { computerRef, commitComputer, onComputerChange } = computerStore;
+  const computerFeed = useMemo<ComputerFeed>(
+    () => ({ current: () => computerRef.current, subscribe: onComputerChange }),
+    [computerRef, onComputerChange],
+  );
   const { cancelFocusPrompt, focusPromptBotIdRef } = focusPrompt;
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
+  const pendingRef = useRef<PendingAttachment[]>([]);
+  pendingRef.current = pendingAttachments;
   const [replyTarget, setReplyTarget] = useState<ThreadMessage | null>(null);
   const [replyQuote, setReplyQuote] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -82,6 +104,10 @@ export function useComposerSend({
   // example rather than sending it, so the person sees it before it goes out.
   const [composerSeed, setComposerSeed] = useState<string | null>(null);
   const [attachmentNotice, setAttachmentNotice] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+  // Files already written to the workspace, by pending id: a retry after a failed send does not
+  // upload them twice.
+  const uploadedRef = useRef(new Map<string, WorkspaceAttachment>());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dismissedRunErrorIds, setDismissedRunErrorIds] =
     useState<ReadonlySet<string>>(readSeenRunErrorIds);
@@ -165,11 +191,117 @@ export function useComposerSend({
     },
     [t],
   );
+  const setAttachmentState = useCallback(
+    (id: string, status: PendingAttachment["status"], error?: string) =>
+      setPendingAttachments((current) =>
+        current.map((item) =>
+          item.id === id
+            ? { ...item, status, error: status === "error" ? error : undefined }
+            : item,
+        ),
+      ),
+    [],
+  );
+  // One AbortController per attachment still being prepared: removing the chip, leaving the chat
+  // or closing the page cancels its wait for the Computer and its read.
+  const controllersRef = useRef(new Map<string, AbortController>());
+  // The send-time upload (a file picked without a chip read) is cancelled when the page goes.
+  const sendAbort = useRef(new AbortController());
+  useEffect(() => {
+    const controller = sendAbort.current;
+    return () => controller.abort();
+  }, []);
+  const abortAttachment = useCallback((id: string) => {
+    controllersRef.current.get(id)?.abort();
+    controllersRef.current.delete(id);
+  }, []);
+  useEffect(() => {
+    const controllers = controllersRef.current;
+    return () => {
+      for (const controller of controllers.values()) controller.abort();
+      controllers.clear();
+    };
+  }, []);
+  /** A Muse attachment is written to the Computer and read there as soon as it is picked, so its
+   * text is ready before the message goes (uploading, reading, ready, or a calm error). A sleeping
+   * Computer is waited for by its status events (the chip says so), never by a retry timer. */
+  const prepareAttachment = useCallback(
+    async (attachment: PendingAttachment, botId: string) => {
+      const mimeType = inferAttachmentMimeType(attachment.file.name, attachment.file.type);
+      if (!mimeType) return;
+      abortAttachment(attachment.id);
+      const controller = new AbortController();
+      controllersRef.current.set(attachment.id, controller);
+      const { signal } = controller;
+      let unfollow: (() => void) | undefined;
+      try {
+        let stored = uploadedRef.current.get(attachment.id);
+        if (!stored) {
+          setAttachmentState(attachment.id, "uploading");
+          const contentBase64 = await readFileAsBase64(attachment.file);
+          signal.throwIfAborted();
+          stored = await runWhenComputerReady(
+            () =>
+              rpc.files.uploadAttachment(
+                { botId, name: attachment.file.name, mimeType, contentBase64 },
+                { signal },
+              ),
+            {
+              isStarting: isComputerStarting,
+              onStarting: () => setAttachmentState(attachment.id, "starting"),
+              feed: computerFeed,
+              signal,
+            },
+          );
+          uploadedRef.current.set(attachment.id, stored);
+        }
+        if (isIngestableAttachmentMimeType(mimeType)) {
+          const path = stored.path;
+          setAttachmentState(attachment.id, "reading");
+          // One call: the engine wakes the Computer and waits for the read. The chip follows the
+          // Computer's own status while it does.
+          unfollow = followComputerStart(computerFeed, {
+            onStarting: () => setAttachmentState(attachment.id, "starting"),
+            onUp: () => setAttachmentState(attachment.id, "reading"),
+          });
+          await rpc.files.ingestAttachment({ botId, path }, { signal });
+          unfollow();
+          unfollow = undefined;
+        }
+        setAttachmentState(attachment.id, "ready");
+      } catch (error) {
+        if (signal.aborted) return; // the chip is gone, or the person left: nothing to report
+        setAttachmentState(
+          attachment.id,
+          "error",
+          isComputerStarting(error)
+            ? t`Your Computer is starting. Try again in a moment.`
+            : isReadTimeout(error)
+              ? t`Reading ${attachment.file.name} is taking too long. Try again in a moment.`
+              : userFacingError(error, t`Couldn't read ${attachment.file.name}`),
+        );
+      } finally {
+        unfollow?.();
+        if (controllersRef.current.get(attachment.id) === controller) {
+          controllersRef.current.delete(attachment.id);
+        }
+      }
+    },
+    [abortAttachment, computerFeed, setAttachmentState, t],
+  );
+  const retryAttachment = useCallback(
+    (attachment: PendingAttachment) => {
+      const botId = activeBotId.current;
+      if (botId) void prepareAttachment(attachment, botId);
+    },
+    [prepareAttachment],
+  );
   const onAttachmentPick = useCallback(
     async (files: FileList | null) => {
       const threadKey = activeGroupId.current ?? activeBotId.current;
       if (!threadKey || !files?.length) return;
       const existing = attachmentsForThread(pendingAttachments, threadKey);
+      const toWorkspace = Boolean(museMode && activeBotId.current && !activeGroupId.current);
       const next: PendingAttachment[] = [];
       const skipped: string[] = [];
       for (const file of Array.from(files)) {
@@ -187,36 +319,49 @@ export function useComposerSend({
           continue;
         }
         next.push({
-          id: `${file.name}-${file.size}-${file.lastModified}-${next.length}`,
+          id: newClientId(),
           threadKey,
           file,
           previewUrl: mimeType.startsWith("image/") ? URL.createObjectURL(file) : undefined,
+          ...(toWorkspace ? { status: "uploading" as const } : {}),
         });
       }
       if (next.length) setPendingAttachments((current) => [...current, ...next]);
+      if (toWorkspace && activeBotId.current) {
+        for (const item of next) void prepareAttachment(item, activeBotId.current);
+      }
       setAttachmentNotice(skipped.length ? t`Skipped ${skipped.join(", ")}` : null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     },
-    [pendingAttachments, t],
+    [museMode, pendingAttachments, prepareAttachment, t],
   );
-  const removeAttachment = useCallback((attachment: PendingAttachment) => {
-    revokePendingAttachmentPreviews([attachment]);
-    setPendingAttachments((current) => current.filter((item) => item.id !== attachment.id));
-  }, []);
+  const removeAttachment = useCallback(
+    (attachment: PendingAttachment) => {
+      abortAttachment(attachment.id);
+      revokePendingAttachmentPreviews([attachment]);
+      uploadedRef.current.delete(attachment.id);
+      setPendingAttachments((current) => current.filter((item) => item.id !== attachment.id));
+    },
+    [abortAttachment],
+  );
+  /** Resolves `true` only when the message (or its routine/group action) really went out; every
+   * other path resolves `false` so the composer gives the person's words back. */
   const sendMessage = useCallback(
-    async (text: string, mentions: ComposerMention[] = []) => {
+    async (text: string, mentions: ComposerMention[] = []): Promise<boolean> => {
       const initialBotTarget = activeBotId.current;
       const initialGroupTarget = activeGroupId.current;
-      if ((!initialBotTarget && !initialGroupTarget) || sending) return;
+      if ((!initialBotTarget && !initialGroupTarget) || sending) return false;
       setFollowSignal((current) => current + 1);
       const originThreadKey = initialGroupTarget ?? initialBotTarget;
       const attachments = attachmentsForThread(pendingAttachments, originThreadKey);
+      // A file still being read (or one that failed) holds the message back; Send is disabled.
+      if (attachmentsBlockSend(attachments)) return false;
       const plan = resolveComposerSendPlan({
         text,
         mentions,
         hasAttachments: attachments.length > 0,
       });
-      if (plan.isNoOp) return;
+      if (plan.isNoOp) return false;
       // The first real message closes the first-run welcome for good (muse/intro),
       // wherever it was sent from — the composer directly, or a welcome card's "Try it".
       if (museMode) markFirstRunSeen(userId, "welcome");
@@ -263,20 +408,51 @@ export function useComposerSend({
           setAttachmentNotice(null);
           if (reroutedToGroup && groupTarget) {
             navigate(`/app/g/${groupTarget}`);
-            return;
+            return true;
           }
           if (groupTarget && activeGroupId.current === groupTarget) {
             await refreshGroupThreadRef.current(groupTarget);
           } else if (botTarget && activeBotId.current === botTarget) {
             await refreshThreadRef.current(botTarget);
           }
-          return;
+          return true;
         }
         const artifactIds: string[] = [];
+        const workspaceAttachments: WorkspaceAttachment[] = [];
+        const toWorkspace = Boolean(museMode && botTarget && !groupTarget);
+        let uploaded = 0;
         for (const pending of attachments) {
           const mimeType = inferAttachmentMimeType(pending.file.name, pending.file.type);
           if (!mimeType) {
             throw new Error(t`Unsupported file type: ${pending.file.name}`);
+          }
+          if (toWorkspace) {
+            let stored = uploadedRef.current.get(pending.id);
+            if (!stored) {
+              setUploadStatus(t`Uploading ${uploaded + 1} of ${attachments.length}`);
+              const contentBase64 = await readFileAsBase64(pending.file);
+              const progress = t`Uploading ${uploaded + 1} of ${attachments.length}`;
+              stored = await runWhenComputerReady(
+                () =>
+                  rpc.files.uploadAttachment({
+                    botId: botTarget!,
+                    name: pending.file.name,
+                    mimeType,
+                    contentBase64,
+                  }),
+                {
+                  isStarting: isComputerStarting,
+                  onStarting: () => setUploadStatus(t`Starting your Computer…`),
+                  feed: computerFeed,
+                  signal: sendAbort.current.signal,
+                },
+              );
+              setUploadStatus(progress);
+              uploadedRef.current.set(pending.id, stored);
+            }
+            uploaded += 1;
+            workspaceAttachments.push(stored);
+            continue;
           }
           const contentBase64 = await readFileAsBase64(pending.file);
           const artifact = await rpc.artifacts.create(
@@ -286,6 +462,7 @@ export function useComposerSend({
           );
           artifactIds.push(artifact.id);
         }
+        setUploadStatus(null);
         const clientNonce = newClientId();
         if (groupTarget) {
           await rpc.threads.send({
@@ -307,6 +484,7 @@ export function useComposerSend({
             text: quoted || undefined,
             mentions: plan.mentionPayload.length ? plan.mentionPayload : undefined,
             artifactIds: artifactIds.length ? artifactIds : undefined,
+            attachments: workspaceAttachments.length ? workspaceAttachments : undefined,
           });
           if (activeBotId.current === botTarget) {
             updateSnapshot((current) =>
@@ -325,6 +503,7 @@ export function useComposerSend({
         dropDelayedSetup();
         clearReply();
         revokePendingAttachmentPreviews(attachments);
+        for (const sentAttachment of attachments) uploadedRef.current.delete(sentAttachment.id);
         setPendingAttachments((current) =>
           current.filter((attachment) => attachment.threadKey !== originThreadKey),
         );
@@ -332,21 +511,28 @@ export function useComposerSend({
         void refreshBots().catch(() => undefined);
         if (reroutedToGroup && groupTarget) {
           navigate(`/app/g/${groupTarget}`);
-          return;
+          return true;
         }
         if (groupTarget && activeGroupId.current === groupTarget) setAttachmentNotice(null);
         if (botTarget && activeBotId.current === botTarget) setAttachmentNotice(null);
         if (groupTarget) await refreshGroupThreadRef.current(groupTarget);
         else if (botTarget) await refreshThreadRef.current(botTarget);
+        return true;
       } catch (error) {
+        const failure = isComputerStarting(error)
+          ? t`Your Computer is starting. Try again in a moment.`
+          : userFacingError(error, t`Failed to send message`);
         if (reroutedToGroup && groupTarget) {
-          setSendError(userFacingError(error, t`Failed to send message`));
+          setSendError(failure);
         } else if (groupTarget && activeGroupId.current === groupTarget) {
-          setSendError(userFacingError(error, t`Failed to send message`));
+          setSendError(failure);
         } else if (botTarget && activeBotId.current === botTarget) {
-          setSendError(userFacingError(error, t`Failed to send message`));
+          setSendError(failure);
         }
+        // Nothing was sent: the composer puts the person's words back.
+        return false;
       } finally {
+        setUploadStatus(null);
         setSending(false);
       }
     },
@@ -438,6 +624,10 @@ export function useComposerSend({
 
   useEffect(() => {
     const threadKey = inGroup ? groupId : active?.id;
+    // Leaving a chat drops its pending files; their reads stop with them.
+    for (const attachment of pendingRef.current) {
+      if (attachment.threadKey !== threadKey) abortAttachment(attachment.id);
+    }
     setPendingAttachments((current) => {
       const stale = current.filter((attachment) => attachment.threadKey !== threadKey);
       revokePendingAttachmentPreviews(stale);
@@ -446,7 +636,7 @@ export function useComposerSend({
     clearReply();
     setAttachmentNotice(null);
     setSendError(null);
-  }, [active?.id, clearReply, groupId, inGroup]);
+  }, [abortAttachment, active?.id, clearReply, groupId, inGroup]);
   return {
     pendingAttachments,
     activePendingAttachments,
@@ -461,6 +651,7 @@ export function useComposerSend({
     composerSeed,
     setComposerSeed,
     attachmentNotice,
+    uploadStatus,
     fileInputRef,
     followSignal,
     displayedRunError,
@@ -471,6 +662,7 @@ export function useComposerSend({
     reactToMessage,
     onAttachmentPick,
     removeAttachment,
+    retryAttachment,
     sendMessage,
     sendCardReply,
     followUpMessage,

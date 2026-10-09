@@ -74,6 +74,33 @@ def test_text_messages_keep_role_and_order() -> None:
     assert out[0]["created_at"] == 100
 
 
+def test_a_turn_shows_only_its_last_text_and_keeps_cards_and_chips() -> None:
+    found = {
+        "type": "file_search",
+        "results": [{"file_id": "f" * 32, "file_name": "a.pdf", "page": 3}],
+    }
+    card = {"type": "card", "card": "note", "fallback": "Note", "data": {}}
+    items = [
+        _msg("u1", "user", "find the budget"),
+        _msg("a1", "assistant", "Search found nothing, so I'll read the file."),
+        _call("c1", "files_search", "k1"),
+        _out("o1", "k1", found),
+        _msg("a2", "assistant", "Four pages. Extract text with Python."),
+        _call("c2", "render_card", "k2", card),
+        _out("o2", "k2", card),
+        _msg("a3", "assistant", "The budget is 4.7 million (a.pdf p. 3)."),
+        _msg("u2", "user", "thanks"),
+        _msg("a4", "assistant", "Anytime."),
+        _msg("n1", "user", "[system notice]", is_system_notice=True),
+        _msg("a5", "assistant", "A Helper finished."),
+    ]
+    out = project_items(items)
+    assert [m["id"] for m in out] == ["u1", "c2", "a3", "u2", "a4", "a5"]
+    assert out[1]["blocks"][0]["type"] == "card"
+    assert [b["type"] for b in out[2]["blocks"]] == ["text", "card"]
+    assert out[2]["blocks"][1]["card"]["card"] == "passages"
+
+
 def test_system_notice_and_hidden_context_are_dropped() -> None:
     items = [
         _msg("n1", "user", "timer fired", is_system_notice=True),
@@ -156,6 +183,20 @@ def test_deck_export_becomes_a_file_block() -> None:
     assert message["blocks"][0]["artifact_id"] == "art_2"
     assert (
         project_items([_call("d2", "deck_export", "ke"), _out("eo", "ke", {"error": "x"})]) == []
+    )
+
+
+def test_display_chart_becomes_a_file_block() -> None:
+    saved = {
+        "type": "artifact", "id": "art_9", "name": "rev.chart.json", "kind": "json", "size": 90,
+        "title": "Revenue", "chart": {"chart_type": "bar"},
+    }  # fmt: skip
+    [message] = project_items([_call("c1", "display_chart", "kc"), _out("co", "kc", saved)])
+    block = message["blocks"][0]
+    assert block["type"] == "file" and block["artifact_id"] == "art_9"
+    assert block["name"] == "rev.chart.json" and block["title"] == "Revenue"
+    assert (
+        project_items([_call("c2", "display_chart", "kf"), _out("cf", "kf", {"error": "x"})]) == []
     )
 
 

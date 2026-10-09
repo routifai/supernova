@@ -3,6 +3,7 @@ import { engineAdminRouter } from "./features/admin/router.js";
 import { approvalsRouter } from "./features/approvals/router.js";
 import { appsRouter } from "./features/apps/router.js";
 import { artifactsRouter } from "./features/artifacts/router.js";
+import { chartsRouter } from "./features/charts/router.js";
 import { filesRouter } from "./features/computer/files-router.js";
 import { computerRouter } from "./features/computer/router.js";
 import { dailyNotesRouter } from "./features/daily-notes/router.js";
@@ -10,6 +11,7 @@ import { decksRouter } from "./features/decks/router.js";
 import { feedRouter } from "./features/feed/router.js";
 import { goalsRouter } from "./features/goals/router.js";
 import { ideasRouter } from "./features/ideas/router.js";
+import { knowledgeRouter } from "./features/knowledge/router.js";
 import { memoryRouter } from "./features/memory/router.js";
 import { engineModelsRouter } from "./features/models/router.js";
 import { sheetsRouter } from "./features/sheets/router.js";
@@ -44,6 +46,7 @@ export function createRouter(deps: RouterDeps) {
     ...approvalsRouter(c),
     ...artifactsRouter(c),
     ...botsRouter(c),
+    ...chartsRouter(c),
     ...computerRouter(c),
     ...dailyNotesRouter(c),
     ...decksRouter(c),
@@ -55,6 +58,7 @@ export function createRouter(deps: RouterDeps) {
     ...goalsRouter(c),
     ...ideasRouter(c),
     ...integrationsRouter(c),
+    ...knowledgeRouter(c),
     ...mcpRouter(c),
     ...memoryRouter(c),
     ...messagingRouter(c),

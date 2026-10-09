@@ -279,14 +279,19 @@ class SqlAlchemyArtifactStore:
         try:
             for attempt in range(_CREATE_ATTEMPTS):
                 try:
-                    return run_write_transaction(self._session_immediate, "insert_artifact", write)
+                    saved = run_write_transaction(
+                        self._session_immediate, "insert_artifact", write
+                    )
+                    break
                 except IntegrityError:
                     if attempt == _CREATE_ATTEMPTS - 1:
                         raise
-            raise AssertionError("unreachable")  # pragma: no cover
+            else:  # pragma: no cover
+                raise AssertionError("unreachable")
         except Exception:
             blobs.delete(key)
             raise
+        return saved
 
     def newest(self, item: Artifact) -> Artifact | None:
         """The newest version of ``item``'s group."""

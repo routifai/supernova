@@ -7,20 +7,25 @@ import {
   ENGINE_INTERRUPTED_MESSAGE,
   failRunUnsupportedOnOmnigent,
   publicRunError,
+  readTurnImages,
   runTurnOnOmnigent,
 } from "./gateway.js";
 
 const {
   adoptOmnigentMuse,
   getOmnigentMuse,
+  ingestOmnigentKnowledge,
   postOmnigentMessage,
   putOmnigentTimezone,
+  readOmnigentFile,
   streamOmnigentSession,
 } = vi.hoisted(() => ({
   adoptOmnigentMuse: vi.fn(),
   getOmnigentMuse: vi.fn(),
+  ingestOmnigentKnowledge: vi.fn(),
   postOmnigentMessage: vi.fn(),
   putOmnigentTimezone: vi.fn(),
+  readOmnigentFile: vi.fn(),
   streamOmnigentSession: vi.fn(),
 }));
 
@@ -28,8 +33,10 @@ vi.mock("./client.js", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./client.js")>()),
   adoptOmnigentMuse,
   getOmnigentMuse,
+  ingestOmnigentKnowledge,
   postOmnigentMessage,
   putOmnigentTimezone,
+  readOmnigentFile,
   streamOmnigentSession,
 }));
 
@@ -533,5 +540,90 @@ describe("publicRunError", () => {
       ENGINE_FAILED_MESSAGE,
     );
     expect(publicRunError("boom")).toBe(ENGINE_FAILED_MESSAGE);
+  });
+});
+
+describe("attached images", () => {
+  const png = new Uint8Array([137, 80, 78, 71]);
+  const ref = (path: string, mime: string, size = 4) =>
+    `Attached file in your workspace: ${path} (${mime}, ${size} bytes)`;
+
+  beforeEach(() => {
+    readOmnigentFile.mockReset();
+  });
+
+  it("reads image attachments under your_files/uploads/ back and skips the rest", async () => {
+    readOmnigentFile.mockResolvedValue({ path: "x", size: 4, truncated: false, bytes: png });
+    const text = [
+      ref("your_files/uploads/d/a.png", "image/png"),
+      ref("your_files/uploads/d/doc.pdf", "application/pdf"),
+      ref("elsewhere/b.png", "image/png"),
+      ref("your_files/uploads/d/huge.png", "image/png", 6 * 1024 * 1024),
+      "",
+      "what is this?",
+    ].join("\n");
+    const images = await readTurnImages(CLIENT, "p@example.test", "sess-1", text);
+    expect(images).toEqual([{ mimeType: "image/png", dataBase64: "iVBORw==" }]);
+    expect(readOmnigentFile).toHaveBeenCalledTimes(1);
+    expect(readOmnigentFile).toHaveBeenCalledWith(
+      CLIENT,
+      "p@example.test",
+      "sess-1",
+      "your_files/uploads/d/a.png",
+    );
+  });
+
+  it("falls back to the path line when the read fails", async () => {
+    readOmnigentFile.mockRejectedValue(new Error("read file failed (503)"));
+    const images = await readTurnImages(
+      CLIENT,
+      "p@example.test",
+      "sess-1",
+      ref("your_files/uploads/d/a.png", "image/png"),
+    );
+    expect(images).toEqual([]);
+  });
+
+  it("posts the images with the turn", async () => {
+    readOmnigentFile.mockResolvedValue({ path: "x", size: 4, truncated: false, bytes: png });
+    getOmnigentMuse.mockResolvedValue({ session_id: "sess-1", agent: "agent", created: false });
+    streamOmnigentSession.mockReturnValue(
+      eventsFrom([{ type: "response.completed", response: { output: [] } }]),
+    );
+    const prompt = `${ref("your_files/uploads/d/a.png", "image/png")}\n\nlook`;
+    const prisma = fakePrisma({
+      task: { findUniqueOrThrow: vi.fn(async () => ({ prompt })) },
+    });
+    await runTurnOnOmnigent({ prisma, events: fakeEvents(), ...DEPS_BASE }, "run-1", "worker-1");
+    expect(postOmnigentMessage).toHaveBeenLastCalledWith(
+      CLIENT,
+      "person@example.test",
+      "sess-1",
+      prompt,
+      [{ mimeType: "image/png", dataBase64: "iVBORw==" }],
+    );
+  });
+});
+
+describe("attached documents", () => {
+  const ref = (path: string, mime: string) =>
+    `Attached file in your workspace: ${path} (${mime}, 10 bytes)`;
+
+  beforeEach(() => {
+    ingestOmnigentKnowledge.mockReset();
+    postOmnigentMessage.mockReset();
+  });
+
+  it("posts the message exactly as the person wrote it: no file text, no ingest hop", async () => {
+    getOmnigentMuse.mockResolvedValue({ session_id: "sess-1", agent: "agent", created: false });
+    streamOmnigentSession.mockReturnValue(
+      eventsFrom([{ type: "response.completed", response: { output: [] } }]),
+    );
+    const xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    const prompt = `${ref("your_files/uploads/d/report.pdf", "application/pdf")}\n${ref("your_files/uploads/d/b.xlsx", xlsx)}\n\nsummarise`;
+    const prisma = fakePrisma({ task: { findUniqueOrThrow: vi.fn(async () => ({ prompt })) } });
+    await runTurnOnOmnigent({ prisma, events: fakeEvents(), ...DEPS_BASE }, "run-1", "worker-1");
+    expect(postOmnigentMessage.mock.calls.at(-1)?.[3]).toBe(prompt);
+    expect(ingestOmnigentKnowledge).not.toHaveBeenCalled();
   });
 });

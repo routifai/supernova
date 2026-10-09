@@ -9,6 +9,7 @@ GET /v1/agents/{id}/contents for out-of-process use).
 from __future__ import annotations
 
 import asyncio
+import base64
 import contextlib
 import dataclasses
 import functools
@@ -1459,6 +1460,20 @@ def _apply_memory_profile_to_body(body: _JsonObject, block: str | None) -> _Json
     new_body = dict(body)
     new_body["content"] = _prefix_content_with_tail(body.get("content"), block)
     return new_body
+
+
+def _message_texts(content: object) -> list[str]:
+    """Every text part of a message's content (a string, or nested blocks/items)."""
+    if isinstance(content, str):
+        return [content]
+    if isinstance(content, list):
+        return [t for part in content for t in _message_texts(part)]
+    if isinstance(content, dict):
+        text = content.get("text")
+        if isinstance(text, str):
+            return [text]
+        return _message_texts(content.get("content"))
+    return []
 
 
 def _prepend_turn_blocks(body: _JsonObject, blocks: Sequence[str], conv_id: str) -> _JsonObject:
@@ -3155,6 +3170,17 @@ def normalize_anthropic_base_url(base_url: str) -> str:
     if parts.path not in ("", "/"):
         return base_url
     return urlunsplit((parts.scheme, parts.netloc, "/v1", parts.query, parts.fragment))
+
+
+def _notify_file_written(relative_path: str, env: Any) -> None:
+    """Tell the file search a file was written through the runner (an upload), if it runs here."""
+    from omnigent.runner.knowledge.runtime import notify_written
+
+    try:
+        root = getattr(env, "cwd", None)
+        notify_written(Path(root) / relative_path if root else relative_path)
+    except Exception:  # noqa: BLE001 - indexing must never fail a write
+        _logger.debug("knowledge: write notification failed", exc_info=True)
 
 
 def create_runner_app(
@@ -5371,6 +5397,7 @@ def create_runner_app(
             with contextlib.suppress(asyncio.CancelledError):
                 await turn_task
         await mcp_execution_registry.cancel_session(session_id)
+        pending_approvals.cancel_session(session_id, "session_closed")
         _session_message_buffers.pop(session_id, None)
         _live_response_id.pop(session_id, None)
         # Clear all desync/turn state so a recreated same-id session starts clean.
@@ -8141,6 +8168,7 @@ def create_runner_app(
         _active_turns.pop(conv_id, None)
         _release_live_turn_markers(conv_id)
         _interrupted_sessions.discard(conv_id)
+        pending_approvals.cancel_session(conv_id, "turn_swept")
         return True
 
     def _on_proxy_stream_end(
@@ -8336,6 +8364,8 @@ def create_runner_app(
         # proxy_stream, so the runner owns no cancellable Task). Both a live Task
         # and the sentinel have a live harness turn parked on a future, so the
         # interrupt must be forwarded for either.
+        # An interrupted turn's approval prompts can no longer be answered into it.
+        pending_approvals.cancel_session(conv_id, "interrupted")
         if conv_id not in _active_turns:
             return
         target = _active_turns.get(conv_id)
@@ -9364,15 +9394,21 @@ def create_runner_app(
                 extra={"session_id": conv_id},
             )
 
-    async def _apply_turn_prefix_blocks(body: _JsonObject, conv_id: str) -> _JsonObject:
+    async def _apply_turn_prefix_blocks(
+        body: _JsonObject, conv_id: str, message: _JsonObject | None = None
+    ) -> _JsonObject:
         """Prepend the Super Chat per-turn blocks (Memory Profile, Projects, local time).
+
+        *message* is this turn's own user message; features build blocks from its text
+        (``Feature.message_prefix``) that go in front of it, for the harness only.
 
         Called only for ``superside-chat`` turns; the blocks come from the one
         ``superchat.prompt_prefix`` hook, fetched fresh each turn (the SDK's system prompt is
         frozen per warm client, so a per-message block is the seam that still reaches it).
         """
         workspace = await _session_runtime_cwd(conv_id)
-        blocks = await turn_prefix_blocks(server_client, conv_id, workspace)
+        texts = _message_texts(message.get("content")) if message else []
+        blocks = await turn_prefix_blocks(server_client, conv_id, workspace, texts)
         return _prepend_turn_blocks(body, blocks, conv_id)
 
     def _discard_comment_relay(session_id: str, relay: ClaudeNativeToolRelay) -> None:
@@ -9926,7 +9962,7 @@ def create_runner_app(
                 [],
             )
         if _turn_context_mode == SUPERSIDE_CHAT_MODE_VALUE:
-            harness_body = await _apply_turn_prefix_blocks(harness_body, conv)
+            harness_body = await _apply_turn_prefix_blocks(harness_body, conv, msg_body)
         _content = cast(list[object], harness_body.get("content", []))
         _content_summary = []
         for _ci in _content:
@@ -10953,6 +10989,9 @@ def create_runner_app(
                             else:
                                 yield raw_sse_bytes
 
+                    # The harness stream ended, so no tool result can reach this turn: a
+                    # dispatch still parked on an approval would otherwise hold it open.
+                    pending_approvals.cancel_session(conv_id, "turn_ended")
                     if _dispatch_tasks:
                         await _asyncio.gather(*_dispatch_tasks, return_exceptions=True)
 
@@ -11027,6 +11066,8 @@ def create_runner_app(
                     }
                 _http_fail = _response_failed_payload(_error, source="harness")
                 _publish_event(conv_id, _http_fail)
+                # The harness is gone; a dispatch parked on an approval has no turn to return to.
+                pending_approvals.cancel_session(conv_id, "harness_lost")
                 _on_proxy_stream_end(conv_id, error=_error, owner_response_id=_response_id)
                 yield _response_failed_event(_error, source="harness")
 
@@ -11391,6 +11432,8 @@ def create_runner_app(
             _harness = _session_harness_name(conversation_id)
             _interrupt_resp = await _native_interrupt_runner.interrupt(_harness, conversation_id)
             if _interrupt_resp is not None:
+                # Native turns skip _cancel_inprocess_turn, which releases approval parks.
+                pending_approvals.cancel_session(conversation_id, "interrupted")
                 return _interrupt_resp
             await _cancel_inprocess_turn(conversation_id)
             return Response(status_code=204)
@@ -11542,6 +11585,8 @@ def create_runner_app(
             _harness = _session_harness_name(conversation_id)
             _stop_resp = await _native_interrupt_runner.stop(_harness, conversation_id)
             if _stop_resp is not None:
+                # Native turns skip _cancel_inprocess_turn, which releases approval parks.
+                pending_approvals.cancel_session(conversation_id, "interrupted")
                 return _stop_resp
             await _cancel_inprocess_turn(conversation_id)
             return Response(status_code=204)
@@ -13116,6 +13161,8 @@ def create_runner_app(
             order=order,
         )
 
+    _exclusive_create_lock = asyncio.Lock()
+
     @app.put(
         "/v1/sessions/{session_id}/resources/environments"
         "/{environment_id}/filesystem/{relative_path:path}"
@@ -13141,24 +13188,45 @@ def create_runner_app(
         content_str = body.get("content", "")
         encoding = body.get("encoding", "utf-8")
         create_parents = body.get("create_parents", True)
-        content_bytes = content_str.encode(encoding)
-        try:
-            existing = await fs.read(relative_path, limit=None)
-            if existing.encoding and filesystem_registry is not None:
-                filesystem_registry.seed_snapshot(
-                    relative_path,
-                    existing.data.decode(existing.encoding, errors="replace"),
-                    session_id=session_id,
+        if encoding == "base64":
+            # Binary content (an upload) travels as base64 inside the JSON body.
+            try:
+                content_bytes = base64.b64decode(content_str, validate=True)
+            except (ValueError, TypeError):
+                return JSONResponse(
+                    status_code=400, content={"error": {"message": "content is not valid base64"}}
                 )
-        except Exception:  # noqa: BLE001
-            pass
-        result = await fs.write(
-            relative_path,
-            content_bytes,
-            create_parents=create_parents,
-        )
+        else:
+            content_bytes = content_str.encode(encoding)
+        # ``if_exists: "fail"`` is an exclusive create (two uploads that picked the same free name
+        # cannot overwrite each other): the check and the write happen under one lock.
+        exclusive = body.get("if_exists") == "fail"
+        async with _exclusive_create_lock if exclusive else contextlib.AsyncExitStack():
+            existed = False
+            try:
+                existing = await fs.read(relative_path, limit=None)
+                existed = True
+                if existing.encoding and filesystem_registry is not None:
+                    filesystem_registry.seed_snapshot(
+                        relative_path,
+                        existing.data.decode(existing.encoding, errors="replace"),
+                        session_id=session_id,
+                    )
+            except Exception:  # noqa: BLE001
+                pass
+            if exclusive and existed:
+                return JSONResponse(
+                    status_code=409,
+                    content={"error": {"message": "A file with that name already exists"}},
+                )
+            result = await fs.write(
+                relative_path,
+                content_bytes,
+                create_parents=create_parents,
+            )
         if filesystem_registry is not None:
             filesystem_registry.record_change(relative_path, result.operation, session_id)
+        _notify_file_written(relative_path, env)
         return JSONResponse(
             status_code=200,
             content={
@@ -14100,6 +14168,18 @@ def create_runner_app(
         method: str = body.get("method") or ""
         params: _JsonObject = body.get("params") or {}
 
+        from omnigent.superchat.feature import RELAY_MARK
+
+        scope = getattr(request, "scope", None)  # absent on the retained-operation re-entry below
+        if (
+            RELAY_MARK in body
+            and scope is not None
+            and (scope.get("client") or (None,))[0] != "tunnel"
+        ):
+            # The relay mark is the server's: only a call that came through the server tunnel may
+            # carry it. Anything else (a direct connection) has it stripped.
+            body = {k: v for k, v in body.items() if k != RELAY_MARK}
+
         raw_operation = body.get("_omnigent_operation")
         if method == "tools/call" and raw_operation is not None:
             operation = raw_operation if isinstance(raw_operation, dict) else {}
@@ -14339,6 +14419,7 @@ def create_runner_app(
                         publish_event=_publish_event,
                         filesystem_registry=filesystem_registry,
                         effective_harness=_session_harness_name(session_id),
+                        relay=body.get(RELAY_MARK) is True,
                     )
                 except Exception as exc:
                     _logger.exception(

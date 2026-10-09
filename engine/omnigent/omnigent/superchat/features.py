@@ -32,6 +32,7 @@ def _load() -> list[Feature]:
     from omnigent.superchat.apps import FEATURE as apps
     from omnigent.superchat.artifacts import ARTIFACTS_FEATURE as artifacts
     from omnigent.superchat.cards import FEATURE as cards
+    from omnigent.superchat.charts import FEATURE as charts
     from omnigent.superchat.daily_notes import FEATURE as daily_notes
     from omnigent.superchat.decks import FEATURE as decks
     from omnigent.superchat.family import FEATURE as family
@@ -39,6 +40,7 @@ def _load() -> list[Feature]:
     from omnigent.superchat.goals import FEATURE as goals
     from omnigent.superchat.helpers import FEATURE as helpers
     from omnigent.superchat.ideas import FEATURE as ideas
+    from omnigent.superchat.knowledge import FEATURE as knowledge
     from omnigent.superchat.memory import FEATURE as memory
     from omnigent.superchat.models import FEATURE as models
     from omnigent.superchat.projects import FEATURE as projects
@@ -61,9 +63,11 @@ def _load() -> list[Feature]:
         cards,
         memory,
         artifacts,
+        knowledge,
         apps,
         sheets,
         decks,
+        charts,
         side_chats,
         helpers,
         projects,
@@ -80,6 +84,11 @@ FEATURES: list[Feature] = _load()
 FEATURE_HANDLERS: dict[str, Handler] = {
     name: handler for feature in FEATURES for name, handler in feature.handlers.items()
 }
+
+#: Handlers only the engine's relays call; the runner's granted-tool gate lets them through.
+FEATURE_RELAY_OPS: frozenset[str] = frozenset(
+    name for feature in FEATURES for name in feature.relay_ops
+)
 
 
 def notify_result(ctx: HandlerCtx, output: str) -> None:

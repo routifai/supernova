@@ -134,6 +134,9 @@ msgstr "{hours}h ago"
 msgid "{minutes}m ago"
 msgstr "{minutes}m ago"
 
+msgid "{muses} Muses"
+msgstr "{muses} Muses"
+
 msgid "{n} cells"
 msgstr "{n} cells"
 
@@ -433,6 +436,9 @@ msgstr "Allow once"
 msgid "Allow purchase actions without asking"
 msgstr "Allow purchase actions without asking"
 
+msgid "Allowed domains"
+msgstr "Allowed domains"
+
 msgid "Allowed models"
 msgstr "Allowed models"
 
@@ -488,6 +494,9 @@ msgstr "API keys"
 msgid "Appearance"
 msgstr "Appearance"
 
+msgid "Approval"
+msgstr "Approval"
+
 msgid "Approvals"
 msgstr "Approvals"
 
@@ -499,6 +508,9 @@ msgstr "Approve"
 
 msgid "Approve this server to let your agent use its tools."
 msgstr "Approve this server to let your agent use its tools."
+
+msgid "Approve unverified emails only after confirming the person another way."
+msgstr "Approve unverified emails only after confirming the person another way."
 
 msgid "Archive"
 msgstr "Archive"
@@ -652,6 +664,9 @@ msgstr "Bearer token"
 msgid "Blocked"
 msgstr "Blocked"
 
+msgid "Bold"
+msgstr "Bold"
+
 msgid "Booting live desktop…"
 msgstr "Booting live desktop…"
 
@@ -757,8 +772,14 @@ msgstr "Changing…"
 msgid "Channels"
 msgstr "Channels"
 
+msgid "Chart"
+msgstr "Chart"
+
 msgid "Chart failed to render: {error}"
 msgstr "Chart failed to render: {error}"
+
+msgid "Chart unavailable"
+msgstr "Chart unavailable"
 
 msgid "Chat"
 msgstr "Chat"
@@ -821,8 +842,8 @@ msgstr "Clear conversation"
 msgid "Clearing…"
 msgstr "Clearing…"
 
-msgid "Click an element on the slide. Double-click text to type."
-msgstr "Click an element on the slide. Double-click text to type."
+msgid "Click an element to edit it."
+msgstr "Click an element to edit it."
 
 msgid "Client ID"
 msgstr "Client ID"
@@ -866,11 +887,17 @@ msgstr "Close user settings"
 msgid "Close voice settings"
 msgstr "Close voice settings"
 
+msgid "Closed"
+msgstr "Closed"
+
 msgid "Code"
 msgstr "Code"
 
 msgid "Collapse sidebar"
 msgstr "Collapse sidebar"
+
+msgid "Collapse slides"
+msgstr "Collapse slides"
 
 msgid "Color"
 msgstr "Color"
@@ -992,6 +1019,10 @@ msgstr "Continue"
 msgid "Continue in Background"
 msgstr "Continue in Background"
 
+#. placeholder {0}: caps.sso.name
+msgid "Continue with {0}"
+msgstr "Continue with {0}"
+
 msgid "Continue with email"
 msgstr "Continue with email"
 
@@ -1016,6 +1047,9 @@ msgstr "Could not add"
 msgid "Could not add MCP server"
 msgstr "Could not add MCP server"
 
+msgid "Could not approve this person."
+msgstr "Could not approve this person."
+
 msgid "Could not approve this server"
 msgstr "Could not approve this server"
 
@@ -1030,6 +1064,9 @@ msgstr "Could not change the default model"
 
 msgid "Could not change this account."
 msgstr "Could not change this account."
+
+msgid "Could not change this."
+msgstr "Could not change this."
 
 msgid "Could not check teaching status. Refresh the view to continue."
 msgstr "Could not check teaching status. Refresh the view to continue."
@@ -1109,6 +1146,9 @@ msgstr "Could not delete this."
 msgid "Could not delete."
 msgstr "Could not delete."
 
+msgid "Could not discard the previous space."
+msgstr "Could not discard the previous space."
+
 msgid "Could not disconnect OAuth"
 msgstr "Could not disconnect OAuth"
 
@@ -1170,6 +1210,9 @@ msgstr "Could not load models."
 msgid "Could not load people."
 msgstr "Could not load people."
 
+msgid "Could not load signups."
+msgstr "Could not load signups."
+
 msgid "Could not load skill"
 msgstr "Could not load skill"
 
@@ -1230,6 +1273,9 @@ msgstr "Could not reach the server"
 msgid "Could not reach this model server"
 msgstr "Could not reach this model server"
 
+msgid "Could not reject this person."
+msgstr "Could not reject this person."
+
 msgid "Could not remove"
 msgstr "Could not remove"
 
@@ -1256,6 +1302,9 @@ msgstr "Could not render chart"
 
 msgid "Could not reset password"
 msgstr "Could not reset password"
+
+msgid "Could not restore the previous space."
+msgstr "Could not restore the previous space."
 
 msgid "Could not revoke"
 msgstr "Could not revoke"
@@ -1323,6 +1372,9 @@ msgstr "Could not save. Try again."
 msgid "Could not search catalog"
 msgstr "Could not search catalog"
 
+msgid "Could not send a code"
+msgstr "Could not send a code"
+
 msgid "Could not send reset email"
 msgstr "Could not send reset email"
 
@@ -1356,8 +1408,14 @@ msgstr "Could not update computer"
 msgid "Could not update reaction"
 msgstr "Could not update reaction"
 
+msgid "Couldn't index"
+msgstr "Couldn't index"
+
 msgid "Couldn't load messaging settings"
 msgstr "Couldn't load messaging settings"
+
+msgid "Couldn't load the themes. Try again in a moment."
+msgstr "Couldn't load the themes. Try again in a moment."
 
 msgid "Couldn't open this sheet."
 msgstr "Couldn't open this sheet."
@@ -1371,6 +1429,10 @@ msgstr "Couldn't prepare PowerPoint"
 msgid "Couldn’t reach Nova’s computer. Retrying…"
 msgstr "Couldn’t reach Nova’s computer. Retrying…"
 
+#. placeholder {0}: attachment.file.name
+msgid "Couldn't read {0}"
+msgstr "Couldn't read {0}"
+
 msgid "Couldn't read that selection."
 msgstr "Couldn't read that selection."
 
@@ -1379,6 +1441,9 @@ msgstr "Couldn't run"
 
 msgid "Couldn't save that change."
 msgstr "Couldn't save that change."
+
+msgid "Couldn't switch the theme."
+msgstr "Couldn't switch the theme."
 
 msgid "Couldn't update avatars"
 msgstr "Couldn't update avatars"
@@ -1413,6 +1478,9 @@ msgstr "Create space"
 
 msgid "Created"
 msgstr "Created"
+
+msgid "Created {created}"
+msgstr "Created {created}"
 
 msgid "Creating…"
 msgstr "Creating…"
@@ -1566,6 +1634,9 @@ msgstr "Direct MCP"
 msgid "Discard"
 msgstr "Discard"
 
+msgid "Discard the previous space?"
+msgstr "Discard the previous space?"
+
 msgid "Disconnect"
 msgstr "Disconnect"
 
@@ -1598,6 +1669,9 @@ msgstr "Docker limits access to your computer for added security. Using {hostLab
 
 msgid "Documents"
 msgstr "Documents"
+
+msgid "Domain"
+msgstr "Domain"
 
 msgid "Don’t have an account?"
 msgstr "Don’t have an account?"
@@ -1659,8 +1733,17 @@ msgstr "Edit Profile"
 msgid "Edited by you"
 msgstr "Edited by you"
 
+msgid "Editorial"
+msgstr "Editorial"
+
 msgid "Email"
 msgstr "Email"
+
+msgid "Email me a code"
+msgstr "Email me a code"
+
+msgid "Email not verified"
+msgstr "Email not verified"
 
 msgid "Email the file to Maya"
 msgstr "Email the file to Maya"
@@ -1737,8 +1820,14 @@ msgstr "Expand"
 msgid "Expand {0}"
 msgstr "Expand {0}"
 
+msgid "Expand {title}"
+msgstr "Expand {title}"
+
 msgid "Expand sidebar"
 msgstr "Expand sidebar"
+
+msgid "Expand slides"
+msgstr "Expand slides"
 
 msgid "Expired"
 msgstr "Expired"
@@ -2114,6 +2203,9 @@ msgstr "In progress"
 msgid "Inbox & email"
 msgstr "Inbox & email"
 
+msgid "Indexing…"
+msgstr "Indexing…"
+
 msgid "Instruction"
 msgstr "Instruction"
 
@@ -2137,6 +2229,12 @@ msgstr "Interval amount"
 
 msgid "Interval unit"
 msgstr "Interval unit"
+
+msgid "Invite"
+msgstr "Invite"
+
+msgid "Invited emails"
+msgstr "Invited emails"
 
 msgid "Isolated preview"
 msgstr "Isolated preview"
@@ -2164,6 +2262,9 @@ msgstr "Its address stops working right away. You can publish it again later."
 
 msgid "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
 msgstr "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
+
+msgid "Its Muses, memory and Computer are removed for good."
+msgstr "Its Muses, memory and Computer are removed for good."
 
 msgid "ITS OWN COMPUTER"
 msgstr "ITS OWN COMPUTER"
@@ -2214,6 +2315,9 @@ msgstr "Language"
 
 msgid "Last active"
 msgstr "Last active"
+
+msgid "Last active {last}"
+msgstr "Last active {last}"
 
 msgid "Last thing — connect the brain I'll think with."
 msgstr "Last thing — connect the brain I'll think with."
@@ -2642,6 +2746,9 @@ msgstr "No messages with {peerBotName} yet."
 msgid "No model catalog is available."
 msgstr "No model catalog is available."
 
+msgid "No one is waiting."
+msgstr "No one is waiting."
+
 msgid "No plan yet"
 msgstr "No plan yet"
 
@@ -2828,6 +2935,11 @@ msgstr "Open · {0}"
 msgid "Open {0}"
 msgstr "Open {0}"
 
+#. placeholder {0}: item.name
+#. placeholder {1}: item.page
+msgid "Open {0}, page {1}"
+msgstr "Open {0}, page {1}"
+
 msgid "Open {name} in new tab"
 msgstr "Open {name} in new tab"
 
@@ -2906,6 +3018,10 @@ msgstr "Other model…"
 msgid "Outcome"
 msgstr "Outcome"
 
+#. placeholder {0}: item.page
+msgid "p. {0}"
+msgstr "p. {0}"
+
 msgid "Padding"
 msgstr "Padding"
 
@@ -2917,6 +3033,9 @@ msgstr "Pages"
 
 msgid "Pages, documents and files your Muse makes will appear here."
 msgstr "Pages, documents and files your Muse makes will appear here."
+
+msgid "Palette"
+msgstr "Palette"
 
 msgid "Panel sections"
 msgstr "Panel sections"
@@ -3031,8 +3150,14 @@ msgstr "Preview isn't available for this file type — download it to view it."
 msgid "Preview isn't available for this file type."
 msgstr "Preview isn't available for this file type."
 
+msgid "Preview unavailable"
+msgstr "Preview unavailable"
+
 msgid "Previous slide"
 msgstr "Previous slide"
+
+msgid "Previous space kept: confirm it's the same person"
+msgstr "Previous space kept: confirm it's the same person"
 
 msgid "Private"
 msgstr "Private"
@@ -3042,6 +3167,9 @@ msgstr "Private workspace with its own bots and groups."
 
 msgid "Proactivity"
 msgstr "Proactivity"
+
+msgid "Professional"
+msgstr "Professional"
 
 msgid "Project ID"
 msgstr "Project ID"
@@ -3127,6 +3255,14 @@ msgstr "Read replies aloud"
 msgid "read-only"
 msgstr "read-only"
 
+#. placeholder {0}: attachment.file.name
+msgid "Reading {0} is taking too long. Try again in a moment."
+msgstr "Reading {0} is taking too long. Try again in a moment."
+
+#. placeholder {0}: attachment.file.name
+msgid "Reading {0}…"
+msgstr "Reading {0}…"
+
 msgid "Ready"
 msgstr "Ready"
 
@@ -3194,6 +3330,9 @@ msgstr "Refresh view"
 
 msgid "Refreshing…"
 msgstr "Refreshing…"
+
+msgid "Reject"
+msgstr "Reject"
 
 msgid "Release"
 msgstr "Release"
@@ -3315,6 +3454,12 @@ msgstr "Research & writing"
 msgid "Research something for me"
 msgstr "Research something for me"
 
+msgid "Resend code"
+msgstr "Resend code"
+
+msgid "Resend in {cooldown}s"
+msgstr "Resend in {cooldown}s"
+
 msgid "Reset"
 msgstr "Reset"
 
@@ -3339,11 +3484,17 @@ msgstr "Restart to update"
 msgid "Restore"
 msgstr "Restore"
 
+msgid "Restore previous space"
+msgstr "Restore previous space"
+
 msgid "Restore the last saved workspace. Unsaved work on the computer is lost."
 msgstr "Restore the last saved workspace. Unsaved work on the computer is lost."
 
 msgid "Restoring your workspace"
 msgstr "Restoring your workspace"
+
+msgid "Restyles every slide; your content stays as it is."
+msgstr "Restyles every slide; your content stays as it is."
 
 msgid "Resume"
 msgstr "Resume"
@@ -3511,6 +3662,9 @@ msgstr "Search your Library"
 msgid "Search your Library…"
 msgstr "Search your Library…"
 
+msgid "Searchable"
+msgstr "Searchable"
+
 msgid "Searching…"
 msgstr "Searching…"
 
@@ -3525,9 +3679,6 @@ msgstr "See summary"
 
 msgid "Select a bot"
 msgstr "Select a bot"
-
-msgid "Select an element"
-msgstr "Select an element"
 
 msgid "Send"
 msgstr "Send"
@@ -3582,6 +3733,9 @@ msgstr "Settings: Usage"
 
 msgid "Setup help"
 msgstr "Setup help"
+
+msgid "Setup token"
+msgstr "Setup token"
 
 msgid "Shared chat with 2-6 bots. They all reply in the same thread."
 msgstr "Shared chat with 2-6 bots. They all reply in the same thread."
@@ -3638,11 +3792,17 @@ msgstr "SIDE CHATS & FORKS"
 msgid "Sign in"
 msgstr "Sign in"
 
+msgid "Sign out"
+msgstr "Sign out"
+
 msgid "Sign up"
 msgstr "Sign up"
 
 msgid "Sign-in for {host}"
 msgstr "Sign-in for {host}"
+
+msgid "Signups"
+msgstr "Signups"
 
 msgid "Size"
 msgstr "Size"
@@ -3688,6 +3848,9 @@ msgstr "Slide"
 msgid "Slide deck"
 msgstr "Slide deck"
 
+msgid "Slide rail"
+msgstr "Slide rail"
+
 msgid "Slides"
 msgstr "Slides"
 
@@ -3708,6 +3871,24 @@ msgstr "Sound on"
 
 msgid "Source"
 msgstr "Source"
+
+#. placeholder {0}: source.file
+msgid "Source: {0}"
+msgstr "Source: {0}"
+
+#. placeholder {0}: source.file
+#. placeholder {1}: source.rows
+msgid "Source: {0} (first {1} rows)"
+msgstr "Source: {0} (first {1} rows)"
+
+#. placeholder {0}: source.file
+#. placeholder {1}: source.rows
+msgid "Source: {0} (latest {1} rows)"
+msgstr "Source: {0} (latest {1} rows)"
+
+#. placeholder {0}: source.file
+msgid "Source: {0} (long file, only its start was read)"
+msgstr "Source: {0} (long file, only its start was read)"
 
 msgid "Sources"
 msgstr "Sources"
@@ -3827,6 +4008,9 @@ msgstr "subagent"
 msgid "Submit"
 msgstr "Submit"
 
+msgid "Suggested follow-ups"
+msgstr "Suggested follow-ups"
+
 #. placeholder {0}: formatSum(stats.sum)
 msgid "Sum {0}"
 msgstr "Sum {0}"
@@ -3845,6 +4029,10 @@ msgstr "Suspend"
 
 msgid "Switch bot"
 msgstr "Switch bot"
+
+#. placeholder {0}: undo?.name ?? ""
+msgid "Switched to {0}"
+msgstr "Switched to {0}"
 
 msgid "Switching…"
 msgstr "Switching…"
@@ -3903,8 +4091,14 @@ msgstr "Text color"
 msgid "That change can't be made exactly by hand."
 msgstr "That change can't be made exactly by hand."
 
+msgid "That code did not work"
+msgstr "That code did not work"
+
 msgid "That took too long. Try again."
 msgstr "That took too long. Try again."
+
+msgid "The deck changed since you opened it. Try again."
+msgstr "The deck changed since you opened it. Try again."
 
 msgid "The key is stored encrypted and only used for voice."
 msgstr "The key is stored encrypted and only used for voice."
@@ -3927,6 +4121,9 @@ msgstr "The Q3 report draft is ready. Revenue is up 8%, churn ticked up in Augus
 msgid "Their chats, Computer and keys are removed for good. This can't be undone."
 msgstr "Their chats, Computer and keys are removed for good. This can't be undone."
 
+msgid "Theme"
+msgstr "Theme"
+
 msgid "Thinking"
 msgstr "Thinking"
 
@@ -3947,6 +4144,12 @@ msgstr "this computer"
 
 msgid "This conversation is too long for the model."
 msgstr "This conversation is too long for the model."
+
+msgid "This deck can't be restyled by hand. Ask Nova to restyle it."
+msgstr "This deck can't be restyled by hand. Ask Nova to restyle it."
+
+msgid "This deck isn't on a theme. Ask Nova to restyle it."
+msgstr "This deck isn't on a theme. Ask Nova to restyle it."
 
 #. placeholder {0}: pendingDelete.versionCount
 msgid "This deletes all {0} versions of this artifact. This can't be undone."
@@ -4130,14 +4333,29 @@ msgstr "Updating Team Computer"
 msgid "Updating…"
 msgstr "Updating…"
 
+#. placeholder {0}: uploaded + 1
+#. placeholder {1}: attachments.length
+msgid "Uploading {0} of {1}"
+msgstr "Uploading {0} of {1}"
+
+#. placeholder {0}: attachment.file.name
+msgid "Uploading {0}…"
+msgstr "Uploading {0}…"
+
 msgid "Usage"
 msgstr "Usage"
 
 msgid "Use {hostLabel}"
 msgstr "Use {hostLabel}"
 
+msgid "Use a different email"
+msgstr "Use a different email"
+
 msgid "Use a found model"
 msgstr "Use a found model"
+
+msgid "Use a password"
+msgstr "Use a password"
 
 msgid "Use default guidance"
 msgstr "Use default guidance"
@@ -4197,8 +4415,15 @@ msgstr "View details"
 msgid "Voice"
 msgstr "Voice"
 
+#. placeholder {0}: change.periodLabel
+msgid "vs. {0}"
+msgstr "vs. {0}"
+
 msgid "Wait for Nova to finish, then clear."
 msgstr "Wait for Nova to finish, then clear."
+
+msgid "Waiting for approval"
+msgstr "Waiting for approval"
 
 msgid "Waiting for sign-in…"
 msgstr "Waiting for sign-in…"
@@ -4295,6 +4520,9 @@ msgstr "When to run"
 msgid "Where should bots run?"
 msgstr "Where should bots run?"
 
+msgid "Who can join"
+msgstr "Who can join"
+
 msgid "Who can open it"
 msgstr "Who can open it"
 
@@ -4353,6 +4581,9 @@ msgstr "You can close this tab if it does not redirect automatically."
 msgid "You can close this window."
 msgstr "You can close this window."
 
+msgid "You can come back later."
+msgstr "You can come back later."
+
 msgid "You changed {changedCount} cells on {sheetName}. Nova sees this before its next reply."
 msgstr "You changed {changedCount} cells on {sheetName}. Nova sees this before its next reply."
 
@@ -4379,6 +4610,9 @@ msgstr "Your account is paused. Contact your admin."
 
 msgid "Your computer · Your model · Your say"
 msgstr "Your computer · Your model · Your say"
+
+msgid "Your Computer is starting. Try again in a moment."
+msgstr "Your Computer is starting. Try again in a moment."
 
 msgid "Your email address"
 msgstr "Your email address"

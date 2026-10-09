@@ -14,6 +14,8 @@ import {
 } from "./lib/session-gate";
 import { ActivityPreviewPage } from "./pages/dev/ActivityPreviewPage";
 import { CanvasPreviewPage } from "./pages/dev/CanvasPreviewPage";
+import { CardsPreviewPage } from "./pages/dev/CardsPreviewPage";
+import { ChartPreviewPage } from "./pages/dev/ChartPreviewPage";
 import { DeckPreviewPage } from "./pages/dev/DeckPreviewPage";
 import { ForksPreviewPage } from "./pages/dev/ForksPreviewPage";
 import { MemoryPreviewPage } from "./pages/dev/MemoryPreviewPage";
@@ -22,6 +24,7 @@ import { SideChatsPreviewPage } from "./pages/dev/SideChatsPreviewPage";
 import { IntegrationSetupPage } from "./pages/IntegrationSetup";
 import { LocalSettingsPage } from "./pages/LocalSettings";
 import { McpOAuthCallbackPage } from "./pages/McpOAuthCallback";
+import { isPendingApproval, PendingApprovalPage } from "./pages/PendingApproval";
 import { ShellPage } from "./pages/Shell";
 
 const AuthPage = lazy(() =>
@@ -52,6 +55,13 @@ export function App() {
   if (import.meta.env.DEV && window.location.pathname === "/dev/side-chats") {
     return <SideChatsPreviewPage />;
   }
+  // Dev-only fixture routes for the clarification card and follow-up chips (CardsPreviewPage.tsx).
+  if (import.meta.env.DEV && window.location.pathname === "/dev/clarify") {
+    return <CardsPreviewPage scenario="clarify" />;
+  }
+  if (import.meta.env.DEV && window.location.pathname === "/dev/followups") {
+    return <CardsPreviewPage scenario="followups" />;
+  }
   // Dev-only fixture route for the Activity panel (ActivityPreviewPage.tsx): same
   // reasoning — `activities.*` isn't served by the local dev API either.
   if (import.meta.env.DEV && window.location.pathname === "/dev/activity") {
@@ -60,6 +70,9 @@ export function App() {
   // Dev-only fixture route for message forks (ForksPreviewPage.tsx), same reasoning.
   if (import.meta.env.DEV && window.location.pathname === "/dev/forks") {
     return <ForksPreviewPage />;
+  }
+  if (import.meta.env.DEV && window.location.pathname === "/dev/chart") {
+    return <ChartPreviewPage />;
   }
   if (import.meta.env.DEV && window.location.pathname === "/dev/sheet") {
     return <SheetPreviewPage />;
@@ -106,6 +119,7 @@ function SessionApp() {
   }
 
   const user = session.data?.user;
+  if (isPendingApproval(user)) return <PendingApprovalPage refetch={session.refetch} />;
   return (
     <div className="h-full" data-nova-app-state="ready">
       {/* Signed out, every page wears the night welcome surface, so the loading frame does too. */}

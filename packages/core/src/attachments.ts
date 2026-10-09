@@ -5,6 +5,7 @@ import {
   isAllowedAttachmentMimeType,
   isAttachmentImageMimeType,
   type MessageBlock,
+  XLSX_MIME_TYPE,
 } from "@nova/contracts";
 
 export class AttachmentValidationError extends Error {
@@ -136,6 +137,7 @@ const EXTENSION_MIME_TYPES: Record<string, AttachmentMimeType> = {
   ".md": "text/markdown",
   ".markdown": "text/markdown",
   ".csv": "text/csv",
+  ".xlsx": XLSX_MIME_TYPE,
   ".html": "text/html",
   ".htm": "text/html",
   ".json": "application/json",
@@ -150,6 +152,7 @@ const MIME_TYPE_EXTENSIONS: Record<AttachmentMimeType, string> = {
   "text/plain": ".txt",
   "text/markdown": ".md",
   "text/csv": ".csv",
+  [XLSX_MIME_TYPE]: ".xlsx",
   "text/html": ".html",
   "application/json": ".json",
 };
@@ -197,4 +200,78 @@ export function userTurnMessageForRun<
       message.role === "user" &&
       (sourceMessageId ? message.id === sourceMessageId : message.runId === runId),
   );
+}
+
+// Muse chats keep a person's files in their Computer workspace, not in Nova's database. A message
+// refers to such a file with one reference line; this is the only definition of that format (the
+// api writes it, the web and the worker parse it).
+
+/** Where composer uploads land in the workspace. */
+export const WORKSPACE_UPLOADS_PREFIX = "your_files/uploads/";
+
+export interface WorkspaceAttachmentRef {
+  path: string;
+  mimeType: string;
+  size: number;
+}
+
+const REFERENCE_PREFIX = "Attached file in your workspace: ";
+const REFERENCE_LINE = /^Attached file in your workspace: (.+) \(([^(),\s]+), (\d+) bytes\)$/;
+
+export function attachmentReferenceLine(ref: WorkspaceAttachmentRef): string {
+  return `${REFERENCE_PREFIX}${ref.path} (${ref.mimeType}, ${ref.size} bytes)`;
+}
+
+/** The attachment types the Computer reads (`files_ingest`): documents into Markdown and an
+ * index, spreadsheets into a schema manifest (never row text). Images go to the model as images;
+ * the other allowed types stay a path line. */
+const INGESTABLE_MIME_TYPES: readonly string[] = [
+  "application/pdf",
+  "text/plain",
+  "text/markdown",
+  "text/csv",
+  XLSX_MIME_TYPE,
+];
+
+export function isIngestableAttachmentMimeType(mimeType: string): boolean {
+  return INGESTABLE_MIME_TYPES.includes(mimeType);
+}
+
+const CONTEXT_OPEN = "<attachment_context>";
+const CONTEXT_CLOSE = "</attachment_context>";
+
+/** The leading reference lines of a message and the caption after them. Lines that do not match
+ * the format end the scan, so ordinary text is never mistaken for an attachment. A message stored
+ * by an older gateway has an `<attachment_context>` block right after the lines; it is skipped
+ * (it is document text for the model, not the person's words). Today the Computer builds that
+ * context at turn start and it is never stored, so a message is only the lines and the caption. */
+export function parseAttachmentReferences(text: string): {
+  attachments: WorkspaceAttachmentRef[];
+  caption: string;
+} {
+  const lines = text.split("\n");
+  const attachments: WorkspaceAttachmentRef[] = [];
+  let index = 0;
+  for (; index < lines.length; index += 1) {
+    const match = REFERENCE_LINE.exec(lines[index] ?? "");
+    if (!match) break;
+    attachments.push({ path: match[1] ?? "", mimeType: match[2] ?? "", size: Number(match[3]) });
+  }
+  if (attachments.length === 0) return { attachments, caption: text };
+  if (lines[index] === CONTEXT_OPEN) {
+    const close = lines.indexOf(CONTEXT_CLOSE, index);
+    if (close !== -1) index = close + 1;
+  }
+  return { attachments, caption: lines.slice(index).join("\n").trim() };
+}
+
+/** The text a Muse turn carries for workspace attachments: one reference line each, a blank line,
+ * then the caption. */
+export function promptTextForWorkspaceAttachments(
+  text: string | undefined,
+  attachments: readonly WorkspaceAttachmentRef[],
+): string {
+  const caption = text?.trim() ?? "";
+  const lines = attachments.map(attachmentReferenceLine).join("\n");
+  return [lines, caption].filter(Boolean).join("\n\n");
 }

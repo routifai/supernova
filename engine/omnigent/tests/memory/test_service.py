@@ -56,6 +56,24 @@ def test_remember_reinforces_a_near_duplicate(service: MemoryService) -> None:
     assert second["claim"]["confidence"] > first["claim"]["confidence"]
 
 
+def test_unsignalled_instruction_is_kept_as_low_confidence_inferred_evidence(
+    service: MemoryService,
+) -> None:
+    first = service.remember(
+        "alice", "The user wants replies in French", kind="instruction", explicitness="inferred"
+    )
+    assert first["action"] == "added"
+    assert first["claim"]["explicitness"] == "inferred"
+    assert first["claim"]["confidence"] == 0.4
+    # Saying it again in a later conversation builds the evidence instead of duplicating it.
+    again = service.remember(
+        "alice", "The user wants replies in french", kind="instruction", explicitness="inferred"
+    )
+    assert again["action"] == "reinforced"
+    assert again["claim"]["claim_id"] == first["claim"]["claim_id"]
+    assert again["claim"]["confidence"] > first["claim"]["confidence"]
+
+
 def test_remember_supersedes_only_the_named_claim(service: MemoryService) -> None:
     first = service.remember("alice", "Prefers figures in CAD", kind="preference")
     second = service.remember(
@@ -210,6 +228,19 @@ def test_forget_with_confirm_removes_the_claim(service: MemoryService) -> None:
     assert done["status"] == "forgotten"
     assert service.get("alice", claim_id)["status"] == "forgotten"
     assert service.search("alice", "figures CAD") == []
+
+
+def test_forget_all_removes_every_claim_of_one_person_and_no_one_else(
+    service: MemoryService,
+) -> None:
+    service.remember("alice", "Prefers figures in CAD", kind="preference")
+    service.remember("alice", "Works on the Atlas migration", kind="focus")
+    service.remember("bob", "Prefers metric units", kind="preference")
+
+    assert service.forget_all("alice") == 2
+    assert service.list_claims("alice") == []
+    assert [c["text"] for c in service.list_claims("bob")] == ["Prefers metric units"]
+    assert service.forget_all("alice") == 0  # idempotent
 
 
 def test_forget_is_scoped_to_user(service: MemoryService) -> None:

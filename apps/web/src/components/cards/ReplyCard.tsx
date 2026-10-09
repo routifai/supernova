@@ -1,8 +1,9 @@
 import { ChatMarkdown } from "@nova/chat-ui/web";
 import { parseReplyCard, type ReplyCardBlock } from "@nova/contracts";
 import { ReplyArtifactFileCard } from "../../features/artifacts";
+import { PassageChips } from "../../features/knowledge";
 import { CardSkeleton, catalog } from "./catalog";
-import { useResolvedReplyCard } from "./context";
+import { useReplyCardRunning, useResolvedReplyCard } from "./context";
 import { SecureEntryCard } from "./SecureEntryCard";
 
 /** The markdown the Muse wrote for a card the client cannot draw. */
@@ -30,6 +31,8 @@ export function ReplyCard({ block, answer }: { block: ReplyCardBlock; answer?: s
       return <catalog.plan title={title} data={parsed.data} />;
     case "ask":
       return <catalog.ask title={title} data={parsed.data} answer={answer} />;
+    case "follow_ups":
+      return <catalog.follow_ups data={parsed.data} />;
     case "quote":
       return <catalog.quote title={title} data={parsed.data} />;
     case "chart":
@@ -42,6 +45,8 @@ export function ReplyCard({ block, answer }: { block: ReplyCardBlock; answer?: s
       ) : (
         <ReplyArtifactFileCard title={title} data={parsed.data} />
       );
+    case "passages":
+      return <PassageChips data={parsed.data} />;
     case "progress":
       return <catalog.progress title={title} data={parsed.data} />;
     case "secure_entry":
@@ -60,8 +65,12 @@ export function ReplyCardBlockView({
   index: number;
 }) {
   const resolved = useResolvedReplyCard(messageId, index);
+  const running = useReplyCardRunning();
   const shown = resolved ? resolved.block : block;
   if (!shown) return null;
+  // Chips are for the latest settled answer of a resolved thread; elsewhere (no thread to judge
+  // "latest" by) or while the Muse works, they stay out of the way.
+  if (shown.card === "follow_ups" && (!resolved || running)) return null;
   return (
     <div className="flex w-full justify-start py-1">
       <ReplyCard block={shown} answer={resolved?.answer} />

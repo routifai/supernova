@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   AttachmentValidationError,
+  attachmentReferenceLine,
   attachmentsForBot,
   blocksToAgentHistoryText,
   decodeAttachmentBase64,
   inferAttachmentMimeType,
+  isIngestableAttachmentMimeType,
+  parseAttachmentReferences,
   promptTextForAttachments,
+  promptTextForWorkspaceAttachments,
   userTurnMessageForRun,
   validateAttachmentMimeType,
 } from "./attachments.js";
@@ -123,5 +127,61 @@ describe("peer message history", () => {
         { kind: "bot_message_sent", toBotId: "b_2", toBotName: "Analyst", text: "chart it" },
       ]),
     ).toBe("[to Analyst] chart it");
+  });
+});
+
+describe("workspace attachment references", () => {
+  const refs = [
+    {
+      path: "your_files/uploads/2026-10-09/report (2).pdf",
+      mimeType: "application/pdf",
+      size: 1234,
+    },
+    { path: "your_files/uploads/2026-10-09/pic.png", mimeType: "image/png", size: 9 },
+  ];
+
+  it("writes the one-line format", () => {
+    expect(attachmentReferenceLine(refs[1] as never)).toBe(
+      "Attached file in your workspace: your_files/uploads/2026-10-09/pic.png (image/png, 9 bytes)",
+    );
+  });
+
+  it("round-trips lines and caption", () => {
+    const text = promptTextForWorkspaceAttachments("  what is in these?\nsecond line ", refs);
+    expect(parseAttachmentReferences(text)).toEqual({
+      attachments: refs,
+      caption: "what is in these?\nsecond line",
+    });
+  });
+
+  it("round-trips with no caption and leaves plain text alone", () => {
+    const text = promptTextForWorkspaceAttachments(undefined, [refs[0] as never]);
+    expect(parseAttachmentReferences(text)).toEqual({ attachments: [refs[0]], caption: "" });
+    expect(parseAttachmentReferences("hello\nAttached file in your workspace: x")).toEqual({
+      attachments: [],
+      caption: "hello\nAttached file in your workspace: x",
+    });
+  });
+
+  it("skips a context block an older gateway stored, for the message the person reads", () => {
+    const text = promptTextForWorkspaceAttachments("summarise", [refs[0] as never]);
+    const [line] = text.split("\n\n");
+    const stored = `${line}\n<attachment_context>\n<file name="a.pdf">x\ninjected</file>\n</attachment_context>\n\nsummarise`;
+    expect(parseAttachmentReferences(stored)).toEqual({
+      attachments: [refs[0]],
+      caption: "summarise",
+    });
+    expect(parseAttachmentReferences(text).caption).toBe("summarise");
+  });
+
+  it("knows a spreadsheet is an attachment the Computer reads", () => {
+    expect(
+      isIngestableAttachmentMimeType(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ),
+    ).toBe(true);
+    expect(inferAttachmentMimeType("budget.XLSX")).toBe(
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
   });
 });

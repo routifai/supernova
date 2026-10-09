@@ -167,15 +167,23 @@ class MemoryService:
         speaker: str | None = None,
         evidence: list[MemoryEvidenceLink] | None = None,
         replaces_claim_id: str | None = None,
+        explicitness: str | None = None,
     ) -> dict[str, Any]:
-        """Write a ``stated`` claim, immediately indexed; reinforce a near-duplicate.
+        """Write a claim (``stated`` unless *explicitness* says ``inferred``), immediately
+        indexed; reinforce a near-duplicate.
 
-        Supersedes only the active claim named by ``replaces_claim_id``.
+        Supersedes only the active claim named by ``replaces_claim_id``. An ``inferred`` claim
+        starts at :data:`INFERRED_CONFIDENCE` (a standing instruction said without a permanence
+        signal), and repeating it reinforces it like any other claim.
 
         :returns: ``{"action": "added"|"reinforced"|"superseded", "claim": {...}}``.
         """
         resolved_kind: str = (
             kind if isinstance(kind, str) and kind in VALID_KINDS else DEFAULT_KIND
+        )
+        resolved_explicitness = "inferred" if explicitness == "inferred" else "stated"
+        confidence = (
+            _INFERRED_CONFIDENCE if resolved_explicitness == "inferred" else _STATED_CONFIDENCE
         )
         if replaces_claim_id:
             old = self._store.get(replaces_claim_id, user_id)
@@ -184,7 +192,13 @@ class MemoryService:
             if old.person_authored:
                 # The person wrote this: keep it and add the new text beside it.
                 result = self.remember(
-                    user_id, text, kind=kind, quote=quote, speaker=speaker, evidence=evidence
+                    user_id,
+                    text,
+                    kind=kind,
+                    quote=quote,
+                    speaker=speaker,
+                    evidence=evidence,
+                    explicitness=explicitness,
                 )
                 result["kept_person_authored"] = replaces_claim_id
                 return result
@@ -198,8 +212,8 @@ class MemoryService:
                 quote=quote,
                 speaker=speaker,
                 evidence=evidence,
-                explicitness="stated",
-                confidence=_STATED_CONFIDENCE,
+                explicitness=resolved_explicitness,
+                confidence=confidence,
             )
             self._index.delete(existing_id)
             self._index.upsert(new_claim)
@@ -228,8 +242,8 @@ class MemoryService:
             quote=quote,
             speaker=speaker,
             evidence=evidence,
-            explicitness="stated",
-            confidence=_STATED_CONFIDENCE,
+            explicitness=resolved_explicitness,
+            confidence=confidence,
         )
         self._index.upsert(new_claim)
         self._invalidate_profile(user_id)
@@ -485,6 +499,27 @@ class MemoryService:
         self._index.delete(target_id)
         self._invalidate_profile(user_id)
         return {"status": "forgotten", "claim": _claim_to_dict(updated)}
+
+    def forget_all(self, user_id: str) -> int:
+        """Forget every claim of *user_id* (account deletion): nothing may outlive the person.
+
+        Loops until no active claim is left (a write that lands mid-way is caught on the next
+        pass), and stops if a pass makes no progress rather than spinning.
+
+        :returns: How many claims were forgotten.
+        """
+        forgotten = 0
+        while True:
+            claims = self.list_claims(user_id)
+            if not claims:
+                return forgotten
+            progress = 0
+            for claim in claims:
+                result = self.forget(user_id, claim_id=claim["claim_id"], confirm=True)
+                progress += int(result.get("status") == "forgotten")
+            if progress == 0:
+                return forgotten
+            forgotten += progress
 
     # ── Work profile (Phase 2) ──────────────────────────────────────
 

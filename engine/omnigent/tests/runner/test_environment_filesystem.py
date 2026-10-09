@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import os
 import shutil
 import subprocess
@@ -241,6 +242,29 @@ async def test_write_file(
     assert body["created"] is True
     assert body["bytes_written"] == 11
     assert (workspace / "new.txt").read_text() == "new content"
+
+
+@pytest.mark.asyncio
+async def test_write_file_with_if_exists_fail_never_overwrites(
+    client: httpx.AsyncClient,
+    workspace: Path,
+) -> None:
+    """``if_exists: "fail"`` is an exclusive create: the second writer of a name gets 409."""
+    url = (
+        f"/v1/sessions/conv_test/resources/environments"
+        f"/{DEFAULT_ENVIRONMENT_ID}/filesystem/up/report.txt"
+    )
+    first, second = await asyncio.gather(
+        client.put(url, json={"content": "one", "encoding": "utf-8", "if_exists": "fail"}),
+        client.put(url, json={"content": "two", "encoding": "utf-8", "if_exists": "fail"}),
+    )
+    assert sorted([first.status_code, second.status_code]) == [200, 409]
+    winner = "one" if first.status_code == 200 else "two"
+    assert (workspace / "up" / "report.txt").read_text() == winner
+    # a plain PUT still replaces, as before
+    again = await client.put(url, json={"content": "three", "encoding": "utf-8"})
+    assert again.status_code == 200
+    assert (workspace / "up" / "report.txt").read_text() == "three"
 
 
 @pytest.mark.asyncio
@@ -2387,3 +2411,36 @@ async def test_scoped_search_reaches_snapshot_files_past_the_budget(
 
     assert [e["path"] for e in body["data"]] == ["zzz/new.txt"], body
     assert body["truncated"] is True
+
+
+@pytest.mark.asyncio
+async def test_write_file_base64_keeps_binary_bytes_and_tells_the_file_search(
+    client: httpx.AsyncClient,
+    workspace: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An upload's bytes arrive as base64, land intact, and the file search hears about them."""
+    import base64
+
+    told: list[object] = []
+    monkeypatch.setattr("omnigent.runner.knowledge.runtime.notify_written", told.append)
+    data = bytes(range(256)) * 4
+    resp = await client.put(
+        f"/v1/sessions/conv_test/resources/environments"
+        f"/{DEFAULT_ENVIRONMENT_ID}/filesystem/your_files/uploads/2026-10-09/blob.pdf",
+        json={"content": base64.b64encode(data).decode(), "encoding": "base64"},
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["bytes_written"] == len(data)
+    assert (workspace / "your_files/uploads/2026-10-09/blob.pdf").read_bytes() == data
+    assert len(told) == 1 and str(told[0]).endswith("uploads/2026-10-09/blob.pdf")
+
+
+@pytest.mark.asyncio
+async def test_write_file_rejects_invalid_base64(client: httpx.AsyncClient) -> None:
+    resp = await client.put(
+        f"/v1/sessions/conv_test/resources/environments"
+        f"/{DEFAULT_ENVIRONMENT_ID}/filesystem/bad.bin",
+        json={"content": "***not base64***", "encoding": "base64"},
+    )
+    assert resp.status_code == 400

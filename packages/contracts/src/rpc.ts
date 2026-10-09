@@ -1,11 +1,12 @@
 import { accountContract } from "./rpc/account.js";
 import { activityContract } from "./rpc/activity.js";
-import { engineAdminContract } from "./rpc/admin.js";
+import { engineAdminContract, signupsContract } from "./rpc/admin.js";
 import { agentSecretsContract } from "./rpc/agent-secrets.js";
 import { approvalsContract } from "./rpc/approvals.js";
 import { appsContract } from "./rpc/apps.js";
 import { artifactsContract } from "./rpc/artifacts.js";
 import { botsContract } from "./rpc/bots.js";
+import { chartsContract } from "./rpc/charts.js";
 import { computerContract } from "./rpc/computer.js";
 import { dailyNotesContract } from "./rpc/daily-notes.js";
 import { decksContract } from "./rpc/decks.js";
@@ -13,6 +14,7 @@ import { feedContract } from "./rpc/feed.js";
 import { goalsContract } from "./rpc/goals.js";
 import { ideasContract } from "./rpc/ideas.js";
 import { integrationsContract } from "./rpc/integrations.js";
+import { knowledgeContract } from "./rpc/knowledge.js";
 import { modelsContract } from "./rpc/local-models.js";
 import { memoryContract } from "./rpc/memory.js";
 import { messagingContract } from "./rpc/messaging.js";
@@ -34,6 +36,7 @@ export const appContract = {
   ...approvalsContract,
   ...artifactsContract,
   ...botsContract,
+  ...chartsContract,
   ...computerContract,
   ...dailyNotesContract,
   ...decksContract,
@@ -43,6 +46,7 @@ export const appContract = {
   ...goalsContract,
   ...ideasContract,
   ...integrationsContract,
+  ...knowledgeContract,
   ...memoryContract,
   ...messagingContract,
   ...modelsContract,
@@ -51,6 +55,7 @@ export const appContract = {
   ...scratchpadContract,
   ...sheetsContract,
   ...sideChatsContract,
+  ...signupsContract,
   ...skillsContract,
   ...threadsContract,
   ...vaultContract,
