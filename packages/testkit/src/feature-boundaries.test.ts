@@ -23,6 +23,7 @@ const CAPABILITIES: Record<LayerName, readonly string[]> = {
     "artifacts",
     "computer",
     "daily-notes",
+    "decks",
     "feed",
     "goals",
     "ideas",
@@ -41,6 +42,7 @@ const CAPABILITIES: Record<LayerName, readonly string[]> = {
     "artifacts",
     "computer",
     "daily-notes",
+    "decks",
     "feed",
     "goals",
     "ideas",
@@ -58,6 +60,7 @@ const CAPABILITIES: Record<LayerName, readonly string[]> = {
     "artifacts",
     "computer",
     "daily-notes",
+    "decks",
     "feed",
     "goals",
     "ideas",
@@ -76,6 +79,7 @@ const CAPABILITIES: Record<LayerName, readonly string[]> = {
     "artifacts",
     "computer",
     "daily-notes",
+    "decks",
     "feed",
     "goals",
     "ideas",
@@ -94,6 +98,7 @@ const CAPABILITIES: Record<LayerName, readonly string[]> = {
     "artifacts",
     "computer",
     "daily-notes",
+    "decks",
     "feed",
     "goals",
     "ideas",
@@ -108,6 +113,8 @@ const CAPABILITIES: Record<LayerName, readonly string[]> = {
 
 /** `capability -> capabilities it may import`, through their public entry point only. */
 const BASES: Record<string, readonly string[]> = {
+  // A deck is a saved HTML artifact (`*.deck.html`); exports are saved back as artifacts.
+  decks: ["artifacts"],
   sheets: ["artifacts"],
   apps: ["artifacts"],
   admin: ["models"],
@@ -136,9 +143,6 @@ const BASELINE: readonly string[] = [
   "web:features/apps/PublishApp.test.tsx -> artifacts",
   // The sheet "ask about this selection" chip lives in the composer and the message view; it
   // needs a composer/message extension point, which comes when those move into their folders.
-  "web:pages/muse/conversation/Composer.tsx -> sheets",
-  "web:pages/muse/conversation/MessageView.tsx -> sheets",
-  "web:pages/muse/conversation/messageText.ts -> sheets",
   // The transcript attaches each message's Forks (side-chats forks.py: forks_by_anchor,
   // attach_forks); goes away when the transcript takes a per-message attachment hook that
   // side-chats registers.
