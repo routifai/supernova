@@ -144,33 +144,37 @@ function Stub() {
   return null;
 }
 
-vi.mock("../components/ArtifactFileCard", () => ({ ArtifactFileCard: Stub }));
-vi.mock("../components/AskCard", () => ({ AskCard: Stub }));
+vi.mock("../features/artifacts/ArtifactFileCard", () => ({ ArtifactFileCard: Stub }));
+vi.mock("../features/approvals/AskCard", () => ({ AskCard: Stub }));
 vi.mock("../components/ai/CollaborationMarker", () => ({
   CollaborationMarker: Stub,
   ActiveBotGlyph: Stub,
 }));
 vi.mock("../components/CloudAgentCard", () => ({ CloudAgentCard: Stub }));
-vi.mock("../components/ComputerMaintenanceActions", () => ({ ComputerMaintenanceActions: Stub }));
-vi.mock("../components/ComputersUnavailableHint", () => ({
+vi.mock("../features/computer/ComputerMaintenanceActions", () => ({
+  ComputerMaintenanceActions: Stub,
+}));
+vi.mock("../features/computer/ComputersUnavailableHint", () => ({
   ComputersUnavailableHint: Stub,
   computersAreUnavailable: () => false,
 }));
-vi.mock("../components/ComputerUpdateProgress", () => ({ ComputerUpdateProgress: Stub }));
+vi.mock("../features/computer/ComputerUpdateProgress", () => ({ ComputerUpdateProgress: Stub }));
 vi.mock("../components/MessageHoverMetadata", () => ({ MessageHoverMetadata: Stub }));
-vi.mock("../components/teach/SkillDraftCard", () => ({ SkillDraftCard: Stub }));
-vi.mock("../components/teach/TeachCaptureOverlay", () => ({ TeachCaptureOverlay: Stub }));
-vi.mock("../components/teach/TeachComputerOverlay", () => ({ TeachComputerOverlayControl: Stub }));
-vi.mock("../components/teach/TeachRecordingChrome", () => ({
+vi.mock("../features/skills/teach/SkillDraftCard", () => ({ SkillDraftCard: Stub }));
+vi.mock("../features/skills/teach/TeachCaptureOverlay", () => ({ TeachCaptureOverlay: Stub }));
+vi.mock("../features/skills/teach/TeachComputerOverlay", () => ({
+  TeachComputerOverlayControl: Stub,
+}));
+vi.mock("../features/skills/teach/TeachRecordingChrome", () => ({
   TeachRecordingChrome: Stub,
   TeachStopButton: Stub,
 }));
-vi.mock("./muse/WaitingSheet", () => ({ WaitingSheet: Stub }));
+vi.mock("../features/approvals/WaitingSheet", () => ({ WaitingSheet: Stub }));
 vi.mock("./GroupPanel", () => ({
   GroupSettings: Stub,
   memberName: () => "",
 }));
-vi.mock("./HostComputerPrompt", () => ({ HostComputerPrompt: Stub }));
+vi.mock("../features/computer/HostComputerPrompt", () => ({ HostComputerPrompt: Stub }));
 vi.mock("./RoutineEditor", () => ({
   RoutineEditor: Stub,
   RoutineListHeader: Stub,

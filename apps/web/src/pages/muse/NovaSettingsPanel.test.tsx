@@ -13,9 +13,9 @@ vi.mock("react-dom/client", async (orig) =>
 const museApi = vi.hoisted(() => ({ settings: vi.fn(), updateSettings: vi.fn() }));
 const preferencesApi = vi.hoisted(() => ({ update: vi.fn().mockResolvedValue({}) }));
 vi.mock("../../lib/rpc", () => ({ rpc: { muse: museApi, preferences: preferencesApi } }));
-vi.mock("./ApprovalsSettings", () => ({ ApprovalsSettings: () => null }));
-vi.mock("./VaultSettings", () => ({ VaultSettings: () => null }));
-vi.mock("./SideChatArchiving", () => ({ SideChatArchiving: () => null }));
+vi.mock("../../features/approvals", () => ({ ApprovalsSettings: () => null }));
+vi.mock("../../features/vault", () => ({ VaultSettings: () => null }));
+vi.mock("../../features/side-chats/SideChatArchiving", () => ({ SideChatArchiving: () => null }));
 vi.mock("../../lib/auth", () => ({
   authClient: { useSession: () => ({ data: { user: { id: "user-1" } }, isPending: false }) },
 }));

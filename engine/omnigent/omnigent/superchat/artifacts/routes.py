@@ -20,8 +20,13 @@ from omnigent.errors import ErrorCode, OmnigentError
 from omnigent.server.auth import LEVEL_OWNER, RESERVED_USER_LOCAL, AuthProvider
 from omnigent.server.routes._auth_helpers import require_access, require_user
 from omnigent.stores import ConversationStore, PermissionStore
-from omnigent.superchat.artifacts.store import Artifact, SqlAlchemyArtifactStore
-from omnigent.superchat.artifacts.types import KIND_MIME, MAX_ARTIFACT_BYTES, kind_for_name
+from omnigent.superchat.artifact_kinds import KIND_MIME, MAX_ARTIFACT_BYTES, kind_for_name
+from omnigent.superchat.artifacts.store import (
+    Artifact,
+    Publication,
+    SqlAlchemyArtifactStore,
+    ViewStats,
+)
 
 #: The preview is shown in a sandboxed, origin-less iframe; this keeps a page that is opened
 #: directly (or downloaded and served) from reaching anything but public https assets.
@@ -32,9 +37,29 @@ _HTML_CSP = (
 )
 
 
-def artifact_to_response(item: Artifact, *, versions: int = 1) -> dict[str, Any]:
+def publication_to_response(pub: Publication, stats: ViewStats | None = None) -> dict[str, Any]:
+    """Serialize a publication with its view stats."""
+    return {
+        "slug": pub.slug,
+        "url_path": pub.url_path,
+        "audience": pub.audience,
+        "version": pub.published_version,
+        "published_at": pub.published_at,
+        "updated_at": pub.updated_at,
+        "stats": (stats or ViewStats()).as_dict(),
+    }
+
+
+def artifact_to_response(
+    item: Artifact,
+    *,
+    versions: int = 1,
+    publication: Publication | None = None,
+    stats: ViewStats | None = None,
+) -> dict[str, Any]:
     """Serialize one artifact version for the REST API."""
     return {
+        "publish": publication_to_response(publication, stats) if publication else None,
         "id": item.id,
         "artifact_id": item.id,
         "parent_session_id": item.parent_session_id,
@@ -45,13 +70,16 @@ def artifact_to_response(item: Artifact, *, versions: int = 1) -> dict[str, Any]
         "size": item.size,
         "version": item.version,
         "versions": versions,
-        "published": item.published,
+        "published": publication is not None,
         "created_at": item.created_at,
         "updated_at": item.updated_at,
+        "origin": item.origin,
+        "parent_version_id": item.parent_version_id,
+        "edit_summary": item.edit_summary,
     }
 
 
-def _check_id(value: str, what: str) -> None:
+def check_id(value: str, what: str) -> None:
     try:
         uuid_to_bytes(value)
     except InvalidUuidError as exc:
@@ -65,6 +93,24 @@ def _disposition(kind: str, name: str) -> str:
     )
 
 
+def request_owner(request: Request, auth_provider: AuthProvider | None) -> str | None:
+    """The calling owner's id, or ``None`` for the single local user (rows are unowned)."""
+    user_id = require_user(request, auth_provider)
+    owner = user_id if user_id is not None else RESERVED_USER_LOCAL
+    return None if owner == RESERVED_USER_LOCAL else owner
+
+
+async def load_artifact(
+    store: SqlAlchemyArtifactStore, owner: str | None, artifact_id: str
+) -> Artifact:
+    """The owner's artifact version, or a 404 (another owner's rows are indistinguishable)."""
+    check_id(artifact_id, "artifact id")
+    item = await asyncio.to_thread(store.get, artifact_id, user_id=owner)
+    if item is None:
+        raise OmnigentError("Artifact not found", code=ErrorCode.NOT_FOUND)
+    return item
+
+
 def create_artifacts_router(
     store: SqlAlchemyArtifactStore,
     *,
@@ -76,17 +122,10 @@ def create_artifacts_router(
     router = APIRouter()
 
     def _owner(request: Request) -> str | None:
-        user_id = require_user(request, auth_provider)
-        owner = user_id if user_id is not None else RESERVED_USER_LOCAL
-        return None if owner == RESERVED_USER_LOCAL else owner
+        return request_owner(request, auth_provider)
 
     async def _load(request: Request, artifact_id: str) -> Artifact:
-        owner = _owner(request)
-        _check_id(artifact_id, "artifact id")
-        item = await asyncio.to_thread(store.get, artifact_id, user_id=owner)
-        if item is None:
-            raise OmnigentError("Artifact not found", code=ErrorCode.NOT_FOUND)
-        return item
+        return await load_artifact(store, _owner(request), artifact_id)
 
     @router.post("/artifacts", status_code=201)
     async def create_artifact(
@@ -94,10 +133,11 @@ def create_artifacts_router(
         parent_session_id: str = Query(),
         name: str = Query(min_length=1, max_length=512),
         title: str | None = Query(default=None, max_length=256),
+        source_path: str | None = Query(default=None, max_length=1024),
     ) -> dict[str, Any]:
         """Save the request body as the next version of ``name`` in a session the caller owns."""
         owner = _owner(request)
-        _check_id(parent_session_id, "parent_session_id")
+        check_id(parent_session_id, "parent_session_id")
         await require_access(
             owner, parent_session_id, LEVEL_OWNER, permission_store, conversation_store
         )
@@ -124,6 +164,7 @@ def create_artifacts_router(
             kind=kind,
             mime=KIND_MIME[kind],
             data=data,
+            source_path=source_path,
         )
         return artifact_to_response(item, versions=item.version)
 
@@ -136,21 +177,81 @@ def create_artifacts_router(
         """The newest version of each deliverable, newest first."""
         owner = _owner(request)
         if parent_session_id is not None:
-            _check_id(parent_session_id, "parent_session_id")
+            check_id(parent_session_id, "parent_session_id")
         rows = await asyncio.to_thread(
             store.list_latest, user_id=owner, parent_session_id=parent_session_id, limit=limit
         )
-        return {"artifacts": [artifact_to_response(a, versions=n) for a, n in rows]}
+        pubs = await asyncio.to_thread(store.publications_for_owner, owner)
+        stats = await asyncio.to_thread(store.stats, [p.slug for p in pubs.values()])
+        out = []
+        for a, n in rows:
+            pub = pubs.get((a.parent_session_id, a.name))
+            out.append(
+                artifact_to_response(
+                    a, versions=n, publication=pub, stats=stats.get(pub.slug) if pub else None
+                )
+            )
+        return {"artifacts": out}
+
+    @router.get("/artifacts/pending-edits")
+    async def pending_edits(request: Request, parent_session_id: str = Query()) -> dict[str, Any]:
+        """Hand-edited versions in a session not yet written back to its Computer.
+
+        The runner calls this at the start of the Muse's turn: it writes each ``latest``
+        edit's bytes to ``source_path``, tells the Muse (``note``) and then acks the ids via
+        ``POST /artifacts/{id}/delivered``.
+        """
+        owner = _owner(request)
+        check_id(parent_session_id, "parent_session_id")
+        await require_access(
+            owner, parent_session_id, LEVEL_OWNER, permission_store, conversation_store
+        )
+        rows = await asyncio.to_thread(
+            store.pending_manual, user_id=owner, parent_session_id=parent_session_id
+        )
+        newest: dict[str, int] = {}
+        for row in rows:
+            newest[row.name] = max(newest.get(row.name, 0), row.version)
+        edits = []
+        for row in rows:
+            head = await asyncio.to_thread(store.newest, row)
+            edits.append(
+                {
+                    **artifact_to_response(row),
+                    "source_path": row.source_path,
+                    # Only the group's newest version is written back, and only when it is
+                    # this hand edit (a later save by the Muse supersedes it).
+                    "write_back": head is not None and head.id == row.id,
+                }
+            )
+        return {"edits": edits}
+
+    @router.post("/artifacts/{artifact_id}/delivered")
+    async def mark_delivered(request: Request, artifact_id: str) -> dict[str, Any]:
+        """Ack that a hand-edited version was written back and announced (idempotent)."""
+        item = await _load(request, artifact_id)
+        ok = await asyncio.to_thread(store.mark_delivered, item.id, user_id=item.user_id)
+        return {"delivered": ok}
 
     @router.get("/artifacts/{artifact_id}")
     async def get_artifact(request: Request, artifact_id: str) -> dict[str, Any]:
         """One version's metadata plus every version of its deliverable."""
         item = await _load(request, artifact_id)
         versions = await asyncio.to_thread(store.versions, item)
+        pub = await asyncio.to_thread(store.publication_for, item)
+        stats = (await asyncio.to_thread(store.stats, [pub.slug])).get(pub.slug) if pub else None
         return {
-            **artifact_to_response(item, versions=len(versions)),
+            **artifact_to_response(item, versions=len(versions), publication=pub, stats=stats),
             "all_versions": [
-                {"id": v.id, "version": v.version, "size": v.size, "created_at": v.created_at}
+                {
+                    "id": v.id,
+                    "version": v.version,
+                    "size": v.size,
+                    "created_at": v.created_at,
+                    "origin": v.origin,
+                    "parent_version_id": v.parent_version_id,
+                    "edit_summary": v.edit_summary,
+                }
                 for v in versions
             ],
         }

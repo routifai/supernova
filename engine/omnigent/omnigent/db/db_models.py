@@ -1760,6 +1760,12 @@ class SqlArtifact(OmnigentBase):
     :param version: 1-based version number within the group.
     :param blob_key: Artifact-store key of the bytes.
     :param published: Reserved for a later "publish" feature.
+    :param origin: ``"ai"`` (saved by the Muse), ``"manual"`` (edited by hand) or ``"restore"``.
+    :param parent_version_id: The version this one was derived from, if any.
+    :param source_path: Computer workspace path the bytes were read from / are written back to.
+    :param edit_summary: Short human text describing a manual edit.
+    :param delivered_at: Epoch seconds when a manual version was written back to the Computer
+        and announced to the Muse; ``None`` while still pending.
     """
 
     __tablename__ = "artifacts"
@@ -1784,6 +1790,11 @@ class SqlArtifact(OmnigentBase):
     published: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=false())
     created_at: Mapped[int] = mapped_column(Integer, nullable=False)
     updated_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    origin: Mapped[str] = mapped_column(String(16), nullable=False, server_default="ai")
+    parent_version_id: Mapped[str | None] = mapped_column(Uuid16, nullable=True)
+    source_path: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    edit_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    delivered_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     __table_args__ = (
         Index(
@@ -1794,8 +1805,93 @@ class SqlArtifact(OmnigentBase):
             "name",
             "version",
         ),
+        Index(
+            "uq_artifacts_session_name_version",
+            "workspace_id",
+            "parent_session_id",
+            "name",
+            "version",
+            unique=True,
+        ),
         Index("ix_artifacts_owner", "workspace_id", "user_id", "created_at"),
     )
+
+
+class SqlArtifactPublication(OmnigentBase):
+    """
+    SQLAlchemy model for the ``artifact_publications`` table.
+
+    One row per *published* deliverable (an artifact group: ``user_id`` + ``parent_session_id``
+    + ``name``). Presence of the row means "published"; deleting it unpublishes.
+
+    :param slug: URL-safe public address segment (title + short random suffix); unique.
+    :param user_id: Owner identity; ``None`` in single-user mode.
+    :param parent_session_id: The Conversation of the deliverable.
+    :param name: File name of the deliverable.
+    :param audience: ``"owner"``, ``"org"`` or ``"link"``.
+    :param published_version: The pinned version number that is served.
+    :param published_at: Epoch seconds of the first publish.
+    :param updated_at: Epoch seconds of the last republish / audience change.
+    """
+
+    __tablename__ = "artifact_publications"
+
+    workspace_id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        nullable=False,
+        server_default="0",
+        default=current_workspace_id,
+    )
+    slug: Mapped[str] = mapped_column(String(96), primary_key=True)
+    user_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    parent_session_id: Mapped[str] = mapped_column(Uuid16, nullable=False)
+    name: Mapped[str] = mapped_column(String(512), nullable=False)
+    audience: Mapped[str] = mapped_column(String(8), nullable=False)
+    published_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    published_at: Mapped[int] = mapped_column(Integer, nullable=False)
+    updated_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    __table_args__ = (
+        Index(
+            "uq_artifact_publications_group",
+            "workspace_id",
+            "parent_session_id",
+            "name",
+            unique=True,
+        ),
+        Index("ix_artifact_publications_owner", "workspace_id", "user_id"),
+    )
+
+
+class SqlArtifactView(OmnigentBase):
+    """
+    SQLAlchemy model for the ``artifact_views`` table.
+
+    Opens of a published app, one row per (slug, UTC day, viewer key). The viewer key is an
+    account id or a daily-rotating salted hash computed by the caller; never a raw IP.
+
+    :param slug: The publication slug.
+    :param day: UTC day, ``YYYY-MM-DD``.
+    :param viewer_key: Opaque viewer key (<= 64 chars).
+    :param opens: Counted opens by that viewer on that day.
+    :param last_at: Epoch seconds of the last counted open (rapid repeats are not counted).
+    """
+
+    __tablename__ = "artifact_views"
+
+    workspace_id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        nullable=False,
+        server_default="0",
+        default=current_workspace_id,
+    )
+    slug: Mapped[str] = mapped_column(String(96), primary_key=True)
+    day: Mapped[str] = mapped_column(String(10), primary_key=True)
+    viewer_key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    opens: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    last_at: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
 class SqlDailyNote(OmnigentBase):
@@ -2514,7 +2610,7 @@ class SqlModelConnection(OmnigentBase):
 
     :param scope: ``user`` (a person's own key) or ``org`` (shared by the workspace).
     :param owner_id: The user id for scope ``user``; ``''`` for scope ``org``.
-    :param provider: Upstream name from :mod:`omnigent.model_credentials.upstreams`.
+    :param provider: Upstream name from :mod:`omnigent.superchat.models.upstreams`.
     :param ciphertext: AES-GCM envelope of the key (never plaintext).
     :param hint: Last 4 characters of the key, for display.
     :param validated_at: Epoch seconds of the last successful provider probe.

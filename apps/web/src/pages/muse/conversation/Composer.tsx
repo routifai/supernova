@@ -25,7 +25,14 @@ import {
   useRef,
   useState,
 } from "react";
-import { requestOpenSettings } from "../../../lib/engine-models";
+import { SheetAskChip } from "../../../features/sheets/SheetAskChip";
+import {
+  setSheetAsk,
+  useSheetAsk,
+  useSheetAskTarget,
+  withSheetAsk,
+} from "../../../features/sheets/sheet-ask";
+import { requestOpenSettings } from "../../../lib/open-settings";
 import { isFileDrag, isFilePaste } from "../../../lib/pending-attachments";
 import { MentionChipIcon, MentionOptionIcon } from "./MentionIcons";
 import { previewMessageText } from "./messageText";
@@ -99,6 +106,8 @@ export const Composer = memo(function Composer({
 }) {
   const { t } = useLingui();
   const [draft, setDraft] = useState("");
+  useSheetAskTarget();
+  const sheetAsk = useSheetAsk();
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionHighlightIndex, setMentionHighlightIndex] = useState(0);
   const [slashQuery, setSlashQuery] = useState<string | null>(null);
@@ -302,7 +311,8 @@ export const Composer = memo(function Composer({
     setSelectedSkill(null);
     const mentions = selectedMentions;
     setSelectedMentions([]);
-    void onSend(text, mentions);
+    setSheetAsk(null);
+    void onSend(withSheetAsk(text, sheetAsk), mentions);
   }
 
   function handleDragEnter(event: DragEvent<HTMLFieldSetElement>) {
@@ -489,6 +499,18 @@ export const Composer = memo(function Composer({
             <X size={13} strokeWidth={2} />
           </button>
         </div>
+      ) : null}
+      {sheetAsk ? (
+        <SheetAskChip label={sheetAsk.label} className="mb-2 w-full">
+          <button
+            type="button"
+            aria-label={t`Remove selection`}
+            onClick={() => setSheetAsk(null)}
+            className="shrink-0 text-muted-foreground hover:text-foreground"
+          >
+            <X size={13} strokeWidth={2} />
+          </button>
+        </SheetAskChip>
       ) : null}
       {attachmentNotice ? (
         <div className="mb-3 rounded-[14px] border border-warning/40 bg-warning/10 px-4 py-2 text-[13px] text-warning">

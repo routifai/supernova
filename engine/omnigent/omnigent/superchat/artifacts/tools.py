@@ -17,7 +17,7 @@ from omnigent.tools.base import Tool
 ARTIFACT_TOOL_NAMES = ("artifact_save", "artifact_list", "artifact_delete")
 
 
-class _ArtifactTool(Tool):
+class ArtifactTool(Tool):
     _NAME = ""
     _DESC = ""
     _PROPERTIES: dict[str, Any] = {}
@@ -50,7 +50,7 @@ class _ArtifactTool(Tool):
         }
 
 
-class ArtifactSaveTool(_ArtifactTool):
+class ArtifactSaveTool(ArtifactTool):
     """Save a workspace file for the person; dispatched to ``POST /v1/artifacts``."""
 
     _NAME = "artifact_save"
@@ -70,14 +70,14 @@ class ArtifactSaveTool(_ArtifactTool):
     _REQUIRED = ("path",)
 
 
-class ArtifactListTool(_ArtifactTool):
+class ArtifactListTool(ArtifactTool):
     """List this chat's saved files; dispatched to ``GET /v1/artifacts``."""
 
     _NAME = "artifact_list"
     _DESC = "List the files already saved for the person in this chat (name, kind, versions)."
 
 
-class ArtifactDeleteTool(_ArtifactTool):
+class ArtifactDeleteTool(ArtifactTool):
     """Delete a saved file; dispatched to ``DELETE /v1/artifacts/{id}``."""
 
     _NAME = "artifact_delete"

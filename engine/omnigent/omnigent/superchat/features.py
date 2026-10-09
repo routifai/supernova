@@ -27,43 +27,47 @@ if TYPE_CHECKING:
 
 def _load() -> list[Feature]:
     """Import each feature folder (order is registration order)."""
-    from omnigent.model_credentials import FEATURE as model_credentials
+    from omnigent.superchat.admin import FEATURE as admin
     from omnigent.superchat.approvals import FEATURE as approvals
+    from omnigent.superchat.apps import FEATURE as apps
     from omnigent.superchat.artifacts import ARTIFACTS_FEATURE as artifacts
     from omnigent.superchat.cards import FEATURE as cards
     from omnigent.superchat.daily_notes import FEATURE as daily_notes
     from omnigent.superchat.family import FEATURE as family
     from omnigent.superchat.feed import FEATURE as feed
+    from omnigent.superchat.goals import FEATURE as goals
     from omnigent.superchat.helpers import FEATURE as helpers
-    from omnigent.superchat.inbox import FEATURE as inbox
-    from omnigent.superchat.memory_tools import FEATURE as memory_tools
-    from omnigent.superchat.objectives import FEATURE as objectives
+    from omnigent.superchat.ideas import FEATURE as ideas
+    from omnigent.superchat.memory import FEATURE as memory
+    from omnigent.superchat.models import FEATURE as models
     from omnigent.superchat.projects import FEATURE as projects
+    from omnigent.superchat.sheets import FEATURE as sheets
     from omnigent.superchat.side_chats import FEATURE as side_chats
+    from omnigent.superchat.skills import FEATURE as skills
     from omnigent.superchat.step_limit import FEATURE as step_limit
-    from omnigent.superchat.suggestions import FEATURE as suggestions
-    from omnigent.superchat.taught_skills import FEATURE as taught_skills
     from omnigent.superchat.transcript import FEATURE as transcript
     from omnigent.superchat.vault import FEATURE as vault
 
     return [
         approvals,
         vault,
-        model_credentials,
-        suggestions,
-        objectives,
-        taught_skills,
+        models,
+        admin,
+        ideas,
+        goals,
+        skills,
         daily_notes,
         cards,
-        memory_tools,
+        memory,
         artifacts,
+        apps,
+        sheets,
         side_chats,
         helpers,
         projects,
         step_limit,
         transcript,
         family,
-        inbox,
         feed,
     ]
 

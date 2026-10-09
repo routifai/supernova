@@ -20,13 +20,13 @@ import { appContract } from "@nova/contracts";
 import type { PrismaClient, ThreadEvents } from "@nova/db";
 import { createGroupRepos, createRepos, IsolationError } from "@nova/db";
 import { getLogger } from "@nova/logging";
-import { implement, ORPCError } from "@orpc/server";
-import { createAgentSkillsService } from "../agent-skills.js";
-import type { EngineArtifactsDeps } from "../engine-artifacts.js";
-import type { EngineIdeasDeps } from "../engine-ideas.js";
-import type { MuseFeedDeps } from "../muse-feed.js";
-import type { MuseIdeasDeps } from "../muse-ideas.js";
-import { assertTeachingSendAllowed, createTaughtSkillsService } from "../taught-skills.js";
+import { type ImplementerInternalWithMiddlewares, implement, ORPCError } from "@orpc/server";
+import type { EngineArtifactsDeps } from "../features/artifacts/index.js";
+import { withEngineComputer } from "../features/computer/service.js";
+import type { EngineIdeasDeps } from "../features/ideas/service.js";
+import { createAgentSkillsService } from "../features/skills/agent-skills.js";
+import { createTaughtSkillsService } from "../features/skills/taught-skills.js";
+import { assertTeachingSendAllowed } from "../teaching-guard.js";
 import { resolveThreadTarget } from "../thread-target.js";
 
 export interface RouterDeps {
@@ -66,7 +66,14 @@ function makeOs() {
 }
 export type RouterOs = ReturnType<typeof makeOs>;
 
-function makeAuthed(os: RouterOs) {
+// Spelled out: inferred, the contract's full type is too large for the declaration emitter (TS7056).
+type AuthedImplementer = ImplementerInternalWithMiddlewares<
+  typeof appContract,
+  { actor: Actor | null; signal?: AbortSignal },
+  { actor: Actor; signal?: AbortSignal }
+>;
+
+function makeAuthed(os: RouterOs): AuthedImplementer {
   return os.use(async ({ context, next }) => {
     if (!context.actor) throw new ORPCError("UNAUTHORIZED");
     return next({ context: { ...context, actor: context.actor } });
@@ -85,10 +92,13 @@ export interface RouterContext {
   mcpOAuth: McpOAuthBroker;
   taughtSkills: ReturnType<typeof createTaughtSkillsService>;
   agentSkills: ReturnType<typeof createAgentSkillsService>;
-  museIdeasDeps: MuseIdeasDeps;
-  museFeedDeps: MuseFeedDeps;
   engineArtifactsDeps: EngineArtifactsDeps;
   engineFilesDeps: { prisma: RouterDeps["prisma"] };
+  /** A thread snapshot with its Computer as the engine sees it. */
+  withComputer<T extends Parameters<typeof withEngineComputer>[2]>(
+    actor: Actor,
+    snapshot: T,
+  ): Promise<T>;
   engineIdeasDeps: EngineIdeasDeps;
 }
 
@@ -113,8 +123,6 @@ export function createRouterContext(deps: RouterDeps): RouterContext {
   // Muse is the only edition now; these routes (Goals, Asks, Feed, Ideas, followed
   // topics, Muse settings) no longer need a mode gate, but the alias documents intent.
   const museOnly = authed;
-  const museIdeasDeps: MuseIdeasDeps = { prisma: deps.prisma };
-  const museFeedDeps: MuseFeedDeps = { prisma: deps.prisma };
   const engineArtifactsDeps: EngineArtifactsDeps = { prisma: deps.prisma };
   const engineFilesDeps = { prisma: deps.prisma };
   const engineIdeasDeps: EngineIdeasDeps = {
@@ -151,10 +159,9 @@ export function createRouterContext(deps: RouterDeps): RouterContext {
     mcpOAuth,
     taughtSkills,
     agentSkills,
-    museIdeasDeps,
-    museFeedDeps,
     engineArtifactsDeps,
     engineFilesDeps,
+    withComputer: (actor, snapshot) => withEngineComputer(deps, actor, snapshot),
     engineIdeasDeps,
   };
 }

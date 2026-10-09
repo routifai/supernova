@@ -84,7 +84,7 @@ Where each concept lives in the engine:
 | Side Chats and Forks | `engine/omnigent/omnigent/superchat/side_chats/` |
 | Helpers | `engine/omnigent/omnigent/superchat/helpers/`, `engine/omnigent/omnigent/superchat/subagents.py` |
 | Activity | `engine/omnigent/omnigent/superchat/activity/` |
-| Memory | `engine/omnigent/omnigent/memory/`, `engine/omnigent/omnigent/superchat/memory_tools/` |
+| Memory | `engine/omnigent/omnigent/memory/`, `engine/omnigent/omnigent/superchat/memory/` |
 | The Computer | `engine/omnigent/omnigent/superchat/computer/`, `engine/omnigent/omnigent/onboarding/sandboxes/computer.py` |
 
 Each of these is a "feature" registered once in `engine/omnigent/omnigent/superchat/features.py`.
@@ -381,7 +381,7 @@ In `GET /v1/sessions/{id}/transcript`, each message has `forks: []`. Each entry 
 
 - **Open as side chat** has no engine call. A Fork already is a Side Chat, so the client just opens
   it in the Side Chat list (Nova: `onOpenSideChat` in
-  `apps/web/src/pages/muse/forks/ForkThread.tsx`).
+  `apps/web/src/features/side-chats/ForkThread.tsx`).
 - **Archive** is the normal Side Chat archive (see [Archiving](#8-archiving)). An archived Fork has
   `state: archived`.
 
@@ -492,7 +492,7 @@ bundle (`infra/omnigent/agents/nova-claude/`) or to the engine's always-on tools
 
 An **Ask** is anything the Muse is waiting on the person for. Open Asks are listed by
 `GET /v1/me/asks` and answered with `POST /v1/me/asks/{ask_id}/answer`
-(`engine/omnigent/omnigent/superchat/inbox/`). Approvals have their own routes under
+(`engine/omnigent/omnigent/superchat/approvals/`). Approvals have their own routes under
 `/v1/me/approvals/` (see the table in section 10).
 
 ## 6. Memory
@@ -501,7 +501,7 @@ The Muse remembers lasting facts about the person. Memory belongs to the **perso
 the Conversation, every Side Chat, every Fork and every Helper read and write the same set. The
 user is always resolved from the **owner of the calling session** on the server, never from tool
 arguments (`resolve_memory_user` in
-`engine/omnigent/omnigent/superchat/memory_tools/tools.py`; `_resolve_user` in
+`engine/omnigent/omnigent/superchat/memory/tools.py`; `_resolve_user` in
 `engine/omnigent/omnigent/server/routes/session_memory.py`). A session merely shared with someone
 never exposes the owner's memory, even at edit level.
 
@@ -541,7 +541,7 @@ profile is empty, and the memory tools answer "long-term memory is not configure
 Two ways:
 
 1. **Right away, by the model.** Every superside-chat session has five tools
-   (`engine/omnigent/omnigent/superchat/memory_tools/`): `memory_remember`, `memory_search`,
+   (`engine/omnigent/omnigent/superchat/memory/`): `memory_remember`, `memory_search`,
    `memory_get`, `memory_explain` and `memory_forget`.
    - `memory_remember` saves a claim and indexes it immediately. A near-duplicate (high hybrid score
      and high word overlap) is **reinforced** instead of added (confidence +0.05). A claim is only
@@ -627,8 +627,8 @@ session (`engine/omnigent/omnigent/server/routes/session_memory.py`):
 - `GET .../memory/claims/{claim_id}` and `.../explain`, `GET .../memory/search?query=&kind=&limit=`,
   `POST .../memory/remember`, `GET .../memory/profile`.
 
-Nova relays these through its API (`apps/api/src/routers/memory.ts`,
-`packages/adapters/src/omnigent/client/memory.ts`) and redacts the profile, claims and notes before
+Nova relays these through its API (`apps/api/src/features/memory/router.ts`,
+`packages/adapters/src/omnigent/memory.ts`) and redacts the profile, claims and notes before
 showing them.
 
 ### Daily notes
@@ -693,8 +693,8 @@ the person and by the Muse (`related_chats` still returns it with `archived: tru
 ### Manual archive (today)
 
 - **How.** `PATCH /v1/sessions/{id}` with `{"archived": true}` (owner only). Nova calls it from
-  `chats.archive` (`apps/api/src/chats.ts`, `archiveOmnigentSession` in
-  `packages/adapters/src/omnigent/client/side-chats.ts`).
+  `chats.archive` (`apps/api/src/features/side-chats/service.ts`, `archiveOmnigentSession` in
+  `packages/adapters/src/omnigent/side-chats.ts`).
 - **What happens.** The archived flag and an `omnigent.archived_at` label are set; the family gets
   `chats.changed`; the person's read state for that chat is dropped; and the runner is stopped after
   a delay (the delay leaves room for an Undo). An unarchive within that time cancels the stop

@@ -30,9 +30,17 @@ msgstr "{0, plural, one {# fork} other {# forks}}"
 msgid "{0, plural, one {# model} other {# models}}"
 msgstr "{0, plural, one {# model} other {# models}}"
 
+#. placeholder {0}: stats.opensTotal
+msgid "{0, plural, one {# open} other {# opens}}"
+msgstr "{0, plural, one {# open} other {# opens}}"
+
 #. placeholder {0}: row.replies
 msgid "{0, plural, one {# reply} other {# replies}}"
 msgstr "{0, plural, one {# reply} other {# replies}}"
+
+#. placeholder {0}: stats.uniqueViewers
+msgid "{0, plural, one {# viewer} other {# viewers}}"
+msgstr "{0, plural, one {# viewer} other {# viewers}}"
 
 #. placeholder {0}: file.name
 msgid "{0} (max {ATTACHMENT_MAX_COUNT} attachments)"
@@ -122,6 +130,9 @@ msgstr "{hours}h ago"
 msgid "{minutes}m ago"
 msgstr "{minutes}m ago"
 
+msgid "{n} cells"
+msgstr "{n} cells"
+
 #. js-lingui-explicit-id
 msgid "{name} failed"
 msgstr "{name} failed"
@@ -174,6 +185,9 @@ msgstr "••••{hint} · Needs attention"
 
 msgid "✓ Sent · 9:42 AM"
 msgstr "✓ Sent · 9:42 AM"
+
+msgid "1 cell"
+msgstr "1 cell"
 
 msgid "2 of 5 · Next check-in Friday, 9:00"
 msgstr "2 of 5 · Next check-in Friday, 9:00"
@@ -431,6 +445,12 @@ msgstr "Answered: {0}"
 msgid "Answered: {answer}"
 msgstr "Answered: {answer}"
 
+msgid "Anyone signed in to your organization"
+msgstr "Anyone signed in to your organization"
+
+msgid "Anyone with the link"
+msgstr "Anyone with the link"
+
 msgid "API key"
 msgstr "API key"
 
@@ -524,6 +544,9 @@ msgstr "Ask me first"
 #. placeholder {0}: index + 1
 msgid "Ask me first before step {0}"
 msgstr "Ask me first before step {0}"
+
+msgid "Ask Nova about {label}"
+msgstr "Ask Nova about {label}"
 
 msgid "Ask once and get on with your day."
 msgstr "Ask once and get on with your day."
@@ -938,6 +961,9 @@ msgstr "Copied"
 msgid "Copy"
 msgstr "Copy"
 
+msgid "Copy link"
+msgstr "Copy link"
+
 msgid "Could not add"
 msgstr "Could not add"
 
@@ -1149,6 +1175,9 @@ msgstr "Could not play a sample."
 msgid "Could not play a test clip"
 msgstr "Could not play a test clip"
 
+msgid "Could not publish this."
+msgstr "Could not publish this."
+
 msgid "Could not reach the server"
 msgstr "Could not reach the server"
 
@@ -1284,8 +1313,20 @@ msgstr "Could not update reaction"
 msgid "Couldn't load messaging settings"
 msgstr "Couldn't load messaging settings"
 
+msgid "Couldn't open this sheet."
+msgstr "Couldn't open this sheet."
+
 msgid "Couldn’t reach Nova’s computer. Retrying…"
 msgstr "Couldn’t reach Nova’s computer. Retrying…"
+
+msgid "Couldn't read that selection."
+msgstr "Couldn't read that selection."
+
+msgid "Couldn't run"
+msgstr "Couldn't run"
+
+msgid "Couldn't save that change."
+msgstr "Couldn't save that change."
 
 msgid "Couldn't update avatars"
 msgstr "Couldn't update avatars"
@@ -1624,6 +1665,9 @@ msgstr "Example: what a morning with me looks like"
 
 msgid "Executor token"
 msgstr "Executor token"
+
+msgid "Exit full screen"
+msgstr "Exit full screen"
 
 msgid "Expand"
 msgstr "Expand"
@@ -2009,6 +2053,9 @@ msgstr "Isolated preview"
 msgid "Isolated preview — no access to your account"
 msgstr "Isolated preview — no access to your account"
 
+msgid "It gets its own web address. It runs on its own, separate from Nova, and can't see your conversations or files."
+msgstr "It gets its own web address. It runs on its own, separate from Nova, and can't see your conversations or files."
+
 msgid "It starts fresh, with only what Nova knows about you."
 msgstr "It starts fresh, with only what Nova knows about you."
 
@@ -2017,6 +2064,9 @@ msgstr "It starts with a summary of this conversation."
 
 msgid "It won't be used anymore. This can't be undone."
 msgstr "It won't be used anymore. This can't be undone."
+
+msgid "Its address stops working right away. You can publish it again later."
+msgstr "Its address stops working right away. You can publish it again later."
 
 msgid "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
 msgstr "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
@@ -2040,6 +2090,9 @@ msgstr "Jump to replied message: {0}"
 
 msgid "just now"
 msgstr "just now"
+
+msgid "Just you, signed in"
+msgstr "Just you, signed in"
 
 msgid "Keep current"
 msgstr "Keep current"
@@ -2335,6 +2388,9 @@ msgstr "My computer restarted. Try again."
 msgid "My computer was replaced, so files I hadn't saved elsewhere are gone."
 msgstr "My computer was replaced, so files I hadn't saved elsewhere are gone."
 
+msgid "My organization"
+msgstr "My organization"
+
 msgid "Name"
 msgstr "Name"
 
@@ -2392,6 +2448,9 @@ msgstr "NEW SKILL"
 
 msgid "New space"
 msgstr "New space"
+
+msgid "Newer version available, show it"
+msgstr "Newer version available, show it"
 
 msgid "Next steps — Review pricing with Maya on Thursday; send the deck Friday."
 msgstr "Next steps — Review pricing with Maya on Thursday; send the deck Friday."
@@ -2482,6 +2541,9 @@ msgstr "No results"
 
 msgid "No runs yet"
 msgstr "No runs yet"
+
+msgid "No sign-in needed"
+msgstr "No sign-in needed"
 
 msgid "No skills yet"
 msgstr "No skills yet"
@@ -2623,6 +2685,9 @@ msgstr "One yes before I send this"
 msgid "Online"
 msgstr "Online"
 
+msgid "Only me"
+msgstr "Only me"
+
 msgid "Open"
 msgstr "Open"
 
@@ -2641,6 +2706,9 @@ msgstr "Open {name} in new tab"
 
 msgid "Open as side chat"
 msgstr "Open as side chat"
+
+msgid "Open full screen"
+msgstr "Open full screen"
 
 msgid "Open in full window"
 msgstr "Open in full window"
@@ -2845,6 +2913,21 @@ msgstr "Provider"
 msgid "Providers"
 msgstr "Providers"
 
+msgid "Publish"
+msgstr "Publish"
+
+msgid "Publish {name}?"
+msgstr "Publish {name}?"
+
+msgid "Publish settings"
+msgstr "Publish settings"
+
+msgid "Publish…"
+msgstr "Publish…"
+
+msgid "Published"
+msgstr "Published"
+
 msgid "Pull holdings and returns for 12 clients"
 msgstr "Pull holdings and returns for 12 clients"
 
@@ -2989,6 +3072,9 @@ msgstr "Remove message trigger"
 
 msgid "Remove schedule"
 msgstr "Remove schedule"
+
+msgid "Remove selection"
+msgstr "Remove selection"
 
 #. placeholder {0}: selectedSkill.name
 msgid "Remove skill {0}"
@@ -3340,6 +3426,9 @@ msgstr "Setup help"
 msgid "Shared chat with 2-6 bots. They all reply in the same thread."
 msgstr "Shared chat with 2-6 bots. They all reply in the same thread."
 
+msgid "Sheets"
+msgstr "Sheets"
+
 msgid "Show"
 msgstr "Show"
 
@@ -3372,6 +3461,10 @@ msgstr "Show replies as they're written"
 
 msgid "Show settings"
 msgstr "Show settings"
+
+#. placeholder {0}: sheet.rows.length
+msgid "Showing the first {0} rows"
+msgstr "Showing the first {0} rows"
 
 msgid "Side chat"
 msgstr "Side chat"
@@ -3425,6 +3518,9 @@ msgstr "Slack message"
 
 msgid "Slack not enabled"
 msgstr "Slack not enabled"
+
+msgid "Something went wrong before it could start."
+msgstr "Something went wrong before it could start."
 
 msgid "Something went wrong on my side. Try again."
 msgstr "Something went wrong on my side. Try again."
@@ -3502,6 +3598,9 @@ msgstr "Starting"
 msgid "Starting the Computer…"
 msgstr "Starting the Computer…"
 
+msgid "Starting your Computer…"
+msgstr "Starting your Computer…"
+
 msgid "Starting…"
 msgstr "Starting…"
 
@@ -3549,6 +3648,10 @@ msgstr "subagent"
 
 msgid "Submit"
 msgstr "Submit"
+
+#. placeholder {0}: formatSum(stats.sum)
+msgid "Sum {0}"
+msgstr "Sum {0}"
 
 msgid "Summary — Revenue up 8% quarter on quarter, led by three renewals."
 msgstr "Summary — Revenue up 8% quarter on quarter, led by three renewals."
@@ -3784,6 +3887,12 @@ msgstr "Unlink"
 msgid "Unpin"
 msgstr "Unpin"
 
+msgid "Unpublish"
+msgstr "Unpublish"
+
+msgid "Unpublish this app?"
+msgstr "Unpublish this app?"
+
 msgid "Unread"
 msgstr "Unread"
 
@@ -3809,6 +3918,14 @@ msgstr "Update progress"
 #. placeholder {0}: superseded.version
 msgid "Updated — v{0}"
 msgstr "Updated — v{0}"
+
+#. placeholder {0}: state.arrived.version
+msgid "Updated by Nova · v{0}"
+msgstr "Updated by Nova · v{0}"
+
+#. placeholder {0}: state.arrived.version
+msgid "Updated by you · v{0}"
+msgstr "Updated by you · v{0}"
 
 msgid "Updates"
 msgstr "Updates"
@@ -3978,6 +4095,9 @@ msgstr "When to run"
 msgid "Where should bots run?"
 msgstr "Where should bots run?"
 
+msgid "Who can open it"
+msgstr "Who can open it"
+
 msgid "Why did churn rise in August?"
 msgstr "Why did churn rise in August?"
 
@@ -4029,6 +4149,12 @@ msgstr "You can close this tab if it does not redirect automatically."
 
 msgid "You can close this window."
 msgstr "You can close this window."
+
+msgid "You changed {changedCount} cells on {sheetName}. Nova sees this before its next reply."
+msgstr "You changed {changedCount} cells on {sheetName}. Nova sees this before its next reply."
+
+msgid "You changed 1 cell on {sheetName}. Nova sees this before its next reply."
+msgstr "You changed 1 cell on {sheetName}. Nova sees this before its next reply."
 
 msgid "You have control"
 msgstr "You have control"

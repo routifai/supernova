@@ -4,13 +4,14 @@ import type { ThreadMessage } from "@nova/contracts";
 import { ENGINE_ERROR_NOTE, isEngineErrorText, isToolActivityBlock } from "@nova/core";
 import { BotAvatar, Button, cn, resolvePersonaColorDef } from "@nova/ui-web";
 import { memo, useMemo } from "react";
-import { ArtifactFileCard } from "../../../components/ArtifactFileCard";
-
-import { AskCard } from "../../../components/AskCard";
 import { CollaborationMarker } from "../../../components/ai/CollaborationMarker";
 import { CloudAgentCard } from "../../../components/CloudAgentCard";
 import { ReplyCardBlockView } from "../../../components/cards/ReplyCard";
-import { SkillDraftCard } from "../../../components/teach/SkillDraftCard";
+import { AskCard } from "../../../features/approvals";
+import { ArtifactFileCard } from "../../../features/artifacts";
+import { SheetAskChip } from "../../../features/sheets/SheetAskChip";
+import { splitSheetAsk } from "../../../features/sheets/sheet-ask";
+import { SkillDraftCard } from "../../../features/skills/teach/SkillDraftCard";
 import type { ArtifactTarget } from "../../../lib/artifact-open";
 import { messageProviderLabel } from "../../../lib/messaging";
 import {
@@ -458,21 +459,26 @@ export const MessageView = memo(function MessageView({
           );
         }
         if (block.kind === "text" && message.role === "user") {
+          const ask = splitSheetAsk(block.text);
+          const body = ask ? ask.rest : block.text;
           return (
-            <div key={i} className="flex w-fit max-w-full justify-end">
-              <div
-                data-testid="message-user-bubble"
-                data-quote-message-id={quoteMessageId}
-                className={cn(
-                  "max-w-full whitespace-pre-wrap wrap-anywhere",
-                  museMode
-                    ? "rounded-[18px] bg-tint px-3.5 py-2 text-[15px] leading-[1.47] tracking-[-0.24px] text-white"
-                    : "rounded-[20px] bg-chat-user px-[18px] py-3 text-[15.5px] leading-[1.45] text-chat-user-foreground",
-                )}
-                dir="auto"
-              >
-                {block.text}
-              </div>
+            <div key={i} className="flex w-fit max-w-full flex-col items-end gap-1.5">
+              {ask ? <SheetAskChip label={ask.label} testId="message-sheet-ask" /> : null}
+              {body || !ask ? (
+                <div
+                  data-testid="message-user-bubble"
+                  data-quote-message-id={quoteMessageId}
+                  className={cn(
+                    "max-w-full whitespace-pre-wrap wrap-anywhere",
+                    museMode
+                      ? "rounded-[18px] bg-tint px-3.5 py-2 text-[15px] leading-[1.47] tracking-[-0.24px] text-white"
+                      : "rounded-[20px] bg-chat-user px-[18px] py-3 text-[15.5px] leading-[1.45] text-chat-user-foreground",
+                  )}
+                  dir="auto"
+                >
+                  {body}
+                </div>
+              ) : null}
             </div>
           );
         }

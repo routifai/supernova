@@ -14,7 +14,7 @@ from typing import Any
 from urllib.parse import quote
 
 from omnigent.superchat._handler_http import HEX_ID_RE, error, finish, resolve_caller
-from omnigent.superchat.artifacts.types import KIND_MIME, MAX_ARTIFACT_BYTES, kind_for_name
+from omnigent.superchat.artifact_kinds import KIND_MIME, MAX_ARTIFACT_BYTES, kind_for_name
 from omnigent.superchat.feature import HandlerCtx
 
 
@@ -106,7 +106,10 @@ async def _save(client: Any, chat_id: str, args: dict[str, Any]) -> str:
     if isinstance(data, str):
         return error(data)
     title = args.get("title")
-    url = f"/v1/artifacts?parent_session_id={chat_id}&name={quote(file.name)}"
+    url = (
+        f"/v1/artifacts?parent_session_id={chat_id}&name={quote(file.name)}"
+        f"&source_path={quote(str(file))}"
+    )
     if isinstance(title, str) and title.strip():
         url += f"&title={quote(title.strip()[:256])}"
     resp = await client.post(

@@ -16,9 +16,15 @@ import type { ReactNode } from "react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { MuseRailView as MuseView } from "../../../components/AppRail";
 import { NovaOrb, useIsDesktop, useOrbHome } from "../../../components/ai/orb";
+import { useNovaWork } from "../../../features/activity/useNovaWork";
+import {
+  FORK_TONE_CLASS,
+  type ForkFilter,
+  type ForkRow,
+} from "../../../features/side-chats/forkModel";
+import { LiveDot } from "../../../features/side-chats/forkParts";
+import type { ChatListState } from "../../../features/side-chats/useChatList";
 import { rpc } from "../../../lib/rpc";
-import { FORK_TONE_CLASS, type ForkFilter, type ForkRow } from "../forks/forkModel";
-import { LiveDot } from "../forks/forkParts";
 import {
   ConversationGlyph,
   FeedGlyph,
@@ -30,9 +36,7 @@ import {
   SidebarGlyph,
   WaitingGlyph,
 } from "./NovaGlyphs";
-import type { ChatListState } from "./useChatList";
 import { type MuseLiveRun, useMuseLiveState } from "./useMuseLiveState";
-import { useNovaWork } from "./useNovaWork";
 
 const MAX_SIDEBAR_GOALS = 3;
 const COLLAPSED_KEY = "muse:sidebar-collapsed";

@@ -40,8 +40,43 @@ import {
   orbPlacement,
   useIsDesktop,
 } from "../components/ai/orb";
-import { ComputerUpdateProgress } from "../components/ComputerUpdateProgress";
 import { ArtifactPanelProvider } from "../components/cards/context";
+import { useNovaWork } from "../features/activity";
+import { ApprovalCards, FeedAsks, useAsks, WaitingSheet } from "../features/approvals";
+import { appsExtension } from "../features/apps";
+import { LibraryScreen } from "../features/artifacts/LibraryScreen";
+import { ArtifactRegistryProvider } from "../features/artifacts/registry";
+import { useChatArtifacts } from "../features/artifacts/useChatArtifacts";
+import { ComputerOverlay } from "../features/computer/ComputerOverlay";
+import { ComputerPreview } from "../features/computer/ComputerPreview";
+import { ComputerUpdateProgress } from "../features/computer/ComputerUpdateProgress";
+import { HostComputerPrompt } from "../features/computer/HostComputerPrompt";
+import { useComputer } from "../features/computer/useComputer";
+import { useComputerScreen } from "../features/computer/useComputerScreen";
+import { useComputerStore } from "../features/computer/useComputerStore";
+import { useComputerView } from "../features/computer/useComputerView";
+import { FeedScreen } from "../features/feed";
+import { GoalsScreen } from "../features/goals";
+import { IdeasScreen } from "../features/ideas";
+import { ConversationModelPicker } from "../features/models";
+import { sheetsExtension } from "../features/sheets";
+import { AllForks, ForkViewSwitch } from "../features/side-chats/AllForks";
+import { ForkAsk } from "../features/side-chats/ForkAsk";
+import { ForkGutter } from "../features/side-chats/ForkGutter";
+import type { ForkWire } from "../features/side-chats/ForkOverlay";
+import { ForkThread, type ForkThreadTarget } from "../features/side-chats/ForkThread";
+import {
+  SideChatSession,
+  type SideChatView,
+  type SideChatWire,
+} from "../features/side-chats/SideChatSession";
+import { sideChatView } from "../features/side-chats/sideChatView";
+import { useChatList } from "../features/side-chats/useChatList";
+import { forkChatSummary, useForkView } from "../features/side-chats/useForkView";
+import { computerTeachSlots } from "../features/skills/computerTeachSlots";
+import { SkillsPanel } from "../features/skills/SkillsPanel";
+import { useAgentSkills } from "../features/skills/useAgentSkills";
+import { useTeaching } from "../features/skills/useTeaching";
 import type { ArtifactTarget } from "../lib/artifact-open";
 import { authClient } from "../lib/auth";
 import { watchFamily } from "../lib/family-stream";
@@ -49,11 +84,8 @@ import { markAfterPaint, markOnce } from "../lib/performance";
 import { rpc } from "../lib/rpc";
 import { activeThreadRuns } from "../lib/thread-events";
 import { memberName } from "./GroupPanel";
-import { HostComputerPrompt } from "./HostComputerPrompt";
-import { ApprovalCards } from "./muse/asks";
 import { ContextPanel, useContextPanelCollapsed } from "./muse/chrome/ContextPanel";
 import { ConversationHeader, TOOLBAR_BUTTON } from "./muse/chrome/ConversationHeader";
-import { ConversationModelPicker } from "./muse/chrome/ConversationModelPicker";
 import { conversationLayout } from "./muse/chrome/conversationLayout";
 import {
   EmptyConversationLead,
@@ -64,54 +96,30 @@ import { museMode } from "./muse/chrome/museMode";
 import { BotSettingsPanel, GroupSettingsPanel } from "./muse/chrome/PanelForms";
 import { type ChatProject, useChatProject } from "./muse/chrome/ProjectChip";
 import type { Panel } from "./muse/chrome/panel";
-import { SideChatSession, type SideChatWire } from "./muse/chrome/SideChatSession";
 import { SidePanelHeader } from "./muse/chrome/SidePanelHeader";
 import { useBotRoster } from "./muse/chrome/useBotRoster";
 import { useBrowserNotifications } from "./muse/chrome/useBrowserNotifications";
-import { useChatList } from "./muse/chrome/useChatList";
 import { useCreateBot } from "./muse/chrome/useCreateBot";
 import type { MuseLiveRun } from "./muse/chrome/useMuseLiveState";
-import { useNovaWork } from "./muse/chrome/useNovaWork";
 import { useReplyAlerts } from "./muse/chrome/useReplyAlerts";
 import { useVoice } from "./muse/chrome/useVoice";
 import { ClearConversationHost } from "./muse/conversation/ClearConversationHost";
 import { Composer } from "./muse/conversation/Composer";
 import { conversationMessages as layerConversation } from "./muse/conversation/museTranscript";
 import { FALLBACK_BOT_COLOR } from "./muse/conversation/shared";
-import { sideChatView } from "./muse/conversation/sideChatView";
 import { Transcript } from "./muse/conversation/Transcript";
-import { useChatArtifacts } from "./muse/conversation/useChatArtifacts";
 import { useComposerSend } from "./muse/conversation/useComposerSend";
 import { useDockTransition } from "./muse/conversation/useDockTransition";
 import { useMuseTranscript } from "./muse/conversation/useMuseTranscript";
 import { useThreadState } from "./muse/conversation/useThreadState";
 import { useThreadSync } from "./muse/conversation/useThreadSync";
-import { FeedScreen } from "./muse/FeedScreen";
-import { ComputerOverlay } from "./muse/files/ComputerOverlay";
-import { ComputerPreview } from "./muse/files/ComputerPreview";
-import { useComputer } from "./muse/files/useComputer";
-import { useComputerScreen } from "./muse/files/useComputerScreen";
-import { useComputerStore } from "./muse/files/useComputerStore";
-import { useComputerView } from "./muse/files/useComputerView";
-import { AllForks, ForkViewSwitch } from "./muse/forks/AllForks";
-import { ForkAsk } from "./muse/forks/ForkAsk";
-import { ForkGutter } from "./muse/forks/ForkGutter";
-import type { ForkWire } from "./muse/forks/ForkOverlay";
-import { ForkThread, type ForkThreadTarget } from "./muse/forks/ForkThread";
-import { forkChatSummary, useForkView } from "./muse/forks/useForkView";
-import { GoalsScreen } from "./muse/GoalsScreen";
-import { IdeasScreen } from "./muse/IdeasScreen";
-import { LibraryScreen } from "./muse/LibraryScreen";
 import { RoutineList } from "./muse/routines/RoutineList";
 import { RoutinePanel } from "./muse/routines/RoutinePanel";
 import { useRoutineEditor } from "./muse/routines/useRoutineEditor";
 import { IntegrationOverlays } from "./muse/settings/IntegrationOverlays";
 import { SettingsHost } from "./muse/settings/SettingsHost";
 import { useShellSettings } from "./muse/settings/useShellSettings";
-import { useAgentSkills } from "./muse/skills/useAgentSkills";
-import { useTeaching } from "./muse/skills/useTeaching";
 import { useMuseNav } from "./muse/useMuseNav";
-import { WaitingSheet } from "./muse/WaitingSheet";
 import { draftFromRoutine } from "./RoutineEditor";
 import { CreateBotForm } from "./shell/bot-panel";
 import { DeleteItemDialog } from "./shell/dialogs";
@@ -119,12 +127,36 @@ import { DeleteItemDialog } from "./shell/dialogs";
 const PeerMessagesOverlay = lazy(() =>
   import("./PeerMessagesOverlay").then((module) => ({ default: module.PeerMessagesOverlay })),
 );
+const SkillsSection = lazy(() =>
+  import("../features/skills/SkillsSection").then((module) => ({ default: module.SkillsSection })),
+);
 const CallView = lazy(() => import("./CallView").then((module) => ({ default: module.CallView })));
 
 /** Nova's Mac window (docs/muse/DESIGN.md "Window"): the Conversation and the other screens
  * sit flat on the rounded content window; only the sidebar, the inspector and side panels
  * float as glass inside it. */
 /** Every orb brightens while Nova works (useNovaWork). */
+const sideChatViewWithApprovals: SideChatView = { ...sideChatView, Approvals: ApprovalCards };
+
+/** The Feed with the open Asks pinned on top: the feed capability takes them as a slot, the
+ * approvals capability supplies them (the same list the Waiting-on-you sheet shows). */
+function FeedWithAsks(props: { botId: string; onSendIdea: (text: string) => void }) {
+  const { asks, answer } = useAsks(props.botId);
+  return (
+    <FeedScreen
+      botId={props.botId}
+      onSendIdea={props.onSendIdea}
+      hasAsks={asks.length > 0}
+      asksSlot={
+        <FeedAsks
+          asks={asks}
+          onAnswer={(ask, value) => answer({ askId: ask.id, runId: ask.runId, answer: value })}
+        />
+      }
+    />
+  );
+}
+
 function NovaPresence({
   botId,
   runs,
@@ -141,6 +173,9 @@ function NovaPresence({
 }
 
 const MUSE_CONTENT_PANE = "relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden";
+
+/** What the capabilities built on artifacts add to the panel and the Library cards. */
+const ARTIFACT_EXTENSIONS = [appsExtension, sheetsExtension];
 
 export function ShellPage() {
   const { t } = useLingui();
@@ -891,7 +926,7 @@ export function ShellPage() {
               <SideChatSession
                 chat={activeChat}
                 bot={{ id: active.id, name: active.name, color: active.color }}
-                view={sideChatView}
+                view={sideChatViewWithApprovals}
                 wire={sideChatWire}
                 onCreated={setActiveChat}
                 onReplied={chatList.refresh}
@@ -916,7 +951,7 @@ export function ShellPage() {
             {museView === "goals" ? (
               <GoalsScreen botId={active.id} botName={active.name} onSendIdea={handleSendIdea} />
             ) : museView === "feed" ? (
-              <FeedScreen botId={active.id} onSendIdea={handleSendIdea} />
+              <FeedWithAsks botId={active.id} onSendIdea={handleSendIdea} />
             ) : museView === "ideas" ? (
               <IdeasScreen
                 botId={active.id}
@@ -924,7 +959,12 @@ export function ShellPage() {
                 onOpenConversation={() => setMuseView("conversation")}
               />
             ) : (
-              <LibraryScreen botId={active.id} botName={active.name} onSendIdea={handleSendIdea} />
+              <LibraryScreen
+                botId={active.id}
+                botName={active.name}
+                onSendIdea={handleSendIdea}
+                skills={<SkillsPanel botId={active.id} />}
+              />
             )}
           </div>
         ) : (
@@ -1360,7 +1400,7 @@ export function ShellPage() {
             {panel === "settings" && active ? (
               <BotSettingsPanel
                 active={active}
-                setAgentSkills={setAgentSkills}
+                skillsSection={<SkillsSection onSkillsChange={setAgentSkills} />}
                 refreshBots={refreshBots}
                 onClear={() => setClearTarget({ kind: "bot", chat: active })}
               />
@@ -1445,7 +1485,13 @@ export function ShellPage() {
         computer={computer}
         ctl={computerCtl}
         screen={screen}
-        teach={{ recordingSkill, teachBusy, stopTeaching, refreshActiveTeaching }}
+        teach={computerTeachSlots({
+          recordingSkill,
+          computer,
+          teachBusy,
+          stopTeaching,
+          refreshActiveTeaching,
+        })}
         run={{ currentRuns, composerRunning, sending, sendError, stopRun }}
       />
     </div>
@@ -1454,26 +1500,28 @@ export function ShellPage() {
   return (
     <AvatarStyleProvider value={bootstrapMe?.avatarStyle ?? "robot"}>
       <ArtifactPanelProvider value={chatArtifacts.api}>
-        {museMode ? (
-          // The window ground around Nova's rounded content window.
-          <div className="muse-wash pt-safe pb-safe ps-safe pe-safe flex h-full md:p-2">
-            {active ? (
-              <OrbHomeProvider home={orbHome}>
-                <NovaPresence
-                  botId={active.id}
-                  runs={currentRuns}
-                  messages={activeSnapshot?.messages}
-                >
-                  {shell}
-                </NovaPresence>
-              </OrbHomeProvider>
-            ) : (
-              shell
-            )}
-          </div>
-        ) : (
-          shell
-        )}
+        <ArtifactRegistryProvider value={ARTIFACT_EXTENSIONS}>
+          {museMode ? (
+            // The window ground around Nova's rounded content window.
+            <div className="muse-wash pt-safe pb-safe ps-safe pe-safe flex h-full md:p-2">
+              {active ? (
+                <OrbHomeProvider home={orbHome}>
+                  <NovaPresence
+                    botId={active.id}
+                    runs={currentRuns}
+                    messages={activeSnapshot?.messages}
+                  >
+                    {shell}
+                  </NovaPresence>
+                </OrbHomeProvider>
+              ) : (
+                shell
+              )}
+            </div>
+          ) : (
+            shell
+          )}
+        </ArtifactRegistryProvider>
       </ArtifactPanelProvider>
     </AvatarStyleProvider>
   );

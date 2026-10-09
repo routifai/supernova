@@ -9,6 +9,8 @@ import {
 } from "@nova/core";
 import { type MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { notifyAsksChanged } from "../../../features/approvals";
+import type { useComputerStore } from "../../../features/computer/useComputerStore";
 import { requestBrowserNotificationPermission } from "../../../lib/browser-notifications";
 import { newClientId } from "../../../lib/client-id";
 import { revokePendingAttachmentPreviews } from "../../../lib/pending-attachments";
@@ -20,9 +22,7 @@ import {
   threadRunError,
 } from "../../../lib/thread-events";
 import { isRawEngineError, userFacingError } from "../../../lib/user-facing-error";
-import { notifyAsksChanged } from "../asks";
 import type { useCreateBot } from "../chrome/useCreateBot";
-import type { useComputerStore } from "../files/useComputerStore";
 import { markFirstRunSeen } from "../intro";
 import { quotedMessageText } from "./museTranscript";
 import { type PendingAttachment, readFileAsBase64 } from "./shared";
