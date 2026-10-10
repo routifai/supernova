@@ -15,6 +15,8 @@ from omnigent.superchat.decks.feature import DECKS_FEATURE
 from omnigent.superchat.decks.handlers import HELPER_ENV
 from omnigent.superchat.decks.tools import DeckCheckTool, DeckNewTool, DeckThemeSetTool
 
+from .look_fakes import helper_ctx
+
 SAMPLE = (kit.KIT_DIR / "sample-slides.html").read_text("utf-8")
 
 
@@ -94,7 +96,8 @@ def test_tools_are_offered_to_the_muse_only() -> None:
     assert names == {"deck_new", "deck_check", "deck_export", "deck_themes", "deck_theme_set"}
     assert DECKS_FEATURE.tools({}, None) == []  # type: ignore[arg-type]
     new = DeckNewTool().get_schema()["function"]["parameters"]
-    assert new["required"] == ["path", "template", "title"]
+    assert new["required"] == ["path", "template", "look_from", "title"]
+    assert "ask" in new["properties"]["look_from"]["enum"]
     assert new["properties"]["template"]["enum"] == list(kit.templates())
     assert DeckCheckTool().get_schema()["function"]["parameters"]["required"] == ["path"]
     setter = DeckThemeSetTool().get_schema()["function"]["parameters"]
@@ -132,9 +135,11 @@ async def test_deck_new_writes_the_deck_and_reports_a_clean_layout(workspace: Pa
             {
                 "path": "your_files/q3.deck.html",
                 "template": "blue-professional",
+                "look_from": "background",
                 "title": "Q3",
                 "slides": SAMPLE,
             },
+            helper_ctx(),
         )
     )
     assert out["ok"] is True and out["written"] is True and out["layout_checked"] is True
@@ -149,7 +154,14 @@ async def test_deck_new_without_slides_returns_the_layout_menu_and_writes_nothin
 ) -> None:
     out = json.loads(
         await handle_authoring_tool(
-            "deck_new", {"path": "d.deck.html", "template": "magazine-mono", "title": "T"}
+            "deck_new",
+            {
+                "path": "d.deck.html",
+                "template": "magazine-mono",
+                "look_from": "background",
+                "title": "T",
+            },
+            helper_ctx(),
         )
     )
     assert out["written"] is False and "l-statement" in out["layouts"]
@@ -157,23 +169,21 @@ async def test_deck_new_without_slides_returns_the_layout_menu_and_writes_nothin
 
 
 async def test_deck_new_refuses_bad_input_and_never_overwrites(workspace: Path) -> None:
-    base = {"template": "magazine-mono", "title": "T", "slides": SAMPLE}
-    bad_name = json.loads(await handle_authoring_tool("deck_new", {**base, "path": "d.html"}))
+    base = {"template": "magazine-mono", "look_from": "background", "title": "T", "slides": SAMPLE}
+
+    async def new(args: dict[str, str]) -> dict[str, object]:
+        return json.loads(await handle_authoring_tool("deck_new", args, helper_ctx()))
+
+    bad_name = await new({**base, "path": "d.html"})
     assert ".deck.html" in bad_name["error"]
-    outside = json.loads(
-        await handle_authoring_tool("deck_new", {**base, "path": "/etc/x.deck.html"})
-    )
+    outside = await new({**base, "path": "/etc/x.deck.html"})
     assert "workspace" in outside["error"]
-    broken = json.loads(
-        await handle_authoring_tool(
-            "deck_new", {**base, "path": "d.deck.html", "slides": "<p>x</p>"}
-        )
-    )
+    broken = await new({**base, "path": "d.deck.html", "slides": "<p>x</p>"})
     assert broken["written"] is False and broken["errors"]
     assert not (workspace / "d.deck.html").exists()
-    first = json.loads(await handle_authoring_tool("deck_new", {**base, "path": "d.deck.html"}))
+    first = await new({**base, "path": "d.deck.html"})
     assert first["written"] is True
-    again = json.loads(await handle_authoring_tool("deck_new", {**base, "path": "d.deck.html"}))
+    again = await new({**base, "path": "d.deck.html"})
     assert "already exists" in again["error"]
 
 

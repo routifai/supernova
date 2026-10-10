@@ -13,6 +13,9 @@ from omnigent.tools.base import Tool
 DECK_TOOL_NAMES = ("deck_export", "deck_new", "deck_check", "deck_themes", "deck_theme_set")
 DECK_AUTHORING_TOOL_NAMES = ("deck_new", "deck_check", "deck_themes", "deck_theme_set")
 DECK_EXPORT_FORMATS = ("pptx", "pdf")
+# Where a new deck's look came from (``deck_new``'s ``look_from``), checked by ``decks.look``.
+# ``ask`` (or a claim the records do not back) returns the "Which look?" card instead of a deck.
+DECK_LOOK_SOURCES = ("named", "picked", "preference", "you_choose", "background", "ask")
 
 
 class DeckExportTool(Tool):
@@ -102,6 +105,20 @@ class DeckNewTool(Tool):
                             ),
                         },
                         "template": {"type": "string", "enum": list(kit.templates())},
+                        "look_from": {
+                            "type": "string",
+                            "enum": list(DECK_LOOK_SOURCES),
+                            "description": (
+                                "Where this look came from: named (their latest message names "
+                                "the theme or a mood), picked (their answer to the 'Which "
+                                "look?' card), preference (a preference they stated names it), "
+                                "you_choose (they said you choose / just do it), background "
+                                "(scheduled work, no person). Checked against the person's "
+                                "chat (a Helper's: the chat that started it); ask, or a claim "
+                                "it does not back, shows the 'Which look?' card instead and "
+                                "ends your turn (a Helper is refused and reports back)."
+                            ),
+                        },
                         "title": {"type": "string", "description": "The deck's title."},
                         "slides": {
                             "type": "string",
@@ -113,7 +130,7 @@ class DeckNewTool(Tool):
                             ),
                         },
                     },
-                    "required": ["path", "template", "title"],
+                    "required": ["path", "template", "look_from", "title"],
                     "additionalProperties": False,
                 },
             },
