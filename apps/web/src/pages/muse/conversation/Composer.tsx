@@ -88,6 +88,7 @@ export const Composer = memo(function Composer({
   onSlashAction,
   seedText,
   onSeedConsumed,
+  docked,
 }: {
   museMode?: boolean;
   activeName?: string;
@@ -126,6 +127,8 @@ export const Composer = memo(function Composer({
   /** First-run "Try it" chips (muse/intro): fills the draft and focuses it, fill-then-send. */
   seedText?: string | null;
   onSeedConsumed?: () => void;
+  /** Floating over another surface (a deck being edited): no outer padding, compact chips. */
+  docked?: boolean;
 }) {
   const { t } = useLingui();
   const [draft, setDraft] = useState("");
@@ -465,6 +468,7 @@ export const Composer = memo(function Composer({
       className={cn(
         "relative z-30 m-0 min-w-0 border-0 px-3 pb-4 pt-3 md:px-6 md:pb-6",
         museMode && "mx-auto w-full max-w-[748px] pt-2 md:pb-[18px]",
+        docked && "p-0 pt-0 md:p-0 md:pb-0",
         draggingFiles && "rounded-[14px] ring-2 ring-inset ring-ring",
       )}
     >
@@ -538,7 +542,7 @@ export const Composer = memo(function Composer({
           key={attachment.kind}
           kind={attachment.kind}
           label={attachment.label}
-          className="mb-2 w-full"
+          className={docked ? "mb-1.5 py-1 text-[12px]" : "mb-2 w-full"}
         >
           <button
             type="button"

@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import "../../test/i18n";
 import { splitComposerAttachments, withComposerAttachments } from "../../lib/composer-attachments";
-import { buildDeckAsk } from "./deck-ask";
+import { buildDeckAsk, buildDeckScope, startsWithDeckAsk } from "./deck-ask";
 
 const element = {
   id: "cover-title",
@@ -82,4 +82,27 @@ it("only a block at the very start counts", () => {
     chips: [],
     rest: 'hello <nova-element-request chip="x">',
   });
+});
+
+it("a deck-wide ask names the deck and reads back as its chip", () => {
+  const block = buildDeckScope({ artifactId: "abc123", name: "q3.deck.html", version: 4 });
+  expect(block).toContain(
+    '<nova-element-request deck="q3.deck.html" artifact="abc123" version="4"',
+  );
+  expect(block).not.toContain("Hard scope");
+  expect(startsWithDeckAsk(block)).toBe(true);
+  const sent = withComposerAttachments("make it shorter", [{ kind: "deck", label: "q3", block }]);
+  expect(splitComposerAttachments(sent)).toEqual({
+    chips: [{ kind: "deck", label: "q3" }],
+    rest: "make it shorter",
+  });
+});
+
+it("a deck-wide ask still has a chip when the deck's name has nothing to show", () => {
+  for (const name of [".deck.html", '"".deck.html', "  \n.deck.html"]) {
+    const block = buildDeckScope({ artifactId: "abc123", name, version: 1 });
+    expect(splitComposerAttachments(`${block}\n\nhi`).chips).toEqual([
+      { kind: "deck", label: "Deck" },
+    ]);
+  }
 });

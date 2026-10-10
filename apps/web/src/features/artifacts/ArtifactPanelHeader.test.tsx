@@ -68,13 +68,13 @@ const quiet: ArtifactExtension = {
   card: () => null,
 };
 
-async function open(name: string) {
+async function open(name: string, html = "<p>x</p>") {
   api.listVersions.mockResolvedValue([]);
   api.getById.mockResolvedValue({
     id: "a1",
     name,
     mimeType: "text/html",
-    contentBase64: btoa("<p>x</p>"),
+    contentBase64: btoa(html),
   });
   const container = document.createElement("div");
   document.body.append(container);
@@ -113,4 +113,12 @@ it("drops the default buttons for a deck and shows the overflow menu", async () 
   expect(c.querySelector('[data-testid="mine"]')).not.toBeNull();
   expect(c.querySelector('[data-testid="panel-overflow"]')).not.toBeNull();
   expect(c.textContent).toContain("Publish…");
+});
+
+it("reads a deck as a deck: kind and slide count, not the file type and size", async () => {
+  const slides = '<section class="slide">a</section><section class="slide">b</section>';
+  const c = await open("d.deck.html", `<main>${slides}</main>`);
+  const header = c.querySelector("header")?.textContent ?? "";
+  expect(header).toContain("Deck · 2 slides");
+  expect(header).not.toContain("HTML");
 });

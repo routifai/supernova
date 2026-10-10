@@ -173,7 +173,9 @@ export function DeckViewer({
         "flex shrink-0 items-center justify-center gap-1 px-3 py-2",
         presenting
           ? "absolute inset-x-0 bottom-4 mx-auto w-fit rounded-full bg-black/70 text-white motion-safe:transition-opacity"
-          : "border-t border-border",
+          : editing && artifact
+            ? "px-1 py-0"
+            : "border-t border-border",
         !showBar && "pointer-events-none opacity-0",
       )}
     >

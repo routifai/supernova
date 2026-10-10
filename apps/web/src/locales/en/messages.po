@@ -361,9 +361,6 @@ msgstr "Added to Conversation"
 msgid "Added to your Library"
 msgstr "Added to your Library"
 
-msgid "Added to your message"
-msgstr "Added to your message"
-
 msgid "Adding…"
 msgstr "Adding…"
 
@@ -590,6 +587,12 @@ msgstr "Ask Nova"
 
 msgid "Ask Nova about {label}"
 msgstr "Ask Nova about {label}"
+
+msgid "Ask Nova about this"
+msgstr "Ask Nova about this"
+
+msgid "Ask Nova about this deck"
+msgstr "Ask Nova about this deck"
 
 msgid "Ask Nova instead"
 msgstr "Ask Nova instead"
@@ -2976,6 +2979,9 @@ msgstr "Open {title}"
 msgid "Open as side chat"
 msgstr "Open as side chat"
 
+msgid "Open conversation"
+msgstr "Open conversation"
+
 msgid "Open full screen"
 msgstr "Open full screen"
 
@@ -4525,13 +4531,6 @@ msgstr "What Nova is"
 
 msgid "What result will you demonstrate?"
 msgstr "What result will you demonstrate?"
-
-#. placeholder {0}: target.id
-msgid "What should change in {0}?"
-msgstr "What should change in {0}?"
-
-msgid "What should change?"
-msgstr "What should change?"
 
 msgid "What should this routine do each time it runs?"
 msgstr "What should this routine do each time it runs?"

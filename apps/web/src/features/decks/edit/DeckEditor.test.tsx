@@ -15,7 +15,12 @@ vi.mock("@lingui/react/macro", () => ({
 }));
 
 import {
+  type ConversationDockApi,
+  ConversationDockProvider,
+} from "../../../components/conversation-dock";
+import {
   clearComposerAttachments,
+  setComposerAttachment,
   useComposerAttachments,
   useComposerAttachTarget,
 } from "../../../lib/composer-attachments";
@@ -25,6 +30,15 @@ import { resetDeckUi, setDeckEditing } from "../deck-ui-state";
 import { COMMIT_DEBOUNCE_MS } from "./committer";
 
 i18n.loadAndActivate({ locale: "en", messages: {} });
+// The docked composer measures itself.
+vi.stubGlobal(
+  "ResizeObserver",
+  class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  },
+);
 
 const NAME = "launch.deck.html";
 const THEME = {
@@ -356,16 +370,13 @@ it("a patch the engine won't apply exactly says so and offers Nova", async () =>
   expect(probe.current[0]?.block).toContain('<element id="title"');
 });
 
-it("Ask Nova attaches a hard-scope element request with the person's note", async () => {
+it("a selection rides along as a hard-scope element request; removing it keeps it off", async () => {
   const probe: Probe = { current: [] };
   await mount({ probe });
   await act(async () => setDeckEditing(NAME, true));
   const frame = editFrame();
   await ready(frame);
   await select(frame);
-  await act(async () => typeInto(control("What should change?"), "make it punchier"));
-  const ask = [...host.querySelectorAll("button")].find((b) => b.textContent === "Ask Nova");
-  await act(async () => ask?.click());
   const attachment = probe.current[0];
   expect(attachment?.kind).toBe("deck");
   expect(attachment?.label).toBe("Slide 1 · title");
@@ -374,7 +385,16 @@ it("Ask Nova attaches a hard-scope element request with the person's note", asyn
   );
   expect(attachment?.block).toContain("Hard scope: change ONLY these elements");
   expect(attachment?.block).toContain('text: "Launch"');
-  expect(attachment?.block).toContain("request: make it punchier");
+  // The person removes the chip: the same selection does not bring it back...
+  await act(async () => setComposerAttachment("deck", null));
+  await select(frame);
+  expect(probe.current).toEqual([]);
+  // ...the inspector's Ask Nova does.
+  await act(async () => control("Ask Nova").click());
+  expect(probe.current[0]?.block).toContain('<element id="title"');
+  // Nothing selected: nothing attached.
+  await fromFrame(frame, { type: "nova:edit-selection", targets: [] });
+  expect(probe.current).toEqual([]);
 });
 
 it("the Ask Nova button on the selection (a bridge message) attaches too", async () => {
@@ -414,4 +434,226 @@ it("a new version keeps the selection by selecting the same ids in the new frame
     "*",
   );
   expect(host.querySelector('[data-testid="deck-edit-frame-next"]')).toBeNull();
+});
+
+it("the docked composer asks Nova in the conversation and shows the reply without leaving", async () => {
+  const sent: string[] = [];
+  let api: ConversationDockApi = {
+    composer: { sending: false, running: false },
+    reply: { id: "old", text: "Earlier answer" },
+    send: async (text) => {
+      sent.push(text);
+      return true;
+    },
+  };
+  const view = () => (
+    <I18nProvider i18n={i18n}>
+      <ConversationDockProvider value={api}>
+        <DeckViewer
+          html={FIXTURE_DECK}
+          title={NAME}
+          artifact={{ id: "v1", version: 1 }}
+          editSource={source}
+        />
+      </ConversationDockProvider>
+    </I18nProvider>
+  );
+  await act(async () => root.render(view()));
+  await act(async () => setDeckEditing(NAME, true));
+  const frame = editFrame();
+  await ready(frame);
+  const dock = () => host.querySelector('[data-testid="deck-dock"]') as HTMLElement;
+  const box = () => dock().querySelector("textarea") as HTMLTextAreaElement;
+  expect(box().placeholder).toBe("Ask Nova about this deck");
+
+  // Nothing selected: the message names the deck.
+  await act(async () => typeInto(box(), "Shorter titles"));
+  await act(async () => (dock().querySelector('[aria-label="Send"]') as HTMLButtonElement).click());
+  expect(sent[0]).toMatch(/^<nova-element-request deck="launch.deck.html" artifact="v1"/);
+  expect(sent[0]).toContain("Scope: this deck as a whole");
+  expect(sent[0]?.endsWith("\n\nShorter titles")).toBe(true);
+  // The old reply is not the answer; the new one shows above the composer.
+  expect(host.querySelector('[data-testid="deck-dock-reply"]')).toBeNull();
+  api = { ...api, reply: { id: "new", text: "Done, both titles are shorter." } };
+  await act(async () => root.render(view()));
+  const reply = host.querySelector('[data-testid="deck-dock-reply"]');
+  expect(reply?.textContent).toContain("Done, both titles are shorter.");
+
+  // A selection goes with the next message as its element request.
+  await select(frame);
+  expect(dock().textContent).toContain("Slide 1 · title");
+  await act(async () => typeInto(box(), "Bigger"));
+  await act(async () => (dock().querySelector('[aria-label="Send"]') as HTMLButtonElement).click());
+  expect(sent[1]).toContain('<element id="title"');
+  expect(sent[1]).not.toContain("Scope: this deck as a whole");
+  // The selection is still the context of the next message.
+  expect(dock().textContent).toContain("Slide 1 · title");
+
+  // Open conversation (on the answer) leaves edit mode.
+  api = { ...api, reply: { id: "newer", text: "Made it bigger." } };
+  await act(async () => root.render(view()));
+  const open = [...host.querySelectorAll("button")].find((b) =>
+    b.textContent?.includes("Open conversation"),
+  );
+  await act(async () => open?.click());
+  expect(host.querySelector('[data-testid="deck-dock"]')).toBeNull();
+});
+
+/** The deck in edit mode inside a conversation whose dock is `api` (re-render with `show`). */
+async function mountDocked(initial: ConversationDockApi) {
+  let api = initial;
+  const view = () => (
+    <I18nProvider i18n={i18n}>
+      <ConversationDockProvider value={api}>
+        <DeckViewer
+          html={FIXTURE_DECK}
+          title={NAME}
+          artifact={{ id: "v1", version: 1 }}
+          editSource={source}
+        />
+      </ConversationDockProvider>
+    </I18nProvider>
+  );
+  await act(async () => root.render(view()));
+  await act(async () => setDeckEditing(NAME, true));
+  const frame = editFrame();
+  await ready(frame);
+  const dock = () => host.querySelector('[data-testid="deck-dock"]') as HTMLElement;
+  return {
+    frame,
+    dock,
+    show: (next: ConversationDockApi) => {
+      api = next;
+      return act(async () => root.render(view()));
+    },
+    send: async (text: string) => {
+      await act(async () =>
+        typeInto(dock().querySelector("textarea") as HTMLTextAreaElement, text),
+      );
+      await act(async () =>
+        (dock().querySelector('[aria-label="Send"]') as HTMLButtonElement).click(),
+      );
+    },
+  };
+}
+
+it("the dock shows what the message would carry: files waiting and the quoted reply", async () => {
+  const removed: string[] = [];
+  const cleared = vi.fn();
+  const file = { id: "f1", threadKey: "t", file: new File(["x"], "q3.csv") };
+  const { dock } = await mountDocked({
+    send: async () => true,
+    reply: null,
+    composer: {
+      sending: false,
+      running: false,
+      pendingAttachments: [file],
+      onRemoveAttachment: (a) => removed.push(a.id),
+      replyTarget: {
+        id: "m1",
+        threadId: "t",
+        seq: 1,
+        role: "bot",
+        blocks: [],
+        createdAt: "2026-01-01T00:00:00Z",
+      },
+      replyQuote: "the margins",
+      replyTargetName: "Nova",
+      onClearReply: cleared,
+      uploadStatus: "Starting your Computer…",
+    },
+  });
+  expect(dock().textContent).toContain("q3.csv");
+  expect(dock().textContent).toContain("the margins");
+  expect(dock().textContent).toContain("Starting your Computer…");
+  await act(async () =>
+    (dock().querySelector('[aria-label="Remove q3.csv"]') as HTMLElement).click(),
+  );
+  expect(removed).toEqual(["f1"]);
+  await act(async () =>
+    (dock().querySelector('[aria-label="Cancel reply"]') as HTMLElement).click(),
+  );
+  expect(cleared).toHaveBeenCalled();
+});
+
+it("a failed send shows its error in the dock instead of vanishing", async () => {
+  const docked = await mountDocked({
+    send: async () => false,
+    reply: null,
+    composer: { sending: false, running: false },
+  });
+  await docked.send("Shorter");
+  // The words come back to the composer...
+  expect((docked.dock().querySelector("textarea") as HTMLTextAreaElement).value).toBe("Shorter");
+  await docked.show({
+    send: async () => false,
+    reply: null,
+    composer: { sending: false, running: false, sendError: "Couldn't reach your Computer." },
+  });
+  // ...and the error shows where the answer would.
+  expect(docked.dock().querySelector('[data-testid="composer-error"]')?.textContent).toContain(
+    "Couldn't reach your Computer.",
+  );
+  expect(host.querySelector('[data-testid="deck-dock-reply"]')).toBeNull();
+});
+
+it("shows Stop while Nova works, and a steered answer streaming into the same message", async () => {
+  const stop = vi.fn(async () => {});
+  const reply = { id: "b1", text: "First answer" };
+  const docked = await mountDocked({
+    send: async () => true,
+    reply,
+    composer: { sending: false, running: true, onStop: stop },
+  });
+  await act(async () =>
+    (docked.dock().querySelector('[aria-label="Stop"]') as HTMLButtonElement).click(),
+  );
+  expect(stop).toHaveBeenCalled();
+  await docked.send("Also the footer");
+  expect(host.querySelector('[data-testid="deck-dock-reply"]')?.textContent).toContain("Working");
+  // Steering: the answer streams into Nova's current message (same id, new text).
+  await docked.show({
+    send: async () => true,
+    reply: { id: "b1", text: "First answer. Footer fixed too." },
+    composer: { sending: false, running: false, onStop: stop },
+  });
+  expect(host.querySelector('[data-testid="deck-dock-reply"]')?.textContent).toContain(
+    "Footer fixed too.",
+  );
+});
+
+it("deselecting clears the chip even when a failed send put it back", async () => {
+  const probe: Probe = { current: [] };
+  let api: ConversationDockApi = {
+    send: async () => false,
+    reply: null,
+    composer: { sending: false, running: false },
+  };
+  const view = () => (
+    <I18nProvider i18n={i18n}>
+      <AttachProbe out={probe} />
+      <ConversationDockProvider value={api}>
+        <DeckViewer
+          html={FIXTURE_DECK}
+          title={NAME}
+          artifact={{ id: "v1", version: 1 }}
+          editSource={source}
+        />
+      </ConversationDockProvider>
+    </I18nProvider>
+  );
+  await act(async () => root.render(view()));
+  await act(async () => setDeckEditing(NAME, true));
+  const frame = editFrame();
+  await ready(frame);
+  await select(frame);
+  const dock = host.querySelector('[data-testid="deck-dock"]') as HTMLElement;
+  await act(async () => typeInto(dock.querySelector("textarea") as HTMLTextAreaElement, "Bigger"));
+  await act(async () => (dock.querySelector('[aria-label="Send"]') as HTMLButtonElement).click());
+  // The send failed: the composer gave the chip back.
+  expect(probe.current[0]?.kind).toBe("deck");
+  api = { ...api };
+  await act(async () => root.render(view()));
+  await fromFrame(frame, { type: "nova:edit-selection", targets: [] });
+  expect(probe.current).toEqual([]);
 });

@@ -9,16 +9,16 @@ export type ChangeMode = "later" | "now";
 
 export function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid grid-cols-[84px_1fr] items-center gap-2 text-[12px]">
+    <div className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-2 text-[12px]">
       <span className="truncate text-muted-foreground">{label}</span>
-      <div className="flex min-w-0 items-center gap-1.5">{children}</div>
+      <div className="flex min-w-0 flex-wrap items-center gap-1.5">{children}</div>
     </div>
   );
 }
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="flex flex-col gap-2.5 border-t border-border px-4 py-3.5 first:border-t-0">
+    <section className="flex min-w-0 flex-col gap-2.5 border-t border-border px-4 py-3.5 first:border-t-0">
       <h3 className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
         {title}
       </h3>
@@ -81,7 +81,7 @@ export function NumberField({
           }
         }}
         onBlur={commit}
-        className="h-7 pe-6 text-[12px] tabular-nums"
+        className={cn("h-7 px-2 text-[12px] tabular-nums", unit && "pe-6")}
       />
       {unit ? (
         <span className="pointer-events-none absolute end-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">
@@ -135,7 +135,7 @@ export function SliderField({
         onPointerUp={done}
         onKeyUp={done}
         onBlur={done}
-        className="h-1.5 min-w-0 flex-1 cursor-pointer accent-foreground"
+        className="h-1.5 min-w-[48px] flex-1 cursor-pointer accent-foreground"
       />
       <NumberField
         value={shown}
@@ -145,7 +145,7 @@ export function SliderField({
         min={min}
         max={max}
         step={step}
-        className="w-[68px] flex-none"
+        className="w-[72px] flex-none"
       />
     </>
   );

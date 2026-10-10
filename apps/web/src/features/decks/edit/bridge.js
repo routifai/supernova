@@ -228,78 +228,116 @@
       opts.css;
     return d;
   }
-  function labelOf(el) {
-    var t = kindOf(el);
-    var word = t === "slide" ? "Slide " + slideNumber(el) : el.tagName.toLowerCase();
-    return word + " · " + el.getAttribute("data-nova-id");
-  }
-  // Where the label chip goes: above the selection, else below it, at its left or right end, the
-  // first spot that stays on screen and covers no other text of the slide.
+
+  // Where the label chip goes: just outside the selection (above, below, then beside it), at the
+  // first spot that stays on screen and covers no text of the slide; failing that, in the margin
+  // outside the slide; failing that, the spot that covers the least.
   var chipInset = 0;
-  function chipSpot(rect, el) {
-    var h = 26;
-    var w = 230;
-    var others = [];
-    var slide = slideOf(el);
-    if (slide) {
-      slide.querySelectorAll("[data-nova-id]").forEach((o) => {
-        if (o === el || o.contains(el) || el.contains(o) || !isLeaf(o) || !isVisible(o)) return;
-        others.push(o.getBoundingClientRect());
-      });
+  function textRects(slide, el) {
+    var rects = [];
+    if (!slide) return rects;
+    var walker = document.createTreeWalker(slide, NodeFilter.SHOW_TEXT);
+    var range = document.createRange();
+    for (var node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.nodeValue || !node.nodeValue.trim() || el.contains(node)) continue;
+      var parent = node.parentElement;
+      if (!parent || !isVisible(parent)) continue;
+      range.selectNodeContents(node);
+      var list = range.getClientRects();
+      for (var i = 0; i < list.length && rects.length < 400; i++) {
+        if (list[i].width > 0 && list[i].height > 0) rects.push(list[i]);
+      }
     }
-    // Keep clear of the slide rail's drawer, which opens over the stage's left edge (the host
-    // says how far in).
-    var left = Math.max(chipInset, rect.left);
-    var right = Math.max(0, Math.min(rect.right - w, window.innerWidth - w));
+    return rects;
+  }
+  function chipSpot(rect, el, w, h) {
+    var gap = 6;
+    var slide = slideOf(el);
+    var others = textRects(slide, el);
+    var minLeft = chipInset + 4;
+    var maxLeft = window.innerWidth - w - 4;
+    var clampX = (x) => Math.max(minLeft, Math.min(x, maxLeft));
     var spots = [
-      { left: left, top: rect.top - h },
-      { left: right, top: rect.top - h },
-      { left: left, top: rect.bottom + 4 },
-      { left: right, top: rect.bottom + 4 },
+      { left: clampX(rect.left), top: rect.top - h - gap },
+      { left: clampX(rect.right - w), top: rect.top - h - gap },
+      { left: clampX(rect.left), top: rect.bottom + gap },
+      { left: clampX(rect.right - w), top: rect.bottom + gap },
+      { left: rect.left - w - gap, top: rect.top },
+      { left: rect.right + gap, top: rect.top },
     ];
+    // The margin outside the slide (the letterbox), above it or below it.
+    var frame = slide ? slide.getBoundingClientRect() : null;
+    if (frame) {
+      spots.push({ left: clampX(rect.left), top: frame.top - h - gap });
+      spots.push({ left: clampX(rect.left), top: frame.bottom + gap });
+    }
     var best = null;
     var fewest = 1e9;
     for (var i = 0; i < spots.length; i++) {
       var s = spots[i];
-      if (s.top < 0 || s.top + h > window.innerHeight) continue;
+      if (s.top < 2 || s.top + h > window.innerHeight - 2) continue;
+      if (s.left < minLeft || s.left > maxLeft) continue;
+      // Never on the selection itself.
+      if (
+        s.left < rect.right &&
+        s.left + w > rect.left &&
+        s.top < rect.bottom &&
+        s.top + h > rect.top
+      )
+        continue;
       var hits = 0;
       for (var j = 0; j < others.length; j++) {
         var o = others[j];
         if (s.left < o.right && s.left + w > o.left && s.top < o.bottom && s.top + h > o.top)
           hits++;
       }
+      if (!hits) return { left: s.left, top: s.top, hits: 0 };
       if (hits < fewest) {
         fewest = hits;
         best = s;
       }
-      if (!hits) break;
     }
-    return best || { left: left, top: Math.max(0, rect.top - h) };
+    if (best) return { left: best.left, top: best.top, hits: fewest };
+    return { left: clampX(rect.left), top: Math.max(2, rect.top - h - gap), hits: 1e9 };
   }
+  var SPARKLE =
+    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19' +
+    'l-1.9-5.8L4 11l6.1-2.2z"/></svg>';
   function chip(rect, text, el) {
     var c = document.createElement("div");
-    var spot = chipSpot(rect, el);
     var name = document.createElement("span");
     name.textContent = text;
     name.style.cssText =
-      "max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
+      "max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px 0 6px";
     var ask = document.createElement("button");
     ask.type = "button";
     ask.setAttribute("data-nova-edit-ask", "");
-    ask.textContent = "Ask Nova";
+    ask.setAttribute("aria-label", "Ask Nova");
+    ask.title = "Ask Nova";
+    ask.innerHTML = SPARKLE;
     ask.style.cssText =
-      "pointer-events:auto;cursor:pointer;border:0;border-radius:4px;padding:2px 6px;font:inherit;" +
-      "background:rgba(255,255,255,.22);color:#fff";
+      "pointer-events:auto;cursor:pointer;border:0;border-radius:999px;width:18px;height:18px;padding:0;" +
+      "display:grid;place-items:center;background:rgba(255,255,255,.22);color:#fff";
     c.appendChild(name);
     c.appendChild(ask);
     c.style.cssText =
-      "position:absolute;display:flex;align-items:center;gap:8px;left:" +
-      spot.left +
-      "px;top:" +
-      spot.top +
-      "px;padding:3px 4px 3px 8px;border-radius:6px;background:#0a84ff;color:#fff;" +
-      "box-shadow:0 1px 4px rgba(0,0,0,.25)";
+      "position:absolute;display:flex;align-items:center;gap:2px;height:22px;box-sizing:border-box;" +
+      "padding:2px;border-radius:999px;background:#0a84ff;color:#fff;font:600 10.5px/1 -apple-system,system-ui,sans-serif;" +
+      "box-shadow:0 1px 4px rgba(0,0,0,.25);visibility:hidden;left:0;top:0";
     return c;
+  }
+  // "Slide 3 · table-r2c2" when that fits somewhere clear and untruncated, else just the id.
+  function placeChip(c, rect, el, short) {
+    var name = c.firstChild;
+    var spot = chipSpot(rect, el, c.offsetWidth || 120, c.offsetHeight || 22);
+    if (short && (spot.hits > 0 || name.scrollWidth > name.clientWidth)) {
+      name.textContent = short;
+      spot = chipSpot(rect, el, c.offsetWidth || 120, c.offsetHeight || 22);
+    }
+    c.style.left = spot.left + "px";
+    c.style.top = spot.top + "px";
+    c.style.visibility = "visible";
   }
   function paint() {
     raf = 0;
@@ -336,7 +374,14 @@
             ? "outline:2px dashed #0a84ff;outline-offset:2px"
             : "outline:2px solid #0a84ff;outline-offset:-1px;background:rgba(10,132,255,.06)";
         l.appendChild(box(item.r, { css: css }));
-        if (item.primary && !editing) l.appendChild(chip(item.r, labelOf(item.el), item.el));
+        if (item.primary && !editing) {
+          var id = item.el.getAttribute("data-nova-id");
+          var slideWord = "Slide " + slideNumber(item.el);
+          var isSlide = kindOf(item.el) === "slide";
+          var c = chip(item.r, isSlide ? slideWord : slideWord + " · " + id, item.el);
+          l.appendChild(c);
+          placeChip(c, item.r, item.el, isSlide ? null : id);
+        }
       });
     }
     if (selected.length || h || editing) schedule();
@@ -345,7 +390,8 @@
     if (!raf) raf = requestAnimationFrame(paint);
   }
   function repaint() {
-    lastRects = "";
+    // Not "": an empty selection paints to "" and must still clear the old chrome.
+    lastRects = null;
     schedule();
   }
 

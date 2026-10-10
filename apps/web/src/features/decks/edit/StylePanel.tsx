@@ -1,7 +1,7 @@
 // Portions modified from nexu-io/open-design apps/web/src/components/ManualEditPanel.tsx@802708f, Apache-2.0; changes: rewritten small with shadcn components; fonts and colours limited to the deck's theme tokens, controls report preview-now / save-later changes, per-element ask-Nova notes.
 import { useLingui } from "@lingui/react/macro";
 import type { DeckEditTarget, DeckEditTheme } from "@nova/contracts";
-import { Button, Input, NativeSelect, NativeSelectOption, Textarea } from "@nova/ui-web";
+import { Button, Input, NativeSelect, NativeSelectOption } from "@nova/ui-web";
 import {
   AlignCenter,
   AlignLeft,
@@ -12,7 +12,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   firstFamily,
   num,
@@ -42,8 +42,6 @@ export type StylePanelProps = {
   slideCount: number;
   /** Whether a message composer is mounted to receive "Ask Nova". */
   canAsk: boolean;
-  asked: boolean;
-  focusAsk: number;
   onStyle: (changes: StyleChanges, mode: ChangeMode) => void;
   onAttributes: (attributes: { href?: string | null; alt?: string | null }) => void;
   onCommit: () => void;
@@ -51,8 +49,8 @@ export type StylePanelProps = {
   onClose: () => void;
   onRemove: () => void;
   onDuplicate: () => void;
-  onAsk: (notes: Record<string, string>) => void;
-  onDismissNotice: () => void;
+  /** Puts the selection on the next message and the cursor in the composer. */
+  onAsk: () => void;
 };
 
 /**
@@ -84,9 +82,9 @@ export function StylePanel(props: StylePanelProps) {
       data-testid="deck-style-panel"
       aria-label={t`Edit`}
       onPointerDownCapture={props.onCommit}
-      className="flex max-h-full w-[288px] flex-col overflow-y-auto overscroll-contain rounded-2xl bg-popover text-popover-foreground shadow-[0_12px_40px_rgb(0_0_0/0.16)] ring-1 ring-border motion-safe:animate-[deck-inspector-in_180ms_ease-out]"
+      className="flex max-h-full w-full min-w-0 flex-col overflow-x-hidden overflow-y-auto overscroll-contain rounded-2xl bg-popover text-popover-foreground shadow-[0_12px_40px_rgb(0_0_0/0.16)] ring-1 ring-border motion-safe:animate-[deck-inspector-in_180ms_ease-out]"
     >
-      <header className="flex items-center gap-1 px-4 py-3">
+      <header className="flex items-center gap-0.5 py-3 ps-4 pe-2">
         <div className="min-w-0 flex-1">
           <div className="truncate text-[13px] font-medium" dir="auto">
             {title}
@@ -95,6 +93,39 @@ export function StylePanel(props: StylePanelProps) {
             <div className="truncate text-[11px] text-muted-foreground">{primary.id}</div>
           ) : null}
         </div>
+        {props.canAsk ? (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="text-muted-foreground"
+            aria-label={t`Ask Nova`}
+            title={t`Ask Nova`}
+            onClick={props.onAsk}
+          >
+            <Sparkles />
+          </Button>
+        ) : null}
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground"
+          aria-label={t`Duplicate`}
+          title={t`Duplicate`}
+          onClick={props.onDuplicate}
+        >
+          <Copy />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground"
+          aria-label={t`Delete`}
+          title={t`Delete`}
+          disabled={isSlide && props.slideCount <= 1}
+          onClick={props.onRemove}
+        >
+          <Trash2 />
+        </Button>
         <Button
           variant="ghost"
           size="icon-sm"
@@ -106,28 +137,12 @@ export function StylePanel(props: StylePanelProps) {
           <X />
         </Button>
       </header>
-      <div className="flex items-center gap-1 px-4 pb-3">
-        <Button variant="ghost" size="sm" onClick={props.onDuplicate}>
-          <Copy />
-          {t`Duplicate`}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={isSlide && props.slideCount <= 1}
-          onClick={props.onRemove}
-        >
-          <Trash2 />
-          {t`Delete`}
-        </Button>
-      </div>
       {hasText ? <TextSection {...props} primary={primary} /> : null}
       <BoxSection {...props} primary={primary} isSlide={isSlide} />
       {isSlide ? null : <PositionSection {...props} primary={primary} />}
       {primary.kind === "link" || primary.kind === "image" ? (
         <AttributeSection key={primary.id} {...props} primary={primary} />
       ) : null}
-      <AskSection {...props} />
     </aside>
   );
 }
@@ -141,7 +156,7 @@ function EmptyInspector({ theme }: { theme: DeckEditTheme | null }) {
     <aside
       data-testid="deck-style-empty"
       aria-label={t`Style`}
-      className="flex max-h-full w-[288px] flex-col gap-4 overflow-y-auto rounded-2xl bg-popover px-4 py-4 text-popover-foreground ring-1 ring-border"
+      className="flex max-h-full w-full min-w-0 flex-col gap-4 overflow-y-auto rounded-2xl bg-popover px-4 py-4 text-popover-foreground ring-1 ring-border"
     >
       <p className="text-[12px] text-muted-foreground">{t`Click an element to edit it.`}</p>
       {swatches.length ? (
@@ -174,8 +189,9 @@ export function EditNoticeBanner({
   onAsk,
   targets,
   canAsk,
-}: Pick<StylePanelProps, "onDismissNotice" | "onAsk" | "targets" | "canAsk"> & {
+}: Pick<StylePanelProps, "onAsk" | "targets" | "canAsk"> & {
   notice: EditNotice | null;
+  onDismissNotice: () => void;
 }) {
   const { t } = useLingui();
   if (!notice) return null;
@@ -203,7 +219,7 @@ export function EditNoticeBanner({
         </button>
       </div>
       {notice.kind === "inexact" && canAsk && targets.length ? (
-        <Button size="sm" variant="outline" onClick={() => onAsk({})}>
+        <Button size="sm" variant="outline" onClick={onAsk}>
           <Sparkles />
           {t`Ask Nova instead`}
         </Button>
@@ -239,7 +255,7 @@ function TextSection({ primary, theme, onStyle }: StylePanelProps & { primary: D
       <Row label={t`Font`}>
         <NativeSelect
           size="sm"
-          className="w-full"
+          className="w-full min-w-0"
           aria-label={t`Font`}
           value={matched ? `var(${matched.name})` : ""}
           onChange={(event) =>
@@ -265,6 +281,7 @@ function TextSection({ primary, theme, onStyle }: StylePanelProps & { primary: D
         />
         <NativeSelect
           size="sm"
+          className="w-[76px] shrink-0"
           aria-label={t`Weight`}
           value={String(weight)}
           onChange={(event) => onStyle({ "font-weight": event.target.value }, "now")}
@@ -470,50 +487,6 @@ function AttributeSection({
           className="h-7 text-[12px]"
         />
       </Row>
-    </Section>
-  );
-}
-
-function AskSection({ targets, canAsk, asked, focusAsk, onAsk }: StylePanelProps) {
-  const { t } = useLingui();
-  const [notes, setNotes] = useState<Record<string, string>>({});
-  const first = targets[targets.length - 1]?.id;
-  // The selection chrome's own "Ask Nova" button asks with what is typed so far.
-  const [handled, setHandled] = useState(focusAsk);
-  useEffect(() => {
-    if (focusAsk !== handled) {
-      setHandled(focusAsk);
-      if (canAsk) onAsk(notes);
-    }
-  }, [focusAsk, handled, canAsk, onAsk, notes]);
-  if (!canAsk) return null;
-  return (
-    <Section title={t`Ask Nova`}>
-      {targets.map((target) => (
-        <Textarea
-          key={target.id}
-          rows={targets.length > 1 ? 1 : 2}
-          aria-label={
-            targets.length > 1 ? t`What should change in ${target.id}?` : t`What should change?`
-          }
-          placeholder={targets.length > 1 ? target.id : t`What should change?`}
-          value={notes[target.id] ?? ""}
-          onChange={(event) =>
-            setNotes((current) => ({ ...current, [target.id]: event.target.value }))
-          }
-          className="min-h-0 text-[12px]"
-          autoFocus={false}
-        />
-      ))}
-      <div className="flex items-center gap-2">
-        <Button size="sm" variant="outline" disabled={!first} onClick={() => onAsk(notes)}>
-          <Sparkles />
-          {t`Ask Nova`}
-        </Button>
-        {asked ? (
-          <span className="text-[11.5px] text-muted-foreground">{t`Added to your message`}</span>
-        ) : null}
-      </div>
     </Section>
   );
 }

@@ -1,8 +1,11 @@
+import { plural } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react/macro";
+import { deckSlideCount } from "@nova/contracts";
 import { Button, cn } from "@nova/ui-web";
 import { Download, ExternalLink, Lock, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatSize } from "../../components/cards/catalog";
+import { artifactKind, kindLabel } from "../../lib/artifact-kind";
 import { downloadArtifactBytes } from "../../lib/artifact-open";
 import { useObjectUrl } from "../../lib/use-object-url";
 import { ArtifactPreview } from "./Artifacts";
@@ -12,9 +15,14 @@ import { PanelOverflowMenu } from "./PanelOverflowMenu";
 import { useArtifactPanelParts } from "./registry";
 
 /** The panel's width from `md` up: usual, wider for a file that needs room, widest while a file is
- * being edited. */
+ * being edited (then it may shrink, so beside a sidebar it fills the window instead of running
+ * off its edge). */
 export const artifactPanelWidth = ({ wide, expanded }: { wide?: boolean; expanded?: boolean }) =>
-  expanded ? "md:w-[min(84vw,1600px)]" : wide ? "md:w-[min(58vw,900px)]" : "md:w-[min(46vw,640px)]";
+  expanded
+    ? "md:w-[min(84vw,1600px)] md:min-w-0 md:shrink md:grow"
+    : wide
+      ? "md:w-[min(58vw,900px)]"
+      : "md:w-[min(46vw,640px)]";
 
 const EMPTY_BYTES = new Uint8Array(0);
 
@@ -27,12 +35,15 @@ export function ArtifactPanel({
   title,
   page,
   onClose,
+  onExpandedChange,
 }: {
   artifactId: string;
   title?: string;
   /** Open a PDF at this page (a citation chip). */
   page?: number;
   onClose: () => void;
+  /** Says when the open file wants the whole window (a deck being edited). */
+  onExpandedChange?: (expanded: boolean) => void;
 }) {
   const { t } = useLingui();
   const state = useArtifactContent(artifactId);
@@ -49,6 +60,12 @@ export function ArtifactPanel({
     openUrl: url,
   });
 
+  const expanded = !!extra.expanded;
+  useEffect(() => {
+    onExpandedChange?.(expanded);
+  }, [expanded, onExpandedChange]);
+  useEffect(() => () => onExpandedChange?.(false), [onExpandedChange]);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || event.defaultPrevented || extra.holdsEscape) return;
@@ -61,10 +78,19 @@ export function ArtifactPanel({
 
   const name = ready?.artifact.name ?? "";
   const shown = ready ? state.versions.find((entry) => entry.id === ready.artifact.id) : undefined;
+  // A deck reads as a deck, as on its chat card and in the Library: "Deck · 7 slides".
+  const isDeck = !!ready && artifactKind(ready.artifact.mimeType, name) === "deck";
+  const deckBytes = isDeck && ready?.artifact.mimeType === "text/html" ? ready.bytes : null;
+  const slides = useMemo(
+    () => (deckBytes ? deckSlideCount(new TextDecoder("utf-8").decode(deckBytes)) : 0),
+    [deckBytes],
+  );
   const meta = ready
     ? [
-        (name.split(".").pop() ?? "").toUpperCase(),
-        formatSize(ready.bytes.byteLength),
+        isDeck ? kindLabel("deck") : (name.split(".").pop() ?? "").toUpperCase(),
+        slides
+          ? plural(slides, { one: "# slide", other: "# slides" })
+          : formatSize(ready.bytes.byteLength),
         state.versions.length > 1 && shown ? `v${shown.version}` : "",
       ]
         .filter(Boolean)
@@ -192,7 +218,7 @@ export function ArtifactPanel({
               toolbarHost={toolbarHost}
               page={page}
             />
-            {state.artifact.mimeType === "text/html" ? (
+            {state.artifact.mimeType === "text/html" && !expanded ? (
               <Lock
                 size={12}
                 aria-label={t`Isolated preview`}

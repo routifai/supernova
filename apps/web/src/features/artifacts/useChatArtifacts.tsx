@@ -12,6 +12,8 @@ const ArtifactPanel = lazy(() =>
 export function useChatArtifacts(resetKey: string | undefined): {
   api: ArtifactPanelApi;
   isOpen: boolean;
+  /** The open file wants the whole window (a deck being edited). */
+  expanded: boolean;
   panel: ReactNode;
 } {
   const [open, setOpen] = useState<{ id: string; title?: string; page?: number } | null>(null);
@@ -24,6 +26,7 @@ export function useChatArtifacts(resetKey: string | undefined): {
     [open?.id],
   );
   useEffect(() => setOpen(null), [resetKey]);
+  const [expanded, setExpanded] = useState(false);
   const panel = open ? (
     <Suspense fallback={null}>
       <ArtifactPanel
@@ -32,8 +35,9 @@ export function useChatArtifacts(resetKey: string | undefined): {
         title={open.title}
         page={open.page}
         onClose={api.close}
+        onExpandedChange={setExpanded}
       />
     </Suspense>
   ) : null;
-  return { api, isOpen: open !== null, panel };
+  return { api, isOpen: open !== null, expanded: open !== null && expanded, panel };
 }

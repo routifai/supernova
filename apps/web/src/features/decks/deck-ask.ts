@@ -85,6 +85,20 @@ export function buildDeckAsk(input: {
   return { label, block: [head, rule, ...body].join("\n") + END };
 }
 
+/** A message asked from the deck with nothing selected: names the deck, scopes nothing in it. */
+export function buildDeckScope(input: { artifactId: string; name: string; version: number }) {
+  const name = sanitizeField(input.name.replace(/\.deck\.html$/i, ""), 80);
+  // The chip must never be empty (or the block would not read back as one).
+  const label = /[\p{L}\p{N}]/u.test(name) ? name : "Deck";
+  const head =
+    `<${TAG} deck="${sanitizeField(input.name, 160)}" artifact="${sanitizeField(input.artifactId, 64)}" ` +
+    `version="${input.version}" chip="${label}">`;
+  return [head, "Scope: this deck as a whole; no element is selected."].join("\n") + END;
+}
+
+/** Whether a message already opens with an element request (a selection is attached). */
+export const startsWithDeckAsk = (text: string): boolean => text.startsWith(`<${TAG} `);
+
 /** Reads a leading element request back out of a sent message. */
 export function splitDeckAsk(text: string): { label: string; rest: string } | null {
   if (!text.startsWith(`<${TAG} `)) return null;

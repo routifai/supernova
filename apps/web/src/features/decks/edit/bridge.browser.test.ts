@@ -182,6 +182,56 @@ describe("edit bridge (Chromium)", () => {
     await page.close();
   });
 
+  it("puts the selection chip outside the element and off every other text of the slide", async () => {
+    if (!browser) return;
+    const page = await open();
+    // The heading sits right under the kicker: the chip must not land on the kicker's text.
+    const labels: string[] = [];
+    for (const id of ["cover-title", "cover-lead", "cover-kicker"]) {
+      await host(page, { type: "nova:edit-select", ids: [id] });
+      await page.waitForTimeout(80);
+      const overlap = await page.evaluate((selected) => {
+        const chip = document.querySelector("[data-nova-edit-ask]")?.parentElement;
+        const el = document.querySelector(`[data-nova-id="${selected}"]`);
+        if (!chip || !el) return "missing";
+        const c = chip.getBoundingClientRect();
+        const hit = (r: DOMRect) =>
+          c.left < r.right && c.right > r.left && c.top < r.bottom && c.bottom > r.top;
+        if (hit(el.getBoundingClientRect())) return "covers the selection";
+        const slide = el.closest(".slide");
+        const walker = document.createTreeWalker(slide as Node, NodeFilter.SHOW_TEXT);
+        const range = document.createRange();
+        for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+          if (!n.nodeValue?.trim() || el.contains(n)) continue;
+          range.selectNodeContents(n);
+          for (const r of range.getClientRects()) if (hit(r)) return `covers "${n.nodeValue}"`;
+        }
+        return null;
+      }, id);
+      expect(overlap).toBeNull();
+      const label = await page.evaluate(
+        () => document.querySelector("[data-nova-edit-ask]")?.parentElement?.textContent ?? "",
+      );
+      expect(label).toMatch(new RegExp(`^(Slide 1 · )?${id}$`));
+      labels.push(label);
+    }
+    // Where there is room the chip says where the element is, not only what it is.
+    expect(labels.some((label) => label.startsWith("Slide 1 · "))).toBe(true);
+    await page.close();
+  });
+
+  it("clears the selection chrome when the host deselects", async () => {
+    if (!browser) return;
+    const page = await open();
+    await host(page, { type: "nova:edit-select", ids: ["cover-title"] });
+    await page.waitForTimeout(80);
+    expect(await page.locator("[data-nova-edit-ask]").count()).toBe(1);
+    await host(page, { type: "nova:edit-select", ids: [] });
+    await page.waitForTimeout(80);
+    expect(await page.locator("[data-nova-edit-ask]").count()).toBe(0);
+    await page.close();
+  });
+
   it("works through the real sandbox shell: nested frames, the relay and the nonce", async () => {
     if (!browser) return;
     const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });

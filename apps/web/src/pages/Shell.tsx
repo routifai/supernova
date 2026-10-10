@@ -41,6 +41,11 @@ import {
   useIsDesktop,
 } from "../components/ai/orb";
 import { ArtifactPanelProvider, AskPreviewsProvider } from "../components/cards/context";
+import {
+  type ConversationDockApi,
+  ConversationDockProvider,
+  latestDockReply,
+} from "../components/conversation-dock";
 import { useNovaWork } from "../features/activity";
 import { ApprovalCards, FeedAsks, useAsks, WaitingSheet } from "../features/approvals";
 import { appsExtension } from "../features/apps";
@@ -582,7 +587,37 @@ export function ShellPage() {
   const composerDock = useRef<HTMLDivElement>(null);
   // A View Transition already glides the composer (`nova-composer`); the FLIP is the fallback.
   useDockTransition(composerDock, shownStart, () => orbFlight.current === "view-transition");
-  const [sidebarCollapsed, toggleSidebarCollapsed] = useSidebarCollapsed();
+  const [sidebarCollapsedPref, toggleSidebarCollapsedPref] = useSidebarCollapsed();
+  // A file being edited (a deck) wants the window: the sidebar steps aside without forgetting
+  // the person's choice, and its toggle only peeks until the edit ends.
+  const [sidebarPeek, setSidebarPeek] = useState(false);
+  const stageExpanded = chatArtifacts.expanded;
+  useEffect(() => {
+    if (!stageExpanded) setSidebarPeek(false);
+  }, [stageExpanded]);
+  // The conversation pane steps aside (display: none) while a file is being edited, which drops
+  // its scroll position; remember where the person was and put them back afterwards.
+  const stageExpandedRef = useRef(stageExpanded);
+  stageExpandedRef.current = stageExpanded;
+  const transcriptScrollTop = useRef<number | null>(null);
+  useEffect(() => {
+    const onScroll = (event: Event) => {
+      const el = messageScroll.current;
+      if (stageExpandedRef.current || !el || event.target !== el) return;
+      transcriptScrollTop.current = el.scrollTop;
+    };
+    document.addEventListener("scroll", onScroll, true);
+    return () => document.removeEventListener("scroll", onScroll, true);
+  }, [messageScroll]);
+  useLayoutEffect(() => {
+    const el = messageScroll.current;
+    if (stageExpanded || !el || transcriptScrollTop.current === null) return;
+    el.scrollTop = transcriptScrollTop.current;
+  }, [stageExpanded, messageScroll]);
+  const sidebarCollapsed = stageExpanded ? !sidebarPeek : sidebarCollapsedPref;
+  const toggleSidebarCollapsed = stageExpanded
+    ? () => setSidebarPeek((peek) => !peek)
+    : toggleSidebarCollapsedPref;
   const isDesktop = useIsDesktop();
   const orbHome = orbPlacement({
     startPage: shownStart,
@@ -790,6 +825,54 @@ export function ShellPage() {
       ? t`You`
       : (resolveTranscriptMemberName(activeReplyTarget.botId) ?? active?.name ?? t`Bot`)
     : undefined;
+  const dockReply = useMemo(() => latestDockReply(transcriptMessages), [transcriptMessages]);
+  // The docked composer (a deck being edited) shows what this conversation's composer shows.
+  const dockComposer = useMemo<ConversationDockApi["composer"]>(
+    () => ({
+      running: composerRunning,
+      sending,
+      disabled: Boolean(recordingSkill),
+      onStop: stopRun,
+      pendingAttachments: activePendingAttachments,
+      onRemoveAttachment: removeAttachment,
+      onRetryAttachment: retryAttachment,
+      attachmentNotice,
+      uploadStatus,
+      sendError,
+      runError: displayedRunError,
+      runErrorId: displayedRunErrorId,
+      onRunErrorPresented: handleRunErrorPresented,
+      onDismissError: dismissComposerError,
+      replyTarget: activeReplyTarget,
+      replyQuote: activeReplyQuote,
+      replyTargetName,
+      onClearReply: clearReply,
+    }),
+    [
+      composerRunning,
+      sending,
+      recordingSkill,
+      stopRun,
+      activePendingAttachments,
+      removeAttachment,
+      retryAttachment,
+      attachmentNotice,
+      uploadStatus,
+      sendError,
+      displayedRunError,
+      displayedRunErrorId,
+      handleRunErrorPresented,
+      dismissComposerError,
+      activeReplyTarget,
+      activeReplyQuote,
+      replyTargetName,
+      clearReply,
+    ],
+  );
+  const conversationDock = useMemo<ConversationDockApi>(
+    () => ({ send: sendMessage, composer: dockComposer, reply: dockReply }),
+    [sendMessage, dockComposer, dockReply],
+  );
   const handleSendIdea = useCallback(
     (text: string) => {
       setMuseView("conversation");
@@ -993,7 +1076,14 @@ export function ShellPage() {
           </div>
         ) : (
           <div className={museMode && active ? "flex min-h-0 flex-1" : "contents"}>
-            <div className={museMode && active ? MUSE_CONTENT_PANE : "contents"}>
+            {/* A deck being edited takes the window; it docks its own composer meanwhile. */}
+            <div
+              className={
+                museMode && active
+                  ? cn(MUSE_CONTENT_PANE, chatArtifacts.expanded && "md:hidden")
+                  : "contents"
+              }
+            >
               {/* Behind a fork's thread view or "lift and ask", the Conversation is out of reach. */}
               <div className="contents" inert={forkOverlayOpen || undefined}>
                 {museMode && active ? (
@@ -1328,7 +1418,11 @@ export function ShellPage() {
                 />
               ) : null}
             </div>
-            {museMode && active ? chatArtifacts.panel : null}
+            {museMode && active ? (
+              <ConversationDockProvider value={conversationDock}>
+                {chatArtifacts.panel}
+              </ConversationDockProvider>
+            ) : null}
             {museMode && active ? (
               <ContextPanel
                 botId={active.id}
