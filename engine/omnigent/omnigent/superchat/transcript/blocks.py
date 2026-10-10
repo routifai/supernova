@@ -46,9 +46,17 @@ ARTIFACT_SAVE_TOOL_NAME = "artifact_save"
 #: Returns the same ``{"type": "artifact", ...}`` result, so its file shows as the same card.
 DECK_EXPORT_TOOL_NAME = "deck_export"
 #: Also returns the ``{"type": "artifact", ...}`` result: the saved chart shows as a file card.
+#: The tool is retired; the name stays so older conversations keep their charts.
 CHART_TOOL_NAME = "display_chart"
+#: Same result for a dashboard: one file card for the whole dashboard.
+DASHBOARD_TOOL_NAME = "display_dashboard"
 #: The calls whose ``{"type": "artifact", ...}`` result shows as a file card.
-FILE_RESULT_TOOL_NAMES = (ARTIFACT_SAVE_TOOL_NAME, DECK_EXPORT_TOOL_NAME, CHART_TOOL_NAME)
+FILE_RESULT_TOOL_NAMES = (
+    ARTIFACT_SAVE_TOOL_NAME,
+    DECK_EXPORT_TOOL_NAME,
+    CHART_TOOL_NAME,
+    DASHBOARD_TOOL_NAME,
+)
 
 #: ``ResourceEventData`` fields of a file a person's own action delivered into the chat.
 DELIVERED_ARTIFACT_RESOURCE = "artifact"

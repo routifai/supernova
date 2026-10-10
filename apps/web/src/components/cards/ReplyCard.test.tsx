@@ -38,7 +38,12 @@ vi.mock("@nova/ui-web", () => {
   };
 });
 
-import { ReplyCardSendProvider, ReplyCardThreadProvider } from "./context";
+import {
+  type AskPreviewProps,
+  AskPreviewsProvider,
+  ReplyCardSendProvider,
+  ReplyCardThreadProvider,
+} from "./context";
 import { ReplyCard, ReplyCardBlockView } from "./ReplyCard";
 
 const mounted: HTMLElement[] = [];
@@ -297,4 +302,82 @@ it("follow-ups: hidden control characters never reach the chip or the sent text"
   expect(chip.textContent).toBe("Show it by region");
   act(() => chip.click());
   expect(send).toHaveBeenCalledWith("Show it by region");
+});
+
+/** A capability's tiles, as the Shell would register them: a button per option. */
+function Tiles({ options, chosen, locked, onPick }: AskPreviewProps) {
+  return (
+    <div data-testid="tiles">
+      {options.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          data-preview-id={option.previewId}
+          disabled={locked}
+          aria-pressed={chosen === option.label}
+          onClick={() => onPick(option.label)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const themeAsk = block({
+  card: "ask",
+  data: {
+    question: "Which look?",
+    options: [
+      ["nord", "Nord"],
+      ["bauhaus", "Bauhaus"],
+      ["minimal-white", "Minimal White"],
+    ].map(([id, label], i) => ({
+      id: `opt-${i + 1}`,
+      label,
+      preview: { kind: "deck-theme", id },
+    })),
+  },
+});
+
+it("previewed options: the registered tiles draw them, one pick sends once and locks", () => {
+  const send = vi.fn();
+  const host = mount(
+    <AskPreviewsProvider value={{ "deck-theme": Tiles }}>
+      <ReplyCardSendProvider send={send}>
+        <ReplyCard block={themeAsk} />
+      </ReplyCardSendProvider>
+    </AskPreviewsProvider>,
+  );
+  const tiles = [...host.querySelectorAll<HTMLButtonElement>('[data-testid="tiles"] button')];
+  expect(tiles.map((tile) => tile.dataset.previewId)).toEqual(["nord", "bauhaus", "minimal-white"]);
+  act(() => {
+    tiles[1]?.click();
+    tiles[0]?.click();
+  });
+  act(() => tiles[1]?.click());
+  expect(send).toHaveBeenCalledExactlyOnceWith("Bauhaus");
+  expect(tiles[1]?.getAttribute("aria-pressed")).toBe("true");
+  expect(tiles[0]?.disabled).toBe(true);
+});
+
+it("previewed options: an answered card is locked on the pick", () => {
+  const send = vi.fn();
+  const host = mount(
+    <AskPreviewsProvider value={{ "deck-theme": Tiles }}>
+      <ReplyCardSendProvider send={send}>
+        <ReplyCard block={themeAsk} answer="Nord" />
+      </ReplyCardSendProvider>
+    </AskPreviewsProvider>,
+  );
+  const tiles = [...host.querySelectorAll<HTMLButtonElement>('[data-testid="tiles"] button')];
+  expect(tiles[0]?.getAttribute("aria-pressed")).toBe("true");
+  act(() => tiles[2]?.click());
+  expect(send).not.toHaveBeenCalled();
+});
+
+it("previewed options with no registered tiles keep the plain buttons", () => {
+  const host = mount(<ReplyCard block={themeAsk} />);
+  expect(host.querySelector('[data-testid="tiles"]')).toBeNull();
+  expect(host.textContent).toContain("Minimal White");
 });

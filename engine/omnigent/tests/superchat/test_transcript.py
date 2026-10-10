@@ -200,6 +200,17 @@ def test_display_chart_becomes_a_file_block() -> None:
     )
 
 
+def test_display_dashboard_becomes_one_file_block() -> None:
+    saved = {
+        "type": "artifact", "id": "art_d", "name": "sales.dashboard.json", "kind": "json",
+        "size": 900, "title": "Sales", "dashboard": {"kpis": 1, "charts": ["bar", "line"]},
+    }  # fmt: skip
+    [message] = project_items([_call("d1", "display_dashboard", "kd"), _out("do", "kd", saved)])
+    [block] = message["blocks"]
+    assert block["type"] == "file" and block["artifact_id"] == "art_d"
+    assert block["name"] == "sales.dashboard.json" and block["title"] == "Sales"
+
+
 def test_delivered_artifact_is_a_user_file_block_and_other_resources_show_nothing() -> None:
     saved = {"type": "artifact", "id": "art_3", "name": "q3.pdf", "kind": "pdf", "size": 7}
     event = {
@@ -514,3 +525,35 @@ async def test_transcript_redacts_deployment_secrets(
     )
     raw = (await reset_client.get(f"/v1/sessions/{root.id}/transcript")).text
     assert secret not in raw and "[redacted]" in raw
+
+
+async def test_a_message_waiting_behind_the_running_turn_reads_as_queued(
+    client: httpx.AsyncClient,
+    conversation_store: SqlAlchemyConversationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from omnigent.superchat.transcript import routes as transcript_routes
+
+    root = conversation_store.create_conversation(kind="default", title="S", labels=_MODE)
+    first, waiting = conversation_store.append(
+        root.id, [_say("user", "redo"), _say("user", "and blue")]
+    )
+    asked: list[str] = []
+
+    async def runner_queue(request: object, session_id: str) -> set[str]:
+        asked.append(session_id)
+        return {waiting.id}
+
+    monkeypatch.setattr(transcript_routes, "_waiting_item_ids", runner_queue)
+    url = f"/v1/sessions/{root.id}/transcript"
+
+    # Not mid-turn: nothing waits, and the runner is not asked.
+    messages = {m["id"]: m for m in (await client.get(url)).json()["data"]}
+    assert "delivered" not in messages[waiting.id]
+    assert asked == []
+
+    # Mid-turn: the runner's live queue is the only source.
+    conversation_store.set_session_live_status(root.id, "running")
+    messages = {m["id"]: m for m in (await client.get(url)).json()["data"]}
+    assert messages[waiting.id]["delivered"] == "queued"
+    assert "delivered" not in messages[first.id]

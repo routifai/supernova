@@ -23,8 +23,10 @@ from __future__ import annotations
 
 import json
 import unicodedata
+from collections.abc import Callable
 from typing import Any
 
+from omnigent.inner.executor import ENDS_TURN_KEY
 from omnigent.tools.base import Tool, ToolContext
 
 CARD_TOOL_NAME = "render_card"
@@ -61,8 +63,9 @@ def _kind_hints() -> str:
     return "; ".join(f"{kind} {_shape(s)}" for kind, s in CARD_DATA_SCHEMAS.items())
 
 
-# No `chart` card is offered: charts come from `display_chart`, which reads a result file so the
-# model never types data values. Old transcripts keep their chart cards; clients still draw them.
+# No `chart` card is offered: charts and dashboards are HTML pages `nova-dashboard` builds from the
+# person's files, so the model never types data values. Old transcripts keep their chart cards;
+# clients still draw them.
 
 # Kinds that are the answer itself. ``plan`` and ``progress`` are living cards the Muse
 # re-renders (same ``id``) while it works, so they never end the reply; ``ask`` waits on
@@ -79,7 +82,15 @@ def _arr(items: dict[str, Any], *, min_items: int = 1, max_items: int = 50) -> d
 _ASK_SCHEMA: dict[str, Any] = _obj(
     ["question", "options"],
     question=_STR,
-    options=_arr(_obj(["id", "label"], id=_STR, label=_STR), max_items=8),
+    options=_arr(
+        _obj(
+            ["id", "label"],
+            id=_STR,
+            label=_STR,
+            preview=_obj(["kind", "id"], kind=_STR, id=_STR),
+        ),
+        max_items=8,
+    ),
     allowFreeText={"type": "boolean"},
 )
 
@@ -244,8 +255,9 @@ class RenderCardTool(Tool):
             "Show the person a card instead of prose, only when it reads better than text: "
             "numbers to compare (compare), a market quote (quote), a plan you will update "
             "(plan), sources you read (sources), a contact "
-            "(person), a file (file), long-running work (progress). For a chart use "
-            "`display_chart` on a result file, never a card with typed numbers. "
+            "(person), a file (file), long-running work (progress). For a chart or a "
+            "dashboard build a page with `nova-dashboard` from the data files, never a card "
+            "with typed numbers. "
             "Otherwise write normally. `data` is an object whose shape depends on `card` "
             f"(`?` = optional): {_kind_hints()}. "
             "`fallback` is a complete markdown summary of the card, used where it cannot be "
@@ -339,6 +351,63 @@ def _clean_strings(
     return out, None
 
 
+#: What an option's ``preview`` may point at: ``kind`` -> the ids that exist. A capability adds
+#: its kind with :func:`register_preview_kind` (decks: ``deck-theme``); the client draws the
+#: preview from its own data. An unknown kind or id is refused.
+PREVIEW_KINDS: dict[str, Callable[[], set[str]]] = {}
+#: ``kind`` -> a check of the ids one question offers together: the problem with the set, or None.
+PREVIEW_CHECKS: dict[str, Callable[[list[str]], str | None]] = {}
+
+
+def register_preview_kind(
+    kind: str,
+    ids: Callable[[], set[str]],
+    check: Callable[[list[str]], str | None] | None = None,
+) -> None:
+    """Allow ``{"kind": kind, "id": <one of ids()>}`` as an ask option's preview.
+
+    :param check: Refuses a set of ids offered together (e.g. near-identical choices).
+    """
+    PREVIEW_KINDS[kind] = ids
+    if check is not None:
+        PREVIEW_CHECKS[kind] = check
+
+
+def _split_options(raw: Any) -> tuple[list[Any], list[Any], str | None]:
+    """Labels and previews of ``options`` entries (a string, or ``{label, preview?}``)."""
+    if not isinstance(raw, list):
+        return [], [], "options must be an array"
+    labels: list[Any] = []
+    previews: list[Any] = []
+    for i, item in enumerate(raw):
+        if not isinstance(item, dict):
+            labels.append(item)
+            previews.append(None)
+            continue
+        if set(item) - {"label", "preview"}:
+            return [], [], f"options[{i}] allows only label and preview"
+        preview = item.get("preview")
+        if preview is not None:
+            if not isinstance(preview, dict) or set(preview) != {"kind", "id"}:
+                return [], [], f"options[{i}].preview must be {{kind, id}}"
+            ids = PREVIEW_KINDS.get(preview["kind"]) if isinstance(preview["kind"], str) else None
+            if ids is None:
+                return (
+                    [],
+                    [],
+                    f"options[{i}].preview.kind must be one of {', '.join(PREVIEW_KINDS)}",
+                )
+            if preview["id"] not in ids():
+                return [], [], f"options[{i}].preview.id is not a known {preview['kind']}"
+        labels.append(item.get("label"))
+        previews.append(preview)
+    for kind, check in PREVIEW_CHECKS.items():
+        problem = check([p["id"] for p in previews if p and p["kind"] == kind])
+        if problem:
+            return [], [], problem
+    return labels, previews, None
+
+
 def build_clarification(args: dict[str, Any]) -> dict[str, Any]:
     """
     Validate ``ask_clarification`` arguments and build its ``ask`` card payload.
@@ -351,8 +420,11 @@ def build_clarification(args: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(question, str) or not question.strip():
         return {"error": "question must be a non-empty string"}
     question = " ".join(question.split())
+    raw_labels, previews, err = _split_options(args.get("options"))
+    if err is not None:
+        return {"error": err}
     options, err = _clean_strings(
-        args.get("options"),
+        raw_labels,
         path="options",
         min_items=CLARIFICATION_MIN_OPTIONS,
         max_items=CLARIFICATION_MAX_OPTIONS,
@@ -366,7 +438,10 @@ def build_clarification(args: dict[str, Any]) -> dict[str, Any]:
             "card": "ask",
             "data": {
                 "question": question,
-                "options": [{"id": f"opt-{i}", "label": o} for i, o in enumerate(options, 1)],
+                "options": [
+                    {"id": f"opt-{i}", "label": o, **({"preview": p} if p else {})}
+                    for i, (o, p) in enumerate(zip(options, previews, strict=True), 1)
+                ],
             },
             "fallback": fallback,
         },
@@ -374,9 +449,10 @@ def build_clarification(args: dict[str, Any]) -> dict[str, Any]:
     )
     if "error" not in out:
         out["note"] = (
-            "Shown to the person with one button per option. End your turn now with no more "
-            "text; their pick arrives as their next message."
+            "Shown to the person with one button per option. Your turn ends here; their pick "
+            "arrives as their next message."
         )
+        out[ENDS_TURN_KEY] = True
     return out
 
 
@@ -402,10 +478,8 @@ def build_follow_ups(args: dict[str, Any]) -> dict[str, Any]:
         "card": "follow_ups",
         "data": {"suggestions": suggestions},
         "fallback": "\n".join(f"- {s}" for s in suggestions),
-        "note": (
-            "Shown as quiet chips under your answer. End your turn now with no more text; "
-            "do not mention them."
-        ),
+        "note": "Shown as quiet chips under your answer. Your turn ends here.",
+        ENDS_TURN_KEY: True,
     }
 
 
@@ -469,13 +543,39 @@ class AskClarificationTool(_CardSiblingTool):
                         },
                         "options": {
                             "type": "array",
-                            "items": {"type": "string"},
+                            "items": {
+                                "anyOf": [
+                                    {"type": "string"},
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "label": {"type": "string"},
+                                            "preview": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "kind": {
+                                                        "type": "string",
+                                                        "enum": list(PREVIEW_KINDS),
+                                                    },
+                                                    "id": {"type": "string"},
+                                                },
+                                                "required": ["kind", "id"],
+                                                "additionalProperties": False,
+                                            },
+                                        },
+                                        "required": ["label"],
+                                        "additionalProperties": False,
+                                    },
+                                ]
+                            },
                             "minItems": CLARIFICATION_MIN_OPTIONS,
                             "maxItems": CLARIFICATION_MAX_OPTIONS,
                             "description": (
                                 f"{CLARIFICATION_MIN_OPTIONS}-{CLARIFICATION_MAX_OPTIONS} "
                                 f"distinct answers, each under "
-                                f"{CLARIFICATION_OPTION_MAX_CHARS} characters."
+                                f"{CLARIFICATION_OPTION_MAX_CHARS} characters. An option may be "
+                                '{"label", "preview": {"kind": "deck-theme", "id": <deck '
+                                "theme id>}} to show that theme's thumbnail."
                             ),
                         },
                     },

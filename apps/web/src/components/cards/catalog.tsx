@@ -25,12 +25,14 @@ import {
   Phone,
 } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
-import { useReplyCardSend } from "./context";
+import { useAskPreviews, useReplyCardSend } from "./context";
 import { hostOf, mailtoHref, safeHttpUrl, telHref } from "./links";
 
 /** The transcript bubble is as wide as its content, so cards state their own width. */
 const CARD_WIDTH = "w-[min(30rem,calc(100vw-3rem))]";
 const WIDE_CARD_WIDTH = "w-[min(42rem,calc(100vw-3rem))]";
+/** A question answered with previews (deck looks) fills the message column: tiles side by side. */
+const PREVIEW_CARD_WIDTH = "w-[min(46rem,calc(100vw-3rem))] max-w-full";
 
 /** Every card kind shares one frame: compact, monochrome, readable at phone width. */
 export function Frame({
@@ -227,38 +229,55 @@ function Ask({
   const pickedRef = useRef(false);
   const chosen = picked ?? answer?.trim() ?? null;
   const locked = chosen !== null || !send;
+  const pick = (label: string) => {
+    if (locked || pickedRef.current) return;
+    pickedRef.current = true;
+    setPicked(label);
+    send?.(label);
+  };
+  // Options that preview something (deck themes) are drawn by that capability's own tiles.
+  const previewKind = data.options.find((o) => o.preview)?.preview?.kind;
+  const Tiles = useAskPreviews()[previewKind ?? ""];
   return (
-    <Frame title={title}>
+    <Frame title={title} className={Tiles ? PREVIEW_CARD_WIDTH : undefined}>
       <p className="text-[14.5px] leading-snug font-medium" dir="auto">
         {data.question}
       </p>
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-        {data.options.map((option) => {
-          const isChosen = chosen === option.label;
-          return (
-            <Button
-              key={option.id}
-              type="button"
-              variant={isChosen ? "default" : "outline"}
-              disabled={locked && !isChosen}
-              aria-pressed={locked ? isChosen : undefined}
-              onClick={() => {
-                if (locked || pickedRef.current) return;
-                pickedRef.current = true;
-                setPicked(option.label);
-                send?.(option.label);
-              }}
-              className={cn(
-                "h-9 justify-start gap-2 px-3 text-[13.5px] sm:justify-center",
-                isChosen && "disabled:opacity-100",
-              )}
-            >
-              {isChosen ? <Check aria-hidden="true" /> : null}
-              <span dir="auto">{option.label}</span>
-            </Button>
-          );
-        })}
-      </div>
+      {Tiles ? (
+        <Tiles
+          options={data.options.map((option) => ({
+            id: option.id,
+            label: option.label,
+            previewId: option.preview?.id ?? "",
+          }))}
+          chosen={chosen}
+          locked={locked}
+          onPick={pick}
+        />
+      ) : (
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          {data.options.map((option) => {
+            const isChosen = chosen === option.label;
+            return (
+              <Button
+                key={option.id}
+                type="button"
+                variant={isChosen ? "default" : "outline"}
+                disabled={locked && !isChosen}
+                aria-pressed={locked ? isChosen : undefined}
+                onClick={() => pick(option.label)}
+                className={cn(
+                  "h-9 justify-start gap-2 px-3 text-[13.5px] sm:justify-center",
+                  isChosen && "disabled:opacity-100",
+                )}
+              >
+                {isChosen ? <Check aria-hidden="true" /> : null}
+                <span dir="auto">{option.label}</span>
+              </Button>
+            );
+          })}
+        </div>
+      )}
     </Frame>
   );
 }
